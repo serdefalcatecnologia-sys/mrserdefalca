@@ -5,9 +5,9 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@supabase/supabase-js';
 
-// Configuración de Supabase
-const supabaseUrl = "https://lngeqruorrokkuuvstut.supabase.co";
-const supabaseKey = "sb_publishable_lAmxQ4ijw9Ah2E_X7Clj1w_3Yni_elN";
+// Configuración de Supabase (CORREGIDA: Ahora lee las variables de Vercel)
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function AdminDashboard() {
