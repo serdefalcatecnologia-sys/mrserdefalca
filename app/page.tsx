@@ -56,11 +56,18 @@ export default function Home() {
         return;
       }
 
-      // Paso C: Filtro de seguridad (Solo admin y super usuario)
-      if (userData.rol === 'super usuario' || userData.rol === 'admin') {
+      // Paso C: Redirección Inteligente (El Semáforo de Roles)
+      const rolEmpleado = userData.rol?.toLowerCase(); // Convertimos a minúsculas por si acaso
+
+      if (rolEmpleado === 'admin' || rolEmpleado === 'super usuario') {
         router.push('/admin'); 
+      } else if (rolEmpleado === 'comercial') {
+        router.push('/comercial'); 
+      } else if (rolEmpleado === 'flota') {
+        router.push('/flota'); 
       } else {
-        setError("⛔ Acceso denegado: Esta área es exclusiva para administradores.");
+        // Si el rol no es ninguno de los anteriores, lo bloqueamos por seguridad
+        setError("⛔ Acceso denegado: Rol no configurado o no reconocido en el sistema.");
         await supabase.auth.signOut(); 
       }
     }
@@ -76,7 +83,7 @@ export default function Home() {
           src="/imagen1.png"
           alt="Fondo de recolección y reciclaje Serdefalca"
           fill
-          sizes="100vw" /* 👈 Agregado para que no se queje Next.js */
+          sizes="100vw"
           className="object-cover opacity-40"
           priority
         />
@@ -92,7 +99,7 @@ export default function Home() {
               src="/logo1.png"
               alt="Logo Oficial Serdefalca"
               fill
-              sizes="(max-width: 768px) 200px, 200px" /* 👈 Agregado para optimizar el logo */
+              sizes="(max-width: 768px) 200px, 200px"
               className="object-contain"
               priority
             />

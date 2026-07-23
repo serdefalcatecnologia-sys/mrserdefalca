@@ -1,217 +1,184 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
+// Configuración de Supabase
+const supabaseUrl = "https://lngeqruorrokkuuvstut.supabase.co";
+const supabaseKey = "sb_publishable_lAmxQ4ijw9Ah2E_X7Clj1w_3Yni_elN";
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-export default function RegistroEmpleados() {
+export default function AdminDashboard() {
   const router = useRouter();
-  const [guardando, setGuardando] = useState(false);
-  const [mensaje, setMensaje] = useState({ tipo: '', texto: '' });
+  const [usuario, setUsuario] = useState<any>(null);
+  const [cargando, setCargando] = useState(true);
 
-  // Campos del empleado
-  const [cedula, setCedula] = useState('');
-  const [nombres, setNombres] = useState('');
-  const [apellidos, setApellidos] = useState('');
-  const [telefono, setTelefono] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [rol, setRol] = useState('comercial'); // comercial, flota, admin
-  const [foto, setFoto] = useState('');
-
-  const registrarEmpleado = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setGuardando(true);
-    setMensaje({ tipo: '', texto: '' });
-
-    try {
-      // 1. Crear el usuario en el sistema de Autenticación de Supabase
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: email,
-        password: password,
-      });
-
-      if (authError) throw authError;
-
-      const userId = authData.user?.id;
-
-      if (!userId) {
-        throw new Error("No se pudo obtener el ID del usuario creado.");
+  useEffect(() => {
+    const validarSesion = async () => {
+      const { data: authData } = await supabase.auth.getSession();
+      if (!authData.session) {
+        router.push('/');
+        return;
       }
 
-      // 2. Guardar los datos en la tabla 'usuarios' (Sin campos de flota mezclados)
-      const { error: dbError } = await supabase
+      const { data: perfil } = await supabase
         .from('usuarios')
-        .insert([
-          {
-            id_usuario: userId,
-            cedula: cedula,
-            nombre: nombres,
-            apellido: apellidos,
-            telefono: telefono,
-            email: email,
-            rol: rol,
-            foto: foto || null // Opcional
-          }
-        ]);
-
-      if (dbError) throw dbError;
-
-      setMensaje({ tipo: 'exito', texto: '¡Empleado registrado con éxito en el sistema!' });
+        .select('*')
+        .eq('id_usuario', authData.session.user.id)
+        .single();
       
-      // Limpiar formulario
-      setCedula('');
-      setNombres('');
-      setApellidos('');
-      setTelefono('');
-      setEmail('');
-      setPassword('');
-      setFoto('');
+      if (perfil) setUsuario(perfil);
+      setCargando(false);
+    };
 
-    } catch (error: any) {
-      console.error(error);
-      setMensaje({ tipo: 'error', texto: 'Error al registrar: ' + (error.message || 'Error desconocido') });
-    } finally {
-      setGuardando(false);
-    }
+    validarSesion();
+  }, [router]);
+
+  const cerrarSesion = async () => {
+    await supabase.auth.signOut();
+    router.push('/');
   };
 
+  const obtenerIniciales = (nombre = '', apellido = '') => {
+    return `${nombre?.charAt(0) || ''}${apellido?.charAt(0) || ''}`.toUpperCase();
+  };
+
+  if (cargando) {
+    return <div className="flex h-screen items-center justify-center bg-zinc-900 text-emerald-500 font-bold text-xl">Cargando Centro de Mando...</div>;
+  }
+
   return (
-    <div className="min-h-screen bg-zinc-50 p-8 dark:bg-zinc-950">
+    <div className="flex h-screen bg-zinc-100 font-sans dark:bg-zinc-950">
       
-      <div className="mb-6">
-        <Link href="/admin" className="inline-flex items-center gap-2 text-sm font-medium text-zinc-500 hover:text-emerald-600 dark:text-zinc-400 transition-colors">
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
-          Volver al Menú Principal
-        </Link>
-      </div>
-
-      <div className="max-w-3xl mx-auto bg-white dark:bg-zinc-900 rounded-2xl shadow-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
-        <div className="bg-emerald-900 text-white p-6">
-          <h1 className="text-2xl font-bold">Alta de Personal y Asignación de Roles</h1>
-          <p className="text-emerald-200 text-sm mt-1">Registra al nuevo operador para darle acceso a su módulo correspondiente.</p>
+      {/* BARRA LATERAL (SIDEBAR EXACTAMENTE COMO LO PEDISTE) */}
+      <aside className="hidden w-64 flex-col bg-emerald-900 text-white md:flex shadow-xl z-10">
+        <div className="flex h-20 items-center justify-center border-b border-emerald-800">
+          <h2 className="text-xl font-bold tracking-wider">SERDEFALCA</h2>
         </div>
-
-        <form onSubmit={registrarEmpleado} className="p-8 space-y-6">
+        <nav className="flex-1 space-y-2 p-4 overflow-y-auto">
           
-          {mensaje.texto && (
-            <div className={`p-4 rounded-lg text-sm font-medium ${mensaje.tipo === 'exito' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
-              {mensaje.texto}
-            </div>
-          )}
+          <Link href="/admin" className="flex items-center gap-3 rounded-lg bg-emerald-800 px-4 py-3 text-sm font-medium transition-colors hover:bg-emerald-700">
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+            Panel Principal
+          </Link>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Cédula de Identidad</label>
-              <input 
-                required
-                type="text" 
-                value={cedula} 
-                onChange={(e) => setCedula(e.target.value)} 
-                placeholder="Ej. 22600509"
-                className="w-full rounded-lg border border-zinc-300 p-2.5 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-white outline-none focus:border-emerald-500" 
-              />
-            </div>
+          <Link href="/admin/empleados/registro" className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-emerald-100 transition-colors hover:bg-emerald-800 hover:text-white">
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
+            Registro de Empleados
+          </Link>
 
-            <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Teléfono</label>
-              <input 
-                required
-                type="text" 
-                value={telefono} 
-                onChange={(e) => setTelefono(e.target.value)} 
-                placeholder="Ej. 04246652978"
-                className="w-full rounded-lg border border-zinc-300 p-2.5 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-white outline-none focus:border-emerald-500" 
-              />
-            </div>
+          <Link href="/admin/empleados" className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-emerald-100 transition-colors hover:bg-emerald-800 hover:text-white">
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+            Visualización de Empleados
+          </Link>
 
-            <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Nombres</label>
-              <input 
-                required
-                type="text" 
-                value={nombres} 
-                onChange={(e) => setNombres(e.target.value)} 
-                placeholder="Nombres del empleado"
-                className="w-full rounded-lg border border-zinc-300 p-2.5 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-white outline-none focus:border-emerald-500" 
-              />
-            </div>
+          <Link href="/admin/comercial" className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-emerald-100 transition-colors hover:bg-emerald-800 hover:text-white">
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+            Vista de Comercialización
+          </Link>
 
-            <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Apellidos</label>
-              <input 
-                required
-                type="text" 
-                value={apellidos} 
-                onChange={(e) => setApellidos(e.target.value)} 
-                placeholder="Apellidos del empleado"
-                className="w-full rounded-lg border border-zinc-300 p-2.5 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-white outline-none focus:border-emerald-500" 
-              />
-            </div>
+          <Link href="/admin/flota" className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-emerald-100 transition-colors hover:bg-emerald-800 hover:text-white">
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
+            Vista Flota de Rutas
+          </Link>
 
-            <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Correo Electrónico (Para Login)</label>
-              <input 
-                required
-                type="email" 
-                value={email} 
-                onChange={(e) => setEmail(e.target.value)} 
-                placeholder="correo@serdefalca.gob.ve"
-                className="w-full rounded-lg border border-zinc-300 p-2.5 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-white outline-none focus:border-emerald-500" 
-              />
-            </div>
+          <Link href="/admin/configuracion" className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-emerald-100 transition-colors hover:bg-emerald-800 hover:text-white mt-4 border border-emerald-700/50">
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+            Configuración de Sistema
+          </Link>
 
-            <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Contraseña Provisional</label>
-              <input 
-                required
-                type="password" 
-                value={password} 
-                onChange={(e) => setPassword(e.target.value)} 
-                placeholder="Mínimo 6 caracteres"
-                className="w-full rounded-lg border border-zinc-300 p-2.5 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-white outline-none focus:border-emerald-500" 
-              />
-            </div>
+        </nav>
+        <div className="p-4 border-t border-emerald-800">
+          <button onClick={cerrarSesion} className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-red-300 transition-colors hover:bg-red-900/50 hover:text-red-100">
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+            Cerrar Sesión
+          </button>
+        </div>
+      </aside>
 
-            <div className="sm:col-span-2">
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Rol / Módulo Asignado</label>
-              <select 
-                value={rol} 
-                onChange={(e) => setRol(e.target.value)}
-                className="w-full rounded-lg border border-zinc-300 p-2.5 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-white outline-none focus:border-emerald-500"
-              >
-                <option value="comercial">Operador de Comercialización</option>
-                <option value="flota">Operador de Flota de Rutas</option>
-                <option value="admin">Administrador General</option>
-              </select>
+      {/* ÁREA PRINCIPAL */}
+      <main className="flex-1 flex flex-col h-screen overflow-hidden">
+        
+        {/* Header */}
+        <header className="flex h-20 items-center justify-between bg-white px-8 shadow-sm dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 flex-shrink-0">
+          <div>
+            <h1 className="text-2xl font-bold text-zinc-800 dark:text-zinc-100">Centro de Monitoreo</h1>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 capitalize">Administración Central - Rol: {usuario?.rol}</p>
+          </div>
+          <div className="flex items-center gap-4">
+            <span className="hidden text-sm font-medium text-zinc-600 dark:text-zinc-300 md:block uppercase">
+              {usuario?.nombre} {usuario?.apellido}
+            </span>
+            <div className="h-10 w-10 rounded-full bg-emerald-600 flex items-center justify-center text-white font-bold shadow-md">
+              {obtenerIniciales(usuario?.nombre, usuario?.apellido)}
             </div>
           </div>
+        </header>
 
-          <div className="pt-4 border-t border-zinc-200 dark:border-zinc-800 flex justify-end gap-4">
-            <Link 
-              href="/admin"
-              className="px-6 py-2.5 rounded-lg border border-zinc-300 text-zinc-700 dark:text-zinc-300 text-sm font-medium hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-            >
-              Cancelar
-            </Link>
-            <button 
-              type="submit"
-              disabled={guardando}
-              className="px-6 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold shadow-md transition-all disabled:opacity-50"
-            >
-              {guardando ? 'Registrando...' : 'Guardar Empleado'}
-            </button>
+        {/* Contenido Central: BOTONES GIGANTES */}
+        <div className="flex-1 p-8 overflow-y-auto bg-zinc-50 dark:bg-zinc-950/50 flex flex-col items-center justify-center">
+          
+          <div className="w-full max-w-5xl">
+            <h2 className="text-xl font-semibold text-zinc-700 dark:text-zinc-300 mb-8 text-center">Seleccione el módulo de administración</h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              
+              {/* Botón 1: Registro de Empleados */}
+              <Link href="/admin/empleados/registro" className="group flex flex-col items-center justify-center gap-4 bg-white dark:bg-zinc-900 p-8 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 hover:shadow-md hover:border-emerald-500 dark:hover:border-emerald-500 transition-all cursor-pointer">
+                <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 rounded-full group-hover:scale-110 transition-transform">
+                  <svg className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
+                </div>
+                <span className="text-lg font-bold text-zinc-800 dark:text-zinc-100">1. Registro de Empleados</span>
+                <p className="text-sm text-zinc-500 text-center">Dar de alta nuevo personal y asignar roles al sistema.</p>
+              </Link>
+
+              {/* Botón 2: Visualización de Empleados */}
+              <Link href="/admin/empleados" className="group flex flex-col items-center justify-center gap-4 bg-white dark:bg-zinc-900 p-8 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 hover:shadow-md hover:border-emerald-500 dark:hover:border-emerald-500 transition-all cursor-pointer">
+                <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 rounded-full group-hover:scale-110 transition-transform">
+                  <svg className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                </div>
+                <span className="text-lg font-bold text-zinc-800 dark:text-zinc-100">2. Visualización de Empleados</span>
+                <p className="text-sm text-zinc-500 text-center">Directorio general y control de la plantilla de trabajo.</p>
+              </Link>
+
+              {/* Botón 3: Vista de Comercialización */}
+              <Link href="/admin/comercial" className="group flex flex-col items-center justify-center gap-4 bg-white dark:bg-zinc-900 p-8 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 hover:shadow-md hover:border-emerald-500 dark:hover:border-emerald-500 transition-all cursor-pointer">
+                <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 rounded-full group-hover:scale-110 transition-transform">
+                  <svg className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                </div>
+                <span className="text-lg font-bold text-zinc-800 dark:text-zinc-100">3. Vista de Comercialización</span>
+                <p className="text-sm text-zinc-500 text-center">Monitoreo de ingresos, taquilla y todos los registros financieros.</p>
+              </Link>
+
+              {/* Botón 4: Vista de Flota */}
+              <Link href="/admin/flota" className="group flex flex-col items-center justify-center gap-4 bg-white dark:bg-zinc-900 p-8 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 hover:shadow-md hover:border-emerald-500 dark:hover:border-emerald-500 transition-all cursor-pointer">
+                <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 rounded-full group-hover:scale-110 transition-transform">
+                  <svg className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
+                </div>
+                <span className="text-lg font-bold text-zinc-800 dark:text-zinc-100">4. Vista Flota de Rutas</span>
+                <p className="text-sm text-zinc-500 text-center">Supervisión de camiones, tonelajes y estatus logístico.</p>
+              </Link>
+
+              {/* Botón 5: Configuración de Sistema (Centrado en la parte inferior) */}
+              <div className="md:col-span-2 flex justify-center mt-4">
+                <Link href="/admin/configuracion" className="group w-full md:w-1/2 flex flex-col items-center justify-center gap-4 bg-white dark:bg-zinc-900 p-8 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 hover:shadow-md hover:border-amber-500 dark:hover:border-amber-500 transition-all cursor-pointer">
+                  <div className="p-4 bg-amber-50 dark:bg-amber-900/20 text-amber-600 rounded-full group-hover:scale-110 transition-transform">
+                    <svg className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </div>
+                  <span className="text-lg font-bold text-zinc-800 dark:text-zinc-100">5. Configuración de Sistema</span>
+                  <p className="text-sm text-zinc-500 text-center">Ajustes avanzados y reglas de negocio.</p>
+                </Link>
+              </div>
+
+            </div>
           </div>
-
-        </form>
-      </div>
+        </div>
+      </main>
     </div>
   );
 }
