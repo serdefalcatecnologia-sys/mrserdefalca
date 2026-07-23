@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link'; // Importación para el botón de volver
 import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable'; // <-- Corrección: Importado como función principal
+import autoTable from 'jspdf-autotable'; 
 import { createClient } from '@supabase/supabase-js';
 
 // Conexión a Supabase usando las variables de entorno
@@ -59,7 +60,7 @@ export default function VistaComercializacion() {
   const facturasEnMora = datosFiltrados.filter(item => item.estado === 'Mora').length;
   const indiceMorosidad = totalFacturas > 0 ? ((facturasEnMora / totalFacturas) * 100).toFixed(1) : "0.0";
 
-  // 4. GENERAR PDF CON MEMBRETE COMPLETO (CORREGIDO)
+  // 4. GENERAR PDF CON MEMBRETE COMPLETO
   const generarPDF = () => {
     if (datosFiltrados.length === 0) {
       alert("No hay datos para exportar con estos filtros.");
@@ -111,6 +112,16 @@ export default function VistaComercializacion() {
   return (
     <div className="min-h-screen bg-zinc-50 p-8 dark:bg-zinc-950">
       
+      {/* BOTÓN DE VOLVER */}
+      <div className="mb-6">
+        <Link href="/admin" className="inline-flex items-center gap-2 text-sm font-medium text-zinc-500 hover:text-emerald-600 dark:text-zinc-400 dark:hover:text-emerald-400 transition-colors">
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          Volver al Menú Principal
+        </Link>
+      </div>
+
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-zinc-800 dark:text-zinc-100">Panel de Comercialización</h1>
