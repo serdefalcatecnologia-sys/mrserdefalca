@@ -1,192 +1,184 @@
 "use client";
 
-import { useState } from "react";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { createClient } from "@supabase/supabase-js";
+import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { createClient } from '@supabase/supabase-js';
 
-// 1. Inicializamos Supabase
+// Configuración de Supabase (CORREGIDA: Ahora lee las variables de Vercel)
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-export default function Home() {
-  // 2. Creamos los estados para guardar lo que el usuario escribe
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [cargando, setCargando] = useState(false);
-  
-  // Estado para mostrar/ocultar la contraseña
-  const [mostrarPassword, setMostrarPassword] = useState(false);
-  
-  // 3. Inicializamos el enrutador para poder cambiar de página
+export default function AdminDashboard() {
   const router = useRouter();
+  const [usuario, setUsuario] = useState<any>(null);
+  const [cargando, setCargando] = useState(true);
 
-  // 4. Función maestra que se ejecuta al darle al botón
-  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault(); 
-    setCargando(true);
-    setError("");
-
-    // Paso A: Autenticar al usuario en Supabase
-    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-      email: email,
-      password: password,
-    });
-
-    if (authError) {
-      setError("❌ Correo o contraseña incorrectos.");
-      setCargando(false);
-      return;
-    }
-
-    // Paso B: Verificar ROL en tu tabla
-    if (authData.user) {
-      const { data: userData, error: userError } = await supabase
-        .from('usuarios')
-        .select('rol')
-        .eq('id_usuario', authData.user.id)
-        .single();
-
-      if (userError || !userData) {
-        setError("❌ Error al verificar los permisos en la base de datos.");
-        await supabase.auth.signOut(); 
-        setCargando(false);
+  useEffect(() => {
+    const validarSesion = async () => {
+      const { data: authData } = await supabase.auth.getSession();
+      if (!authData.session) {
+        router.push('/');
         return;
       }
 
-      // Paso C: Filtro de seguridad (Solo admin y super usuario)
-      if (userData.rol === 'super usuario' || userData.rol === 'admin') {
-        router.push('/admin'); 
-      } else {
-        setError("⛔ Acceso denegado: Esta área es exclusiva para administradores.");
-        await supabase.auth.signOut(); 
-      }
-    }
-    setCargando(false);
+      const { data: perfil } = await supabase
+        .from('usuarios')
+        .select('*')
+        .eq('id_usuario', authData.session.user.id)
+        .single();
+      
+      if (perfil) setUsuario(perfil);
+      setCargando(false);
+    };
+
+    validarSesion();
+  }, [router]);
+
+  const cerrarSesion = async () => {
+    await supabase.auth.signOut();
+    router.push('/');
   };
 
+  const obtenerIniciales = (nombre = '', apellido = '') => {
+    return `${nombre?.charAt(0) || ''}${apellido?.charAt(0) || ''}`.toUpperCase();
+  };
+
+  if (cargando) {
+    return <div className="flex h-screen items-center justify-center bg-zinc-900 text-emerald-500 font-bold text-xl">Cargando Centro de Mando...</div>;
+  }
+
   return (
-    <div className="relative flex min-h-screen items-center justify-center bg-zinc-900 font-sans">
+    <div className="flex h-screen bg-zinc-100 font-sans dark:bg-zinc-950">
       
-      {/* Imagen de fondo a pantalla completa */}
-      <div className="absolute inset-0 z-0">
-        <Image
-          src="/imagen1.png"
-          alt="Fondo de recolección y reciclaje Serdefalca"
-          fill
-          sizes="100vw" /* 👈 Agregado para que no se queje Next.js */
-          className="object-cover opacity-40"
-          priority
-        />
-      </div>
-
-      {/* Tarjeta de Inicio de Sesión */}
-      <div className="relative z-10 mx-4 w-full max-w-md rounded-2xl bg-white/95 p-8 shadow-2xl backdrop-blur-md dark:bg-zinc-950/90 sm:p-10">
-        
-        {/* Encabezado y Logo */}
-        <div className="mb-8 flex flex-col items-center text-center">
-          <div className="relative mb-6 h-20 w-full max-w-[200px]">
-            <Image
-              src="/logo1.png"
-              alt="Logo Oficial Serdefalca"
-              fill
-              sizes="(max-width: 768px) 200px, 200px" /* 👈 Agregado para optimizar el logo */
-              className="object-contain"
-              priority
-            />
-          </div>
-          <h1 className="text-2xl font-bold tracking-tight text-emerald-800 dark:text-emerald-400">
-            Portal Serdefalca
-          </h1>
-          <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-            Sistema Regional de Gestión de Desechos Sólidos del Estado Falcón
-          </p>
+      {/* BARRA LATERAL (SIDEBAR EXACTAMENTE COMO LO PEDISTE) */}
+      <aside className="hidden w-64 flex-col bg-emerald-900 text-white md:flex shadow-xl z-10">
+        <div className="flex h-20 items-center justify-center border-b border-emerald-800">
+          <h2 className="text-xl font-bold tracking-wider">SERDEFALCA</h2>
         </div>
+        <nav className="flex-1 space-y-2 p-4 overflow-y-auto">
+          
+          <Link href="/admin" className="flex items-center gap-3 rounded-lg bg-emerald-800 px-4 py-3 text-sm font-medium transition-colors hover:bg-emerald-700">
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+            Panel Principal
+          </Link>
 
-        {/* Formulario conectado a la función handleLogin */}
-        <form onSubmit={handleLogin} className="flex flex-col gap-5">
-          <div>
-            <label htmlFor="email" className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-              Correo Electrónico
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="operador@serdefalca.gob.ve"
-              className="w-full rounded-lg border border-zinc-300 bg-zinc-50 px-4 py-3 text-sm text-zinc-900 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:focus:border-emerald-500"
-            />
-          </div>
+          <Link href="/admin/empleados/registro" className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-emerald-100 transition-colors hover:bg-emerald-800 hover:text-white">
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
+            Registro de Empleados
+          </Link>
 
-          <div>
-            <label htmlFor="password" className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-              Contraseña
-            </label>
-            <div className="relative">
-              <input
-                id="password"
-                name="password"
-                type={mostrarPassword ? "text" : "password"}
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full rounded-lg border border-zinc-300 bg-zinc-50 px-4 py-3 pr-12 text-sm text-zinc-900 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:focus:border-emerald-500"
-              />
-              
-              {/* Botón del ojito */}
-              <button
-                type="button"
-                onClick={() => setMostrarPassword(!mostrarPassword)}
-                className="absolute inset-y-0 right-0 flex items-center pr-3 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
-              >
-                {mostrarPassword ? (
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-5 w-5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                  </svg>
-                ) : (
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-5 w-5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" />
-                  </svg>
-                )}
-              </button>
-            </div>
-          </div>
+          <Link href="/admin/empleados" className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-emerald-100 transition-colors hover:bg-emerald-800 hover:text-white">
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+            Visualización de Empleados
+          </Link>
 
-          {/* Caja de mensajes de error */}
-          {error && (
-            <div className="rounded-lg bg-red-100 p-3 text-sm text-red-700 text-center dark:bg-red-900/30 dark:text-red-400">
-              {error}
-            </div>
-          )}
+          <Link href="/admin/comercial" className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-emerald-100 transition-colors hover:bg-emerald-800 hover:text-white">
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+            Vista de Comercialización
+          </Link>
 
-          {/* Botón de Acción configurado como 'submit' */}
-          <button
-            type="submit"
-            disabled={cargando}
-            className={`mt-2 flex w-full items-center justify-center rounded-lg px-4 py-3 text-sm font-semibold text-white shadow-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-zinc-950 ${
-              cargando ? 'bg-emerald-400 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-700 focus:ring-emerald-500'
-            }`}
-          >
-            {cargando ? 'Verificando credenciales...' : 'Ingresar al Sistema'}
+          <Link href="/admin/flota" className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-emerald-100 transition-colors hover:bg-emerald-800 hover:text-white">
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
+            Vista Flota de Rutas
+          </Link>
+
+          <Link href="/admin/configuracion" className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-emerald-100 transition-colors hover:bg-emerald-800 hover:text-white mt-4 border border-emerald-700/50">
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+            Configuración de Sistema
+          </Link>
+
+        </nav>
+        <div className="p-4 border-t border-emerald-800">
+          <button onClick={cerrarSesion} className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-red-300 transition-colors hover:bg-red-900/50 hover:text-red-100">
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+            Cerrar Sesión
           </button>
-        </form>
-
-        {/* Pie de página */}
-        <div className="mt-8 border-t border-zinc-200 pt-6 text-center dark:border-zinc-800">
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">
-            &copy; {new Date().getFullYear()} Gobernación del Estado Falcón. <br />
-            Trabajando por un estado más limpio.
-          </p>
         </div>
+      </aside>
+
+      {/* ÁREA PRINCIPAL */}
+      <main className="flex-1 flex flex-col h-screen overflow-hidden">
         
-      </div>
+        {/* Header */}
+        <header className="flex h-20 items-center justify-between bg-white px-8 shadow-sm dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 flex-shrink-0">
+          <div>
+            <h1 className="text-2xl font-bold text-zinc-800 dark:text-zinc-100">Centro de Monitoreo</h1>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 capitalize">Administración Central - Rol: {usuario?.rol}</p>
+          </div>
+          <div className="flex items-center gap-4">
+            <span className="hidden text-sm font-medium text-zinc-600 dark:text-zinc-300 md:block uppercase">
+              {usuario?.nombre} {usuario?.apellido}
+            </span>
+            <div className="h-10 w-10 rounded-full bg-emerald-600 flex items-center justify-center text-white font-bold shadow-md">
+              {obtenerIniciales(usuario?.nombre, usuario?.apellido)}
+            </div>
+          </div>
+        </header>
+
+        {/* Contenido Central: BOTONES GIGANTES */}
+        <div className="flex-1 p-8 overflow-y-auto bg-zinc-50 dark:bg-zinc-950/50 flex flex-col items-center justify-center">
+          
+          <div className="w-full max-w-5xl">
+            <h2 className="text-xl font-semibold text-zinc-700 dark:text-zinc-300 mb-8 text-center">Seleccione el módulo de administración</h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              
+              {/* Botón 1: Registro de Empleados */}
+              <Link href="/admin/empleados/registro" className="group flex flex-col items-center justify-center gap-4 bg-white dark:bg-zinc-900 p-8 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 hover:shadow-md hover:border-emerald-500 dark:hover:border-emerald-500 transition-all cursor-pointer">
+                <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 rounded-full group-hover:scale-110 transition-transform">
+                  <svg className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
+                </div>
+                <span className="text-lg font-bold text-zinc-800 dark:text-zinc-100">1. Registro de Empleados</span>
+                <p className="text-sm text-zinc-500 text-center">Dar de alta nuevo personal y asignar roles al sistema.</p>
+              </Link>
+
+              {/* Botón 2: Visualización de Empleados */}
+              <Link href="/admin/empleados" className="group flex flex-col items-center justify-center gap-4 bg-white dark:bg-zinc-900 p-8 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 hover:shadow-md hover:border-emerald-500 dark:hover:border-emerald-500 transition-all cursor-pointer">
+                <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 rounded-full group-hover:scale-110 transition-transform">
+                  <svg className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                </div>
+                <span className="text-lg font-bold text-zinc-800 dark:text-zinc-100">2. Visualización de Empleados</span>
+                <p className="text-sm text-zinc-500 text-center">Directorio general y control de la plantilla de trabajo.</p>
+              </Link>
+
+              {/* Botón 3: Vista de Comercialización */}
+              <Link href="/admin/comercial" className="group flex flex-col items-center justify-center gap-4 bg-white dark:bg-zinc-900 p-8 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 hover:shadow-md hover:border-emerald-500 dark:hover:border-emerald-500 transition-all cursor-pointer">
+                <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 rounded-full group-hover:scale-110 transition-transform">
+                  <svg className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                </div>
+                <span className="text-lg font-bold text-zinc-800 dark:text-zinc-100">3. Vista de Comercialización</span>
+                <p className="text-sm text-zinc-500 text-center">Monitoreo de ingresos, taquilla y todos los registros financieros.</p>
+              </Link>
+
+              {/* Botón 4: Vista de Flota */}
+              <Link href="/admin/flota" className="group flex flex-col items-center justify-center gap-4 bg-white dark:bg-zinc-900 p-8 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 hover:shadow-md hover:border-emerald-500 dark:hover:border-emerald-500 transition-all cursor-pointer">
+                <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 rounded-full group-hover:scale-110 transition-transform">
+                  <svg className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
+                </div>
+                <span className="text-lg font-bold text-zinc-800 dark:text-zinc-100">4. Vista Flota de Rutas</span>
+                <p className="text-sm text-zinc-500 text-center">Supervisión de camiones, tonelajes y estatus logístico.</p>
+              </Link>
+
+              {/* Botón 5: Configuración de Sistema (Centrado en la parte inferior) */}
+              <div className="md:col-span-2 flex justify-center mt-4">
+                <Link href="/admin/configuracion" className="group w-full md:w-1/2 flex flex-col items-center justify-center gap-4 bg-white dark:bg-zinc-900 p-8 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 hover:shadow-md hover:border-amber-500 dark:hover:border-amber-500 transition-all cursor-pointer">
+                  <div className="p-4 bg-amber-50 dark:bg-amber-900/20 text-amber-600 rounded-full group-hover:scale-110 transition-transform">
+                    <svg className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </div>
+                  <span className="text-lg font-bold text-zinc-800 dark:text-zinc-100">5. Configuración de Sistema</span>
+                  <p className="text-sm text-zinc-500 text-center">Ajustes avanzados y reglas de negocio.</p>
+                </Link>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
   );
 }
