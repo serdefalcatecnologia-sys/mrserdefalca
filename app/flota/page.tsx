@@ -91,13 +91,12 @@ export default function PanelFlotaOperaciones() {
     const textoMayuscula = texto.toUpperCase();
     setRutaSector(textoMayuscula);
     
-    // Solo busca si hay 3 o más letras
     if (textoMayuscula.length >= 3) {
       const { data } = await supabase
         .from('sectores_guardados')
         .select('nombre')
         .ilike('nombre', `%${textoMayuscula}%`)
-        .limit(5); // Trae máximo 5 sugerencias
+        .limit(5);
 
       if (data && data.length > 0) {
         setSugerenciasSector(data.map(d => d.nombre));
@@ -124,8 +123,12 @@ export default function PanelFlotaOperaciones() {
     setMensaje({ tipo: '', texto: '' });
 
     try {
+      // MAGIA AÑADIDA: Generamos un código único para que la base de datos no dé error
+      const codigoGenerado = `RUT-${Date.now().toString().slice(-6)}-${Math.floor(Math.random() * 1000)}`;
+
       // 1. Guardamos el reporte de la ruta
       const { error } = await supabase.from('flota_rutas').insert([{
+        codigo: codigoGenerado, // <-- AQUÍ ENVIAMOS EL CÓDIGO A LA BASE DE DATOS
         fecha_reporte: fecha,
         vehiculo: vehiculoRuta,
         conductor: conductor,
@@ -139,7 +142,7 @@ export default function PanelFlotaOperaciones() {
 
       if (error) throw error;
 
-      // 2. MAGIA: Alimentamos el diccionario guardando el nuevo sector (Upsert evita duplicados)
+      // 2. Alimentamos el diccionario guardando el nuevo sector (Upsert evita duplicados)
       await supabase.from('sectores_guardados').upsert([{ nombre: rutaSector }], { onConflict: 'nombre' });
 
       setMensaje({ tipo: 'exito', texto: '¡Reporte de carga guardado exitosamente!' });
@@ -186,6 +189,62 @@ export default function PanelFlotaOperaciones() {
       setTimeout(() => setMensaje({ tipo: '', texto: '' }), 4000);
     } catch (error: any) {
       setMensaje({ tipo: 'error', texto: 'Error al actualizar: ' + error.message });
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+  // --------------------------------------------------------
+  // FUNCIONES: VEHÍCULOS (AUTOCOMPLETADO Y EDICIÓN)
+  // --------------------------------------------------------
+  const esEdicionVehiculo = vehiculosLista.some(v => v.placa === placa.toUpperCase());
+
+  const manejarCambioPlaca = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const valorPlaca = e.target.value.toUpperCase();
+    setPlaca(valorPlaca);
+
+    const vehiculoExistente = vehiculosLista.find(v => v.placa === valorPlaca);
+    if (vehiculoExistente) {
+      setDescripcionVehiculo(vehiculoExistente.descripcion);
+      setResponsable(vehiculoExistente.responsable);
+      setEstadoVehiculo(vehiculoExistente.estado_operativo);
+    }
+  };
+
+  const seleccionarVehiculoParaEditar = (vehiculo: any) => {
+    setPlaca(vehiculo.placa);
+    setDescripcionVehiculo(vehiculo.descripcion);
+    setResponsable(vehiculo.responsable);
+    setEstadoVehiculo(vehiculo.estado_operativo);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const registrarVehiculo = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setGuardando(true);
+    setMensaje({ tipo: '', texto: '' });
+
+    try {
+      const { error } = await supabase.from('vehiculos').upsert([{
+        placa: placa.toUpperCase(),
+        descripcion: descripcionVehiculo,
+        responsable: responsable,
+        estado_operativo: estadoVehiculo,
+        updated_at: new Date().toISOString()
+      }], { onConflict: 'placa' });
+
+      if (error) throw error;
+      
+      setMensaje({ 
+        tipo: 'exito', 
+        texto: esEdicionVehiculo ? '¡Vehículo editado y actualizado correctamente!' : '¡Nuevo vehículo guardado correctamente!' 
+      });
+      
+      setPlaca(''); setDescripcionVehiculo(''); setResponsable(''); setEstadoVehiculo('Operativo');
+      await cargarDatosCompletos();
+      setTimeout(() => setMensaje({ tipo: '', texto: '' }), 4000);
+    } catch (error: any) {
+      setMensaje({ tipo: 'error', texto: 'Error al procesar vehículo: ' + error.message });
     } finally {
       setGuardando(false);
     }
@@ -350,47 +409,110 @@ export default function PanelFlotaOperaciones() {
             </div>
           )}
 
-          {/* VISTA 2: VEHÍCULOS (SOLO EDICIÓN) */}
+          {/* VISTA 2: VEHÍCULOS Y ESTABILIDAD */}
           {tabActiva === 'vehiculos' && (
             <div className="space-y-8 animate-in fade-in">
-              <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-sm border border-zinc-200 overflow-hidden">
-                <div className="bg-amber-50 px-6 py-4 border-b border-amber-100">
-                  <h2 className="text-lg font-bold text-amber-800">Reportar Novedad de Vehículo</h2>
-                  <p className="text-xs text-amber-600">Selecciona el vehículo para reportar una falla o actualizar su estatus.</p>
+              <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+                <div className={`${esEdicionVehiculo ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-100 dark:border-amber-800/50' : 'bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-800/50'} px-6 py-4 border-b transition-colors`}>
+                  <h2 className={`text-lg font-bold ${esEdicionVehiculo ? 'text-amber-800 dark:text-amber-400' : 'text-blue-800 dark:text-blue-400'}`}>
+                    {esEdicionVehiculo ? 'Editando Vehículo Existente' : 'Registrar Nuevo Vehículo'}
+                  </h2>
+                  <p className={`text-xs mt-1 ${esEdicionVehiculo ? 'text-amber-600 dark:text-amber-500' : 'text-blue-600 dark:text-blue-500'}`}>
+                    {esEdicionVehiculo ? 'Modifica los datos y presiona Editar.' : 'Ingresa la placa para registrar la unidad en el sistema.'}
+                  </p>
                 </div>
                 
-                <form onSubmit={actualizarEstadoVehiculo} className="p-6">
+                <form onSubmit={registrarVehiculo} className="p-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-xs font-bold text-zinc-500 uppercase mb-1">Selecciona el Vehículo *</label>
-                      <select required value={placa} onChange={(e) => manejarCambioVehiculoLista(e.target.value)} className="w-full rounded-lg border border-amber-300 bg-amber-50 p-2.5 text-sm font-bold text-amber-800 outline-none">
-                        <option value="">-- Elige un vehículo --</option>
-                        {vehiculosLista.map(v => <option key={v.placa} value={v.placa}>{v.placa}</option>)}
-                      </select>
+                      <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">Placa o Código Interno *</label>
+                      <input 
+                        required 
+                        type="text" 
+                        value={placa} 
+                        onChange={manejarCambioPlaca} 
+                        placeholder="Ej. COMP-01 o A12B34C" 
+                        className={`w-full uppercase rounded-lg border p-2.5 text-sm outline-none dark:bg-zinc-800 dark:text-white font-bold transition-colors ${esEdicionVehiculo ? 'border-amber-400 focus:border-amber-500 text-amber-700 dark:text-amber-400' : 'border-zinc-300 focus:border-blue-500 dark:border-zinc-700'}`} 
+                      />
                     </div>
+
                     <div>
-                      <label className="block text-xs font-bold text-zinc-500 uppercase mb-1">Estado de Operatividad *</label>
-                      <select required value={estadoVehiculo} onChange={(e) => setEstadoVehiculo(e.target.value)} className="w-full rounded-lg border border-zinc-300 p-2.5 text-sm font-bold">
+                      <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">Estado de Operatividad *</label>
+                      <select required value={estadoVehiculo} onChange={(e) => setEstadoVehiculo(e.target.value)} className="w-full rounded-lg border border-zinc-300 p-2.5 text-sm outline-none focus:border-blue-500 dark:bg-zinc-800 dark:border-zinc-700 dark:text-white font-bold">
                         <option value="Operativo">🟢 Operativo</option>
-                        <option value="En Mantenimiento">🟡 En Mantenimiento Correctivo</option>
+                        <option value="En Mantenimiento">🟡 En Mantenimiento Correctivo/Preventivo</option>
                         <option value="Inoperativo">🔴 Inoperativo (Dañado)</option>
                       </select>
                     </div>
+                    
                     <div className="md:col-span-2">
-                      <label className="block text-xs font-bold text-zinc-500 uppercase mb-1">Descripción / Novedad</label>
-                      <input required type="text" value={descripcionVehiculo} onChange={(e) => setDescripcionVehiculo(e.target.value)} className="w-full rounded-lg border border-zinc-300 p-2.5 text-sm" />
+                      <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">Descripción del Equipo *</label>
+                      <input required type="text" value={descripcionVehiculo} onChange={(e) => setDescripcionVehiculo(e.target.value)} placeholder="Ej. Camión Compactador Blanco marca Ford..." className="w-full rounded-lg border border-zinc-300 p-2.5 text-sm outline-none focus:border-blue-500 dark:bg-zinc-800 dark:border-zinc-700 dark:text-white" />
                     </div>
+
                     <div className="md:col-span-2">
-                      <label className="block text-xs font-bold text-zinc-500 uppercase mb-1">Responsable del Bien</label>
-                      <input required type="text" value={responsable} onChange={(e) => setResponsable(e.target.value)} className="w-full rounded-lg border border-zinc-300 p-2.5 text-sm" />
+                      <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">Responsable del Bien *</label>
+                      <input required type="text" value={responsable} onChange={(e) => setResponsable(e.target.value)} placeholder="Nombre del Supervisor a cargo" className="w-full rounded-lg border border-zinc-300 p-2.5 text-sm outline-none focus:border-blue-500 dark:bg-zinc-800 dark:border-zinc-700 dark:text-white" />
                     </div>
                   </div>
-                  <div className="mt-6 flex justify-end pt-4 border-t border-zinc-100">
-                    <button type="submit" disabled={guardando || !placa} className="bg-amber-500 hover:bg-amber-600 text-white px-8 py-3 rounded-lg font-bold shadow-md disabled:opacity-50 transition-colors">
-                      {guardando ? 'Actualizando...' : 'Actualizar Estado del Vehículo'}
+
+                  <div className="mt-6 flex justify-end pt-4 border-t border-zinc-100 dark:border-zinc-800">
+                    <button 
+                      type="submit" 
+                      disabled={guardando} 
+                      className={`px-8 py-3 rounded-lg font-bold shadow-md transition-all disabled:opacity-50 text-white ${esEdicionVehiculo ? 'bg-amber-500 hover:bg-amber-600' : 'bg-blue-600 hover:bg-blue-500'}`}
+                    >
+                      {guardando ? (esEdicionVehiculo ? 'Editando...' : 'Guardando...') : (esEdicionVehiculo ? 'Editar Vehículo' : 'Guardar Vehículo')}
                     </button>
                   </div>
                 </form>
+              </div>
+
+              {/* TABLA VEHICULOS */}
+              <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+                <div className="px-6 py-4 border-b border-zinc-200 dark:border-zinc-800">
+                  <h2 className="text-sm font-bold text-zinc-800 dark:text-zinc-100 uppercase tracking-wider">Flota de SERDEFALCA</h2>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm text-zinc-600 dark:text-zinc-400">
+                    <thead className="bg-zinc-50 text-xs uppercase text-zinc-500 dark:bg-zinc-800/50">
+                      <tr>
+                        <th className="px-6 py-3 font-semibold">Placa / ID</th>
+                        <th className="px-6 py-3 font-semibold">Descripción</th>
+                        <th className="px-6 py-3 font-semibold">Responsable</th>
+                        <th className="px-6 py-3 font-semibold">Estatus Operativo</th>
+                        <th className="px-6 py-3 font-semibold text-center">Acción</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+                      {vehiculosLista.map((v) => (
+                        <tr key={v.placa} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors">
+                          <td className="px-6 py-3 font-bold text-zinc-900 dark:text-zinc-100 uppercase">{v.placa}</td>
+                          <td className="px-6 py-3">{v.descripcion}</td>
+                          <td className="px-6 py-3 font-medium text-zinc-800 dark:text-zinc-200">{v.responsable}</td>
+                          <td className="px-6 py-3">
+                            <span className={`inline-block px-3 py-1 text-xs font-bold rounded-full
+                              ${v.estado_operativo === 'Operativo' ? 'bg-emerald-100 text-emerald-800' : ''}
+                              ${v.estado_operativo === 'En Mantenimiento' ? 'bg-amber-100 text-amber-800' : ''}
+                              ${v.estado_operativo === 'Inoperativo' ? 'bg-red-100 text-red-800' : ''}
+                            `}>
+                              {v.estado_operativo}
+                            </span>
+                          </td>
+                          <td className="px-6 py-3 text-center">
+                            <button 
+                              onClick={() => seleccionarVehiculoParaEditar(v)}
+                              title="Editar Vehículo"
+                              className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-100 text-zinc-500 hover:bg-amber-100 hover:text-amber-600 dark:bg-zinc-800 dark:text-zinc-400 transition-colors"
+                            >
+                              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           )}
