@@ -7,7 +7,19 @@ import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
+
+// 1. CLIENTE PRINCIPAL: Mantiene la sesión del Administrador intacta
 const supabase = createClient(supabaseUrl, supabaseKey);
+
+// 2. CLIENTE SECUNDARIO: La magia para que no te cierre la sesión.
+// Tiene la orden estricta de NO guardar la sesión en el navegador (persistSession: false)
+const supabaseRegistro = createClient(supabaseUrl, supabaseKey, {
+  auth: {
+    persistSession: false,
+    autoRefreshToken: false,
+    detectSessionInUrl: false
+  }
+});
 
 export default function RegistroEmpleados() {
   const router = useRouter();
@@ -101,7 +113,8 @@ export default function RegistroEmpleados() {
     setMensaje({ tipo: '', texto: '' });
 
     try {
-      const { data: authData, error: authError } = await supabase.auth.signUp({
+      // AQUÍ USAMOS EL CLIENTE SECUNDARIO PARA QUE NO TE SAQUE DE TU SESIÓN
+      const { data: authData, error: authError } = await supabaseRegistro.auth.signUp({
         email: correo,
         password: password,
       });
@@ -109,6 +122,7 @@ export default function RegistroEmpleados() {
       if (authError) throw authError;
 
       if (authData.user) {
+        // Y aquí volvemos a usar el principal para guardar los datos en la tabla usando tus permisos de Admin
         const { error: dbError } = await supabase.from('usuarios').insert([{
           id_usuario: authData.user.id,
           cedula: cedula,
@@ -193,11 +207,29 @@ export default function RegistroEmpleados() {
 
               <div>
                 <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1">Correo Electrónico (Para Login) *</label>
-                <input required type="email" value={correo} onChange={(e) => setCorreo(e.target.value)} placeholder="usuario@serdefalca.com" className="w-full rounded-lg border border-zinc-300 p-2.5 text-sm outline-none focus:border-emerald-500 bg-blue-50/50 dark:bg-zinc-800 dark:border-zinc-700 dark:text-white" />
+                <input 
+                  required 
+                  type="email" 
+                  value={correo} 
+                  onChange={(e) => setCorreo(e.target.value)} 
+                  onKeyDown={(e) => e.stopPropagation()} 
+                  autoComplete="off" 
+                  placeholder="usuario@serdefalca.com" 
+                  className="w-full rounded-lg border border-zinc-300 p-2.5 text-sm outline-none focus:border-emerald-500 bg-blue-50/50 dark:bg-zinc-800 dark:border-zinc-700 dark:text-white" 
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-1">Contraseña Provisional *</label>
-                <input required type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className="w-full rounded-lg border border-zinc-300 p-2.5 text-sm outline-none focus:border-emerald-500 bg-blue-50/50 dark:bg-zinc-800 dark:border-zinc-700 dark:text-white" />
+                <input 
+                  required 
+                  type="password" 
+                  value={password} 
+                  onChange={(e) => setPassword(e.target.value)} 
+                  onKeyDown={(e) => e.stopPropagation()}
+                  autoComplete="new-password"
+                  placeholder="••••••••" 
+                  className="w-full rounded-lg border border-zinc-300 p-2.5 text-sm outline-none focus:border-emerald-500 bg-blue-50/50 dark:bg-zinc-800 dark:border-zinc-700 dark:text-white" 
+                />
               </div>
 
               <div className="sm:col-span-2">
@@ -287,7 +319,7 @@ export default function RegistroEmpleados() {
             <form onSubmit={guardarVehiculoExpress} className="p-6 space-y-4">
               <div>
                 <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">Placa o Código *</label>
-                <input required type="text" value={nuevaPlaca} onChange={(e) => setNuevaPlaca(e.target.value)} placeholder="Ej. COMP-01" className="w-full uppercase rounded-lg border border-zinc-300 p-2.5 text-sm outline-none focus:border-emerald-500 dark:bg-zinc-800 dark:border-zinc-700 dark:text-white" />
+                <input required type="text" value={nuevaPlaca} onChange={(e) => setNuevaPlaca(e.target.value)} onKeyDown={(e) => e.stopPropagation()} placeholder="Ej. COMP-01" className="w-full uppercase rounded-lg border border-zinc-300 p-2.5 text-sm outline-none focus:border-emerald-500 dark:bg-zinc-800 dark:border-zinc-700 dark:text-white" />
               </div>
               <div>
                 <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">Estado Inicial *</label>
@@ -299,11 +331,11 @@ export default function RegistroEmpleados() {
               </div>
               <div>
                 <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">Descripción del Equipo *</label>
-                <input required type="text" value={nuevaDesc} onChange={(e) => setNuevaDesc(e.target.value)} placeholder="Ej. Camión Compactador Blanco" className="w-full rounded-lg border border-zinc-300 p-2.5 text-sm outline-none focus:border-emerald-500 dark:bg-zinc-800 dark:border-zinc-700 dark:text-white" />
+                <input required type="text" value={nuevaDesc} onChange={(e) => setNuevaDesc(e.target.value)} onKeyDown={(e) => e.stopPropagation()} placeholder="Ej. Camión Compactador Blanco" className="w-full rounded-lg border border-zinc-300 p-2.5 text-sm outline-none focus:border-emerald-500 dark:bg-zinc-800 dark:border-zinc-700 dark:text-white" />
               </div>
               <div>
                 <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">Responsable Fijo</label>
-                <input type="text" value={nuevoResp} onChange={(e) => setNuevoResp(e.target.value)} placeholder="(Opcional) Nombre del supervisor" className="w-full rounded-lg border border-zinc-300 p-2.5 text-sm outline-none focus:border-emerald-500 dark:bg-zinc-800 dark:border-zinc-700 dark:text-white" />
+                <input type="text" value={nuevoResp} onChange={(e) => setNuevoResp(e.target.value)} onKeyDown={(e) => e.stopPropagation()} placeholder="(Opcional) Nombre del supervisor" className="w-full rounded-lg border border-zinc-300 p-2.5 text-sm outline-none focus:border-emerald-500 dark:bg-zinc-800 dark:border-zinc-700 dark:text-white" />
               </div>
 
               <div className="mt-6 flex justify-end gap-3 pt-4 border-t border-zinc-100 dark:border-zinc-800">

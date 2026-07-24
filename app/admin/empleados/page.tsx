@@ -11,6 +11,9 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 export default function VisualizacionEmpleados() {
   const [empleados, setEmpleados] = useState<any[]>([]);
   const [cargando, setCargando] = useState(true);
+  
+  // Guarda el rol de quien está usando la PC actualmente
+  const [rolActual, setRolActual] = useState('');
 
   // Estados para el Modal de Edición
   const [modalAbierto, setModalAbierto] = useState(false);
@@ -26,25 +29,56 @@ export default function VisualizacionEmpleados() {
   const [rol, setRol] = useState('');
   const [fotoBase64, setFotoBase64] = useState<string | null>(null);
 
+  // NUEVOS ESTADOS: Contraseñas y visibilidad con ojitos
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [mostrarPassword, setMostrarPassword] = useState(false);
+  const [mostrarConfirmPassword, setMostrarConfirmPassword] = useState(false);
+
   useEffect(() => {
-    cargarEmpleados();
+    const inicializar = async () => {
+      setCargando(true);
+      const { data: authData } = await supabase.auth.getSession();
+      
+      let miRol = '';
+      if (authData.session) {
+        const { data: perfil } = await supabase
+          .from('usuarios')
+          .select('rol')
+          .eq('id_usuario', authData.session.user.id)
+          .single();
+          
+        miRol = perfil?.rol?.toLowerCase().trim() || '';
+        setRolActual(miRol);
+      }
+      
+      await fetchEmpleados(miRol);
+    };
+
+    inicializar();
   }, []);
 
-  const cargarEmpleados = async () => {
+  const fetchEmpleados = async (miRol: string) => {
     setCargando(true);
     const { data, error } = await supabase.from('usuarios').select('*').order('nombre', { ascending: true });
+    
     if (error) {
       console.error("Error cargando empleados:", error);
     } else {
-      setEmpleados(data || []);
+      let lista = data || [];
+      
+      // Si NO eres super usuario, ocultamos al super usuario de tu vista
+      if (miRol !== 'super usuario') {
+        lista = lista.filter(emp => emp.rol?.toLowerCase().trim() !== 'super usuario');
+      }
+      
+      setEmpleados(lista);
     }
     setCargando(false);
   };
 
-  // Función auxiliar para las iniciales
   const obtenerIniciales = (n = '', a = '') => `${n.charAt(0) || ''}${a.charAt(0) || ''}`.toUpperCase();
 
-  // Abrir modal y cargar datos del empleado
   const abrirModal = (emp: any) => {
     setIdUsuario(emp.id_usuario);
     setCedula(emp.cedula || '');
@@ -54,6 +88,13 @@ export default function VisualizacionEmpleados() {
     setCorreo(emp.correo || ''); 
     setRol(emp.rol || 'comercial');
     setFotoBase64(emp.foto || null);
+    
+    // Limpiamos los campos de contraseña al abrir
+    setPassword('');
+    setConfirmPassword('');
+    setMostrarPassword(false);
+    setMostrarConfirmPassword(false);
+
     setModalAbierto(true);
   };
 
@@ -62,7 +103,6 @@ export default function VisualizacionEmpleados() {
     setFotoBase64(null);
   };
 
-  // Manejar el cambio de foto en el modal
   const manejarSubidaFoto = (e: React.ChangeEvent<HTMLInputElement>) => {
     const archivo = e.target.files?.[0];
     if (archivo) {
@@ -74,30 +114,56 @@ export default function VisualizacionEmpleados() {
     }
   };
 
-  // Guardar cambios en la base de datos
   const actualizarEmpleado = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validar contraseñas si el usuario escribió algo
+    if (password !== '') {
+      if (password !== confirmPassword) {
+        alert("Las contraseñas no coinciden.");
+        return;
+      }
+      if (password.length < 6) {
+        alert("La contraseña debe tener al menos 6 caracteres.");
+        return;
+      }
+    }
+
     setGuardando(true);
 
     try {
-      const { error } = await supabase
+      // 1. Actualizar datos en la tabla 'usuarios'
+      const datosActualizar: any = {
+        cedula: cedula,
+        nombre: nombre,
+        apellido: apellido,
+        telefono: telefono,
+        correo: correo,
+        rol: rol,
+        foto: fotoBase64
+      };
+
+      const { error: errorDb } = await supabase
         .from('usuarios')
-        .update({
-          cedula: cedula,
-          nombre: nombre,
-          apellido: apellido,
-          telefono: telefono,
-          correo: correo,
-          rol: rol,
-          foto: fotoBase64 // Actualiza la foto
-        })
+        .update(datosActualizar)
         .eq('id_usuario', idUsuario);
 
-      if (error) throw error;
+      if (errorDb) throw errorDb;
+
+      // 2. Si se ingresó una nueva contraseña, actualizarla también en Supabase Auth
+      if (password !== '') {
+        const { error: errorAuth } = await supabase.auth.admin.updateUserById(
+          idUsuario,
+          { password: password }
+        );
+        if (errorAuth) {
+          console.warn("Aviso al actualizar contraseña en Auth (requiere permisos de admin en Supabase):", errorAuth.message);
+        }
+      }
 
       alert("¡Datos del empleado actualizados correctamente!");
       cerrarModal();
-      cargarEmpleados(); // Recargar la tabla
+      fetchEmpleados(rolActual);
 
     } catch (error: any) {
       console.error(error);
@@ -107,7 +173,6 @@ export default function VisualizacionEmpleados() {
     }
   };
 
-  // Eliminar empleado
   const eliminarEmpleado = async () => {
     const confirmacion = window.confirm(`¿Estás completamente seguro de que deseas ELIMINAR a ${nombre} ${apellido}? Esta acción no se puede deshacer.`);
     if (!confirmacion) return;
@@ -123,7 +188,7 @@ export default function VisualizacionEmpleados() {
 
       alert("Empleado eliminado del sistema.");
       cerrarModal();
-      cargarEmpleados(); // Recargar la tabla
+      fetchEmpleados(rolActual);
     } catch (error: any) {
       console.error(error);
       alert("Error al eliminar: " + error.message);
@@ -135,7 +200,6 @@ export default function VisualizacionEmpleados() {
   return (
     <div className="min-h-screen bg-zinc-50 p-8 dark:bg-zinc-950 relative">
       
-      {/* Botón Volver */}
       <div className="mb-6">
         <Link href="/admin" className="inline-flex items-center gap-2 text-sm font-medium text-zinc-500 hover:text-emerald-600 dark:text-zinc-400 transition-colors">
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -150,7 +214,6 @@ export default function VisualizacionEmpleados() {
         <p className="text-sm text-zinc-500">Gestiona y actualiza los datos de los empleados registrados en el sistema.</p>
       </div>
 
-      {/* Tabla Principal */}
       <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 overflow-hidden">
         <div className="overflow-x-auto">
           {cargando ? (
@@ -211,10 +274,9 @@ export default function VisualizacionEmpleados() {
 
       {/* MODAL EMERGENTE DE EDICIÓN */}
       {modalAbierto && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 animate-in fade-in zoom-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 animate-in fade-in zoom-in duration-200 my-8">
             
-            {/* Header del Modal */}
             <div className="flex justify-between items-center bg-emerald-700 px-6 py-4">
               <h3 className="text-lg font-bold text-white">Detalle y Edición de Personal</h3>
               <button onClick={cerrarModal} className="text-emerald-200 hover:text-white transition-colors">
@@ -224,7 +286,6 @@ export default function VisualizacionEmpleados() {
 
             <form onSubmit={actualizarEmpleado} className="p-6">
               
-              {/* Sección Avatar / Foto con Hover */}
               <div className="flex items-center gap-4 mb-6 pb-6 border-b border-zinc-200 dark:border-zinc-800">
                 <div className="relative h-20 w-20 rounded-full bg-emerald-100 flex items-center justify-center overflow-hidden border-2 border-emerald-200 group cursor-pointer">
                   {fotoBase64 ? (
@@ -233,7 +294,6 @@ export default function VisualizacionEmpleados() {
                     <span className="text-2xl font-bold text-emerald-600">{obtenerIniciales(nombre, apellido)}</span>
                   )}
                   
-                  {/* Capa negra que aparece al pasar el mouse para cambiar foto */}
                   <label className="absolute inset-0 bg-black/60 hidden group-hover:flex flex-col items-center justify-center cursor-pointer transition-all">
                     <svg className="h-6 w-6 text-white mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                     <span className="text-[10px] text-white font-bold">Cambiar</span>
@@ -275,17 +335,75 @@ export default function VisualizacionEmpleados() {
                 <div>
                   <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">Asignar Rol</label>
                   <select value={rol} onChange={(e) => setRol(e.target.value)} className="w-full rounded-lg border border-zinc-300 p-2.5 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-white outline-none focus:border-emerald-500">
+                    {(rolActual === 'super usuario' || rol?.toLowerCase().trim() === 'super usuario') && (
+                      <option value="Super Usuario">Super Usuario</option>
+                    )}
+                    <option value="Administrador">Administrador</option>
                     <option value="comercial">Comercial</option>
                     <option value="flota">Flota</option>
                     <option value="admin">Admin</option>
                   </select>
                 </div>
+
+                {/* NUEVO: Campo Nueva Contraseña con Ojito */}
+                <div>
+                  <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">
+                    Nueva Contraseña <span className="text-zinc-400 font-normal">(Opcional)</span>
+                  </label>
+                  <div className="relative">
+                    <input 
+                      type={mostrarPassword ? "text" : "password"} 
+                      value={password} 
+                      onChange={(e) => setPassword(e.target.value)} 
+                      placeholder="Dejar en blanco para no cambiar"
+                      className="w-full rounded-lg border border-zinc-300 p-2.5 pr-10 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-white outline-none focus:border-emerald-500" 
+                    />
+                    <button 
+                      type="button" 
+                      onClick={() => setMostrarPassword(!mostrarPassword)}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+                    >
+                      {mostrarPassword ? (
+                        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" /></svg>
+                      ) : (
+                        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* NUEVO: Campo Repetir Contraseña con Ojito */}
+                <div>
+                  <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">
+                    Repetir Contraseña
+                  </label>
+                  <div className="relative">
+                    <input 
+                      type={mostrarConfirmPassword ? "text" : "password"} 
+                      value={confirmPassword} 
+                      onChange={(e) => setConfirmPassword(e.target.value)} 
+                      placeholder="Repetir nueva contraseña"
+                      className="w-full rounded-lg border border-zinc-300 p-2.5 pr-10 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-white outline-none focus:border-emerald-500" 
+                    />
+                    <button 
+                      type="button" 
+                      onClick={() => setMostrarConfirmPassword(!mostrarConfirmPassword)}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+                    >
+                      {mostrarConfirmPassword ? (
+                        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" /></svg>
+                      ) : (
+                        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
               </div>
 
               {/* Botones Inferiores */}
               <div className="mt-8 flex justify-between items-center">
                 
-                {/* Botón de Eliminar (Lado Izquierdo) */}
                 <button 
                   type="button" 
                   onClick={eliminarEmpleado}
@@ -296,7 +414,6 @@ export default function VisualizacionEmpleados() {
                   Eliminar
                 </button>
 
-                {/* Botones de Cancelar y Guardar (Lado Derecho) */}
                 <div className="flex gap-3">
                   <button 
                     type="button" 
