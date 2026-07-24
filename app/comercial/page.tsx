@@ -195,15 +195,20 @@ export default function PanelComercial() {
     doc.text("Teléfono: 0268-0000000", 20, 65);
     doc.text("Director / Gerente Actual: Por Asignar", 20, 71);
 
-    // Número de Factura y Fecha (a la derecha dentro de la misma tabla)
+    // -----------------------------------------------------------------------
+    // ✅ CAMBIO APLICADO AQUÍ: Número de Factura y Fecha a la derecha
+    // -----------------------------------------------------------------------
     doc.setFont("helvetica", "bold");
     doc.setFontSize(12);
     doc.setTextColor(4, 120, 87);
-    doc.text(`Factura / Recibo N°: ${numFactura}`, 115, 53);
+    // Subimos la Y a 47 (misma línea del título) y alineamos a la derecha (X=190)
+    doc.text(`Factura / Recibo N°: ${numFactura}`, 190, 47, { align: "right" });
+    
     doc.setFont("helvetica", "normal");
     doc.setTextColor(0, 0, 0);
     doc.setFontSize(10);
-    doc.text(`Fecha: ${fecha}`, 115, 60);
+    // Subimos la Y a 54 y alineamos a la derecha
+    doc.text(`Fecha: ${fecha}`, 190, 54, { align: "right" });
 
     // -- C. DATOS DEL CLIENTE --
     doc.setFont("helvetica", "bold");
