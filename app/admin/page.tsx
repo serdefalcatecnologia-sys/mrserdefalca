@@ -46,6 +46,9 @@ export default function AdminDashboard() {
     return `${nombre?.charAt(0) || ''}${apellido?.charAt(0) || ''}`.toUpperCase();
   };
 
+  // Variable rápida para saber si es el Super Usuario
+  const esSuperUsuario = usuario?.rol?.toLowerCase().trim() === 'super usuario';
+
   return (
     <div className="flex h-screen bg-zinc-100 font-sans dark:bg-zinc-950">
       
@@ -81,10 +84,13 @@ export default function AdminDashboard() {
             Vista Flota de Rutas
           </Link>
 
-          <Link href="/admin/configuracion" className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-emerald-100 transition-colors hover:bg-emerald-800 hover:text-white mt-4 border border-emerald-700/50">
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-            Configuración de Sistema
-          </Link>
+          {/* Ocultamiento Condicional: Solo lo ve el Super Usuario */}
+          {esSuperUsuario && (
+            <Link href="/admin/configuracion" className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-amber-100 transition-colors hover:bg-amber-800 hover:text-white mt-4 border border-amber-700/50">
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+              Configuración de Sistema
+            </Link>
+          )}
 
         </nav>
         <div className="p-4 border-t border-emerald-800">
@@ -114,7 +120,6 @@ export default function AdminDashboard() {
               </span>
             )}
             
-            {/* AQUÍ ESTÁ EL CAMBIO: Validación de foto y overflow-hidden */}
             <div className={`h-10 w-10 rounded-full flex items-center justify-center text-white font-bold shadow-md transition-colors overflow-hidden ${cargando ? 'bg-zinc-300 dark:bg-zinc-800 animate-pulse' : 'bg-emerald-600'}`}>
               {cargando ? '' : (
                 usuario?.foto ? (
@@ -142,7 +147,7 @@ export default function AdminDashboard() {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 
-                {/* Botones de los Módulos */}
+                {/* Botón 1 */}
                 <Link href="/admin/empleados/registro" className="group flex flex-col items-center justify-center gap-4 bg-white dark:bg-zinc-900 p-8 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 hover:shadow-md hover:border-emerald-500 dark:hover:border-emerald-500 transition-all cursor-pointer">
                   <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 rounded-full group-hover:scale-110 transition-transform">
                     <svg className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
@@ -151,6 +156,7 @@ export default function AdminDashboard() {
                   <p className="text-sm text-zinc-500 text-center">Dar de alta nuevo personal y asignar roles al sistema.</p>
                 </Link>
 
+                {/* Botón 2 */}
                 <Link href="/admin/empleados" className="group flex flex-col items-center justify-center gap-4 bg-white dark:bg-zinc-900 p-8 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 hover:shadow-md hover:border-emerald-500 dark:hover:border-emerald-500 transition-all cursor-pointer">
                   <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 rounded-full group-hover:scale-110 transition-transform">
                     <svg className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
@@ -159,6 +165,7 @@ export default function AdminDashboard() {
                   <p className="text-sm text-zinc-500 text-center">Directorio general y control de la plantilla de trabajo.</p>
                 </Link>
 
+                {/* Botón 3 */}
                 <Link href="/admin/comercial" className="group flex flex-col items-center justify-center gap-4 bg-white dark:bg-zinc-900 p-8 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 hover:shadow-md hover:border-emerald-500 dark:hover:border-emerald-500 transition-all cursor-pointer">
                   <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 rounded-full group-hover:scale-110 transition-transform">
                     <svg className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
@@ -167,6 +174,7 @@ export default function AdminDashboard() {
                   <p className="text-sm text-zinc-500 text-center">Monitoreo de ingresos, taquilla y todos los registros financieros.</p>
                 </Link>
 
+                {/* Botón 4 */}
                 <Link href="/admin/flota" className="group flex flex-col items-center justify-center gap-4 bg-white dark:bg-zinc-900 p-8 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 hover:shadow-md hover:border-emerald-500 dark:hover:border-emerald-500 transition-all cursor-pointer">
                   <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 rounded-full group-hover:scale-110 transition-transform">
                     <svg className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
@@ -175,18 +183,21 @@ export default function AdminDashboard() {
                   <p className="text-sm text-zinc-500 text-center">Supervisión de camiones, tonelajes y estatus logístico.</p>
                 </Link>
 
-                <div className="md:col-span-2 flex justify-center mt-4">
-                  <Link href="/admin/configuracion" className="group w-full md:w-1/2 flex flex-col items-center justify-center gap-4 bg-white dark:bg-zinc-900 p-8 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 hover:shadow-md hover:border-amber-500 dark:hover:border-amber-500 transition-all cursor-pointer">
-                    <div className="p-4 bg-amber-50 dark:bg-amber-900/20 text-amber-600 rounded-full group-hover:scale-110 transition-transform">
-                      <svg className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                    </div>
-                    <span className="text-lg font-bold text-zinc-800 dark:text-zinc-100">5. Configuración de Sistema</span>
-                    <p className="text-sm text-zinc-500 text-center">Ajustes avanzados y reglas de negocio.</p>
-                  </Link>
-                </div>
+                {/* Botón 5: Ocultamiento Condicional (Solo lo ve el Super Usuario) */}
+                {esSuperUsuario && (
+                  <div className="md:col-span-2 flex justify-center mt-4">
+                    <Link href="/admin/configuracion" className="group w-full md:w-1/2 flex flex-col items-center justify-center gap-4 bg-white dark:bg-zinc-900 p-8 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 hover:shadow-md hover:border-amber-500 dark:hover:border-amber-500 transition-all cursor-pointer">
+                      <div className="p-4 bg-amber-50 dark:bg-amber-900/20 text-amber-600 rounded-full group-hover:scale-110 transition-transform">
+                        <svg className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                      </div>
+                      <span className="text-lg font-bold text-zinc-800 dark:text-zinc-100">5. Configuración de Sistema</span>
+                      <p className="text-sm text-zinc-500 text-center">Ajustes avanzados y reglas de negocio.</p>
+                    </Link>
+                  </div>
+                )}
 
               </div>
             </div>

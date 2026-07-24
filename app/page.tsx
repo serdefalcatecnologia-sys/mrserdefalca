@@ -56,10 +56,12 @@ export default function Home() {
         return;
       }
 
-      // Paso C: Redirección Inteligente (El Semáforo de Roles)
-      const rolEmpleado = userData.rol?.toLowerCase(); // Convertimos a minúsculas por si acaso
+      // Paso C: Redirección Inteligente (El Semáforo de Roles Corregido)
+      // Usamos trim() para quitar espacios accidentales y toLowerCase para minúsculas
+      const rolEmpleado = userData.rol?.toLowerCase().trim(); 
 
-      if (rolEmpleado === 'admin' || rolEmpleado === 'super usuario') {
+      // Ahora acepta "administrador", "admin" o "super usuario"
+      if (rolEmpleado === 'administrador' || rolEmpleado === 'admin' || rolEmpleado === 'super usuario') {
         router.push('/admin'); 
       } else if (rolEmpleado === 'comercial') {
         router.push('/comercial'); 
@@ -67,7 +69,7 @@ export default function Home() {
         router.push('/flota'); 
       } else {
         // Si el rol no es ninguno de los anteriores, lo bloqueamos por seguridad
-        setError("⛔ Acceso denegado: Rol no configurado o no reconocido en el sistema.");
+        setError(`⛔ Acceso denegado: El rol "${userData.rol}" no está configurado en el sistema.`);
         await supabase.auth.signOut(); 
       }
     }
