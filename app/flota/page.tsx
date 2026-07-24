@@ -42,7 +42,6 @@ export default function PanelFlotaOperaciones() {
   const [mensaje, setMensaje] = useState({ tipo: '', texto: '' });
 
   useEffect(() => {
-    // Reloj visual formateado
     const actualizarReloj = () => {
       setRelojVisual(new Date().toLocaleString('es-VE', {
         day: '2-digit', month: '2-digit', year: 'numeric',
@@ -122,7 +121,6 @@ export default function PanelFlotaOperaciones() {
     setMostrarSugerencias(false);
   };
 
-  // Función para formatear fechas al mostrarlas en la tabla
   const formatearFechaHora = (fechaIso: string) => {
     if (!fechaIso) return '';
     const f = new Date(fechaIso);
@@ -142,15 +140,14 @@ export default function PanelFlotaOperaciones() {
     try {
       const codigoGenerado = `RUT-${Date.now().toString().slice(-6)}-${Math.floor(Math.random() * 1000)}`;
 
-      // AQUÍ ESTÁ LA MAGIA PARA LA HORA DE VENEZUELA: 
-      // Le restamos el offset de tu zona horaria para que la BD guarde el número tal cual es
+      // Hora local correcta para Venezuela
       const ahora = new Date();
       const offsetMinutos = ahora.getTimezoneOffset(); 
       const momentoExactoLocal = new Date(ahora.getTime() - (offsetMinutos * 60000)).toISOString().slice(0, 19);
 
       const { error } = await supabase.from('flota_rutas').insert([{
         codigo: codigoGenerado,
-        fecha: momentoExactoLocal, // Guarda exactamente la hora que estás viendo en tu pantalla
+        fecha: momentoExactoLocal,
         unidad: vehiculoRuta, 
         chofer: conductor, 
         municipio: municipio,
@@ -184,33 +181,6 @@ export default function PanelFlotaOperaciones() {
       setDescripcionVehiculo(v.descripcion);
       setResponsable(v.responsable);
       setEstadoVehiculo(v.estado_operativo);
-    }
-  };
-
-  const actualizarEstadoVehiculo = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!placa) return;
-
-    setGuardando(true);
-    setMensaje({ tipo: '', texto: '' });
-
-    try {
-      const { error } = await supabase.from('vehiculos').update({
-        descripcion: descripcionVehiculo,
-        responsable: responsable,
-        estado_operativo: estadoVehiculo,
-        updated_at: new Date().toISOString()
-      }).eq('placa', placa);
-
-      if (error) throw error;
-      
-      setMensaje({ tipo: 'exito', texto: '¡Estado del vehículo actualizado correctamente!' });
-      await cargarDatosCompletos(usuario?.vehiculo_asignado);
-      setTimeout(() => setMensaje({ tipo: '', texto: '' }), 4000);
-    } catch (error: any) {
-      setMensaje({ tipo: 'error', texto: 'Error al actualizar: ' + error.message });
-    } finally {
-      setGuardando(false);
     }
   };
 
@@ -313,7 +283,7 @@ export default function PanelFlotaOperaciones() {
                 <form onSubmit={registrarReporteRuta} className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
                   
                   <div>
-                    <label className="block text-xs font-bold text-zinc-500 uppercase mb-1">Fecha (Automática) *</label>
+                    <label className="block text-xs font-bold text-zinc-500 uppercase mb-1">Fecha y Hora (Automática) *</label>
                     <input 
                       type="text" 
                       required 
@@ -542,4 +512,4 @@ export default function PanelFlotaOperaciones() {
       </main>
     </div>
   );
-}
+}//prueva de supervivencia
