@@ -87,14 +87,18 @@ export default function Home() {
         
         {/* Encabezado y Logo */}
         <div className="mb-8 flex flex-col items-center text-center">
-          {/* Contenedor del logo ampliado a los bordes y más alto */}
-          <div className="relative mb-6 h-48 w-full">
+          {/* 
+            Contenedor ajustado:
+            - Se quitó el height fijo y la propiedad 'fill'.
+            - Se usa w-full (ancho completo) y h-auto (alto automático) en la imagen.
+          */}
+          <div className="relative mb-6 w-full">
             <Image
               src="/logo1.png"
               alt="Logo Oficial Serdefalca"
-              fill
-              sizes="(max-width: 768px) 100vw, 400px"
-              className="object-contain"
+              width={800}     /* Un ancho base grande para que mantenga calidad */
+              height={200}    /* Un alto base referencial */
+              className="h-auto w-full object-contain"
               priority
             />
           </div>
