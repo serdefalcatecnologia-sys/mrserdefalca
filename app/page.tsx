@@ -87,8 +87,8 @@ export default function Home() {
         
         {/* Encabezado y Logo */}
         <div className="mb-8 flex flex-col items-center text-center">
-          {/* Contenedor del logo ampliado */}
-          <div className="relative mb-6 h-32 w-full px-4">
+          {/* Contenedor del logo ampliado a los bordes y más alto */}
+          <div className="relative mb-6 h-48 w-full">
             <Image
               src="/logo1.png"
               alt="Logo Oficial Serdefalca"
