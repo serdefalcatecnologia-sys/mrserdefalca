@@ -76,7 +76,7 @@ export default function Home() {
           src="/imagen1.png"
           alt="Fondo de recolección y reciclaje Serdefalca"
           fill
-          sizes="100vw" /* 👈 Agregado para que no se queje Next.js */
+          sizes="100vw"
           className="object-cover opacity-40"
           priority
         />
@@ -87,12 +87,13 @@ export default function Home() {
         
         {/* Encabezado y Logo */}
         <div className="mb-8 flex flex-col items-center text-center">
-          <div className="relative mb-6 h-20 w-full max-w-[200px]">
+          {/* Contenedor del logo ampliado */}
+          <div className="relative mb-6 h-32 w-full px-4">
             <Image
               src="/logo1.png"
               alt="Logo Oficial Serdefalca"
               fill
-              sizes="(max-width: 768px) 200px, 200px" /* 👈 Agregado para optimizar el logo */
+              sizes="(max-width: 768px) 100vw, 400px"
               className="object-contain"
               priority
             />
