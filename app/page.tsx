@@ -87,21 +87,21 @@ export default function Home() {
         
         {/* Encabezado y Logo */}
         <div className="mb-8 flex flex-col items-center text-center">
-          {/* 
-            Contenedor ajustado:
-            - Se quitó el height fijo y la propiedad 'fill'.
-            - Se usa w-full (ancho completo) y h-auto (alto automático) en la imagen.
-          */}
-          <div className="relative mb-6 w-full">
+          
+          {/* EL TRUCO ESTÁ AQUÍ: w-full en el contenedor, y forzamos el width al 100% en el style de la imagen */}
+          <div className="relative mb-6 w-full"> 
             <Image
               src="/logo1.png"
               alt="Logo Oficial Serdefalca"
-              width={800}     /* Un ancho base grande para que mantenga calidad */
-              height={200}    /* Un alto base referencial */
-              className="h-auto w-full object-contain"
+              width={0}
+              height={0}
+              sizes="100vw"
+              style={{ width: '100%', height: 'auto' }} // Esto obliga a Next.js a ignorar sus propias reglas y ocupar todo el ancho
+              className="object-contain" // Mantiene las proporciones reales
               priority
             />
           </div>
+
           <h1 className="text-2xl font-bold tracking-tight text-emerald-800 dark:text-emerald-400">
             Portal Serdefalca
           </h1>
