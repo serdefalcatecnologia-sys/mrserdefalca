@@ -57,10 +57,8 @@ export default function Home() {
       }
 
       // Paso C: Redirección Inteligente (El Semáforo de Roles Corregido)
-      // Usamos trim() para quitar espacios accidentales y toLowerCase para minúsculas
       const rolEmpleado = userData.rol?.toLowerCase().trim(); 
 
-      // Ahora acepta "administrador", "admin" o "super usuario"
       if (rolEmpleado === 'administrador' || rolEmpleado === 'admin' || rolEmpleado === 'super usuario') {
         router.push('/admin'); 
       } else if (rolEmpleado === 'comercial') {
@@ -68,7 +66,6 @@ export default function Home() {
       } else if (rolEmpleado === 'flota') {
         router.push('/flota'); 
       } else {
-        // Si el rol no es ninguno de los anteriores, lo bloqueamos por seguridad
         setError(`⛔ Acceso denegado: El rol "${userData.rol}" no está configurado en el sistema.`);
         await supabase.auth.signOut(); 
       }
@@ -94,14 +91,14 @@ export default function Home() {
       {/* Tarjeta de Inicio de Sesión */}
       <div className="relative z-10 mx-4 w-full max-w-md rounded-2xl bg-white/95 p-8 shadow-2xl backdrop-blur-md dark:bg-zinc-950/90 sm:p-10">
         
-        {/* Encabezado y Logo */}
+        {/* Encabezado y Logo Ampliado */}
         <div className="mb-8 flex flex-col items-center text-center">
-          <div className="relative mb-6 h-20 w-full max-w-[200px]">
+          <div className="relative mb-6 h-28 w-full max-w-[280px]">
             <Image
               src="/logo1.png"
               alt="Logo Oficial Serdefalca"
               fill
-              sizes="(max-width: 768px) 200px, 200px"
+              sizes="(max-width: 768px) 280px, 280px"
               className="object-contain"
               priority
             />
@@ -161,7 +158,7 @@ export default function Home() {
                   </svg>
                 ) : (
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-5 w-5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228L3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" />
                   </svg>
                 )}
               </button>
@@ -175,7 +172,7 @@ export default function Home() {
             </div>
           )}
 
-          {/* Botón de Acción configurado como 'submit' */}
+          {/* Botón de Acción */}
           <button
             type="submit"
             disabled={cargando}
