@@ -6,6 +6,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable'; 
 import { createClient } from '@supabase/supabase-js';
 
+// Conexión directa a Supabase
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
 const supabase = createClient(supabaseUrl, supabaseKey);
@@ -92,7 +93,7 @@ export default function VistaComercializacion() {
     ]);
 
     autoTable(doc, { head: [columnas], body: filas, startY: 60, theme: 'grid', headStyles: { fillColor: [16, 185, 129] } });
-    doc.save('Reporte_Comercializacion_SERDEFALCA.pdf');
+    doc.save('Reporte_Comercializacion.pdf');
   };
 
   // --- ABRIR MODAL DE DETALLES ---
@@ -105,7 +106,6 @@ export default function VistaComercializacion() {
   const reimprimirFactura = async (factura: any) => {
     setGenerandoPDF(true);
     try {
-      // Buscamos los datos completos del cliente en la BD para el PDF
       const { data: clienteInfo } = await supabase
         .from('clientes')
         .select('*')
@@ -121,7 +121,7 @@ export default function VistaComercializacion() {
       if (img.complete && img.naturalWidth > 0) {
         doc.addImage(img, 'PNG', 15, 10, 180, 25);
       } else {
-        doc.setFont("helvetica", "bold"); doc.setFontSize(24); doc.setTextColor(4, 120, 87); doc.text("SERDEFALCA", 105, 20, { align: "center" });
+        doc.setFont("helvetica", "bold"); doc.setFontSize(24); doc.setTextColor(4, 120, 87); doc.text("SISTEMA", 105, 20, { align: "center" });
       }
 
       doc.setFillColor(245, 245, 245); 
@@ -129,8 +129,8 @@ export default function VistaComercializacion() {
       
       doc.setFont("helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(0, 0, 0); doc.text("DATOS DE LA EMPRESA", 20, 47);
       doc.setFont("helvetica", "normal"); doc.setFontSize(9);
-      doc.text("Nombre: Servicio Regional de Gestión de Desechos Sólidos (SERDEFALCA)", 20, 53);
-      doc.text("RIF: G-20000000-0 (Pendiente de Configuración)", 20, 59);
+      doc.text("Nombre: Gestión de Desechos Sólidos", 20, 53);
+      doc.text("RIF: G-20000000-0", 20, 59);
       doc.text("Teléfono: 0268-0000000", 20, 65);
       doc.text("Director / Gerente Actual: Por Asignar", 20, 71);
 
@@ -258,7 +258,6 @@ export default function VistaComercializacion() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-center gap-2">
-                        {/* BOTÓN OJITO */}
                         <button 
                           onClick={() => verDetalles(item)}
                           title="Ver Detalles"
@@ -266,8 +265,6 @@ export default function VistaComercializacion() {
                         >
                           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                         </button>
-
-                        {/* BOTÓN IMPRESORA */}
                         <button 
                           onClick={() => reimprimirFactura(item)}
                           disabled={generandoPDF}
@@ -286,12 +283,10 @@ export default function VistaComercializacion() {
         </div>
       </div>
 
-      {/* MODAL DE DETALLES DE LA FACTURA */}
       {modalAbierto && facturaSeleccionada && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in zoom-in duration-200">
           <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-zinc-200 dark:border-zinc-800">
             
-            {/* Header del Modal */}
             <div className="bg-emerald-600 px-6 py-4 flex justify-between items-center">
               <h3 className="text-lg font-bold text-white flex items-center gap-2">
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
@@ -302,7 +297,6 @@ export default function VistaComercializacion() {
               </button>
             </div>
 
-            {/* Contenido del Modal */}
             <div className="p-6">
               <div className="flex justify-between items-start mb-6 pb-4 border-b border-zinc-100 dark:border-zinc-800">
                 <div>
