@@ -60,20 +60,7 @@ export default function AdminDashboard() {
           </div>
         </Link>
 
-        {/* 5. NUEVO: Registro de Desechos */}
-        <Link href="/desechos/registro" className="block rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm transition-shadow hover:shadow-md">
-          <div className="flex flex-col items-center text-center">
-            <div className="mb-4 rounded-full bg-emerald-50 p-4 text-emerald-600">
-              <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-            </div>
-            <h3 className="mb-2 font-bold text-zinc-800">5. Registro de Desechos</h3>
-            <p className="text-sm text-zinc-500">Dar de alta ingresos de camiones al botadero.</p>
-          </div>
-        </Link>
-
-        {/* 6. NUEVO: Visualización de Desechos */}
+        {/* 5. Visualización de Desechos */}
         <Link href="/admin/desechos" className="block rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm transition-shadow hover:shadow-md">
           <div className="flex flex-col items-center text-center">
             <div className="mb-4 rounded-full bg-emerald-50 p-4 text-emerald-600">
@@ -81,7 +68,7 @@ export default function AdminDashboard() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
               </svg>
             </div>
-            <h3 className="mb-2 font-bold text-zinc-800">6. Visualización de Desechos</h3>
+            <h3 className="mb-2 font-bold text-zinc-800">5. Visualización de Desechos</h3>
             <p className="text-sm text-zinc-500">Historial y tabla general de desechos procesados.</p>
           </div>
         </Link>
