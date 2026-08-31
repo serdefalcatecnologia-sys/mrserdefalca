@@ -10,7 +10,6 @@ export default function AdminLayout({
 }) {
   const pathname = usePathname();
 
-  // Definición de todos los enlaces del menú lateral
   const menuItems = [
     {
       name: "Panel Principal",
@@ -58,15 +57,6 @@ export default function AdminLayout({
       ),
     },
     {
-      name: "Registro de Desechos",
-      href: "/admin/desechos/registro",
-      icon: (
-        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-        </svg>
-      ),
-    },
-    {
       name: "Visualizar Desechos",
       href: "/admin/desechos",
       icon: (
@@ -79,15 +69,12 @@ export default function AdminLayout({
 
   return (
     <div className="flex h-screen bg-zinc-100 overflow-hidden font-sans">
-      {/* Sidebar Lateral */}
       <aside className="flex w-64 flex-col justify-between bg-[#004d3d] text-white">
         <div>
-          {/* Logo / Encabezado Sidebar */}
           <div className="p-6">
             <h1 className="text-xl font-black tracking-wider text-white">SERDEFALCA</h1>
           </div>
 
-          {/* Menú de Navegación */}
           <nav className="mt-4 space-y-1 px-3">
             {menuItems.map((item) => {
               const isActive = pathname === item.href;
@@ -109,7 +96,6 @@ export default function AdminLayout({
           </nav>
         </div>
 
-        {/* Botón Cerrar Sesión */}
         <div className="p-4 border-t border-emerald-800">
           <Link
             href="/login"
@@ -123,7 +109,6 @@ export default function AdminLayout({
         </div>
       </aside>
 
-      {/* Área Principal de Contenido (Aquí se cargan tus páginas /admin/page.tsx, etc.) */}
       <div className="flex flex-1 flex-col overflow-y-auto">
         <header className="flex items-center justify-between border-b border-zinc-200 bg-white px-8 py-4 shadow-sm">
           <div>
@@ -138,7 +123,6 @@ export default function AdminLayout({
           </div>
         </header>
 
-        {/* El children inyecta el contenido de cada page.tsx */}
         <main className="flex-1 p-6">{children}</main>
       </div>
     </div>
