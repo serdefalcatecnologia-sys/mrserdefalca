@@ -33,7 +33,7 @@ export default function LoginPage() {
       }
 
       if (data.session) {
-        router.push("/admin"); // Redirige al panel después de iniciar sesión
+        router.push("/admin");
       }
     } catch (err) {
       setError("Error de conexión con el servidor.");
@@ -42,14 +42,21 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-zinc-100 p-4 font-sans">
-      <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl border border-zinc-200">
+    <div 
+      className="flex min-h-screen flex-col items-center justify-center p-4 font-sans bg-cover bg-center relative"
+      style={{ backgroundImage: "url('/fondo.jpg')" }}
+    >
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+
+      <div className="relative z-10 w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl border border-zinc-200">
         
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#004d3d] shadow-md">
-            <svg className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
+          <div className="mx-auto mb-4 flex justify-center">
+            <img 
+              src="/logo1.png" 
+              alt="Logo Serdefalca" 
+              className="h-24 w-auto object-contain drop-shadow-sm"
+            />
           </div>
           <h1 className="text-2xl font-black tracking-wider text-[#004d3d]">SERDEFALCA</h1>
           <p className="mt-2 text-sm text-zinc-500">Sistema Central de Monitoreo</p>
