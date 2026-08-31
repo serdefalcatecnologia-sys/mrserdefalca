@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css"; // ESTA ES LA LÍNEA VITAL QUE TE FALTA
+import "./globals.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
