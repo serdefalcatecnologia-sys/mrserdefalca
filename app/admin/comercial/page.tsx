@@ -6,7 +6,6 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable'; 
 import { createClient } from '@supabase/supabase-js';
 
-// Conexión directa a Supabase
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
 const supabase = createClient(supabaseUrl, supabaseKey);
@@ -14,12 +13,8 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 export default function VistaComercializacion() {
   const [datosComerciales, setDatosComerciales] = useState<any[]>([]);
   const [cargando, setCargando] = useState(true);
-
-  // Filtros
   const [fechaInicio, setFechaInicio] = useState('');
   const [fechaFin, setFechaFin] = useState('');
-
-  // Estados para el Modal de Detalles
   const [facturaSeleccionada, setFacturaSeleccionada] = useState<any>(null);
   const [modalAbierto, setModalAbierto] = useState(false);
   const [generandoPDF, setGenerandoPDF] = useState(false);
@@ -43,7 +38,6 @@ export default function VistaComercializacion() {
         setCargando(false);
       }
     };
-
     cargarDatos();
   }, []);
 
@@ -61,7 +55,6 @@ export default function VistaComercializacion() {
   const facturasEnMora = datosFiltrados.filter(item => item.estado_cobro === 'Pendiente').length;
   const indiceMorosidad = totalFacturas > 0 ? ((facturasEnMora / totalFacturas) * 100).toFixed(1) : "0.0";
 
-  // --- REPORTE GENERAL EN PDF ---
   const generarReporteGeneral = async () => {
     if (datosFiltrados.length === 0) {
       alert("No hay datos para exportar con estos filtros.");
@@ -96,13 +89,11 @@ export default function VistaComercializacion() {
     doc.save('Reporte_Comercializacion.pdf');
   };
 
-  // --- ABRIR MODAL DE DETALLES ---
   const verDetalles = (factura: any) => {
     setFacturaSeleccionada(factura);
     setModalAbierto(true);
   };
 
-  // --- REIMPRIMIR FACTURA INDIVIDUAL ---
   const reimprimirFactura = async (factura: any) => {
     setGenerandoPDF(true);
     try {
