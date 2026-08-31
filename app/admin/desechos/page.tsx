@@ -38,12 +38,12 @@ export default function VistaDesechosAdmin() {
 
         <div className="mb-6 rounded-2xl bg-white p-6 shadow-md">
           <h1 className="text-2xl font-bold text-emerald-800">Control de Desechos Sólidos</h1>
-          <p className="text-zinc-500 text-sm mt-1">Historial general de recepciones e ingresos al botadero.</p>
+          <p className="mt-1 text-sm text-zinc-500">Historial general de recepciones e ingresos al botadero.</p>
         </div>
 
         <div className="overflow-x-auto rounded-xl border border-zinc-200 bg-white shadow-sm">
           <table className="w-full text-left text-sm text-zinc-600">
-            <thead className="bg-emerald-50 text-emerald-800 border-b border-zinc-200">
+            <thead className="border-b border-zinc-200 bg-emerald-50 text-emerald-800">
               <tr>
                 <th className="px-6 py-4 font-semibold">Fecha y Hora</th>
                 <th className="px-6 py-4 font-semibold">Clasificación</th>
@@ -55,16 +55,22 @@ export default function VistaDesechosAdmin() {
             <tbody className="divide-y divide-zinc-100">
               {cargando ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-zinc-500">Cargando registros...</td>
+                  <td colSpan={5} className="px-6 py-8 text-center text-zinc-500">
+                    Cargando registros...
+                  </td>
                 </tr>
               ) : registros.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-zinc-500">No hay registros de desechos aún.</td>
+                  <td colSpan={5} className="px-6 py-8 text-center text-zinc-500">
+                    No hay registros de desechos aún.
+                  </td>
                 </tr>
               ) : (
                 registros.map((reg) => (
-                  <tr key={reg.id} className="hover:bg-zinc-50 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap">{new Date(reg.fecha_hora).toLocaleString('es-VE')}</td>
+                  <tr key={reg.id} className="transition-colors hover:bg-zinc-50">
+                    <td className="whitespace-nowrap px-6 py-4">
+                      {new Date(reg.fecha_hora).toLocaleString("es-VE")}
+                    </td>
                     <td className="px-6 py-4">
                       <span className="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-800">
                         {reg.tipo_desecho}
