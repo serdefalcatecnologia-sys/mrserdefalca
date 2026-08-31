@@ -5,6 +5,7 @@ import { createClient } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
+// Configuración de Supabase
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
@@ -22,6 +23,7 @@ export default function Login() {
     setError("");
 
     try {
+      // 1. Autenticar usuario
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -29,9 +31,11 @@ export default function Login() {
 
       if (authError || !authData.user) {
         setError("❌ Correo o contraseña incorrectos.");
+        setCargando(false);
         return;
       }
 
+      // 2. Buscar el rol en la tabla usuarios
       const { data: userData, error: userError } = await supabase
         .from("usuarios")
         .select("rol")
@@ -41,9 +45,11 @@ export default function Login() {
       if (userError || !userData) {
         setError("❌ Error al verificar los permisos en la base de datos.");
         await supabase.auth.signOut();
+        setCargando(false);
         return;
       }
 
+      // 3. Redirigir según el rol
       const rolEmpleado = userData.rol?.toLowerCase().trim();
 
       if (rolEmpleado === "administrador" || rolEmpleado === "admin" || rolEmpleado === "super usuario") {
@@ -53,9 +59,11 @@ export default function Login() {
       } else if (rolEmpleado === "flota") {
         router.push("/flota");
       } else if (rolEmpleado === "desechos") {
+        // Redirección al nuevo módulo
         router.push("/desechos");
       } else {
-        setError(`⛔ Acceso denegado: El rol "${userData.rol}" no está configurado.`);
+        // Si tiene un rol diferente a los anteriores, muestra error
+        setError(`⛔ Acceso denegado: El rol "${userData.rol}" no está configurado en el sistema.`);
         await supabase.auth.signOut();
       }
     } catch (err) {
