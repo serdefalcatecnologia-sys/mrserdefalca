@@ -5,7 +5,7 @@ PROJECT EXPORT FOR LLMs
 PROJECT INFORMATION:
 --------------------------------------------------
 Project Name: mrserdefalca
-Generated On: 2026-09-01 17:08:23 (America/Caracas / GMT-04:00)
+Generated On: 2026-09-01 17:25:15 (America/Caracas / GMT-04:00)
 Total Files Processed: 39
 Export Tool: Easy Whole Project to Single Text File for LLMs v1.1.0
 Tool Author: Jota / José Guilherme Pandolfi
@@ -58,7 +58,7 @@ PROJECT STRUCTURE
 │   ├── 📄 favicon.ico (264.06 KB)
 │   ├── 📄 globals.css (488 B)
 │   ├── 📄 layout.tsx (821 B)
-│   └── 📄 page.tsx (5.81 KB)
+│   └── 📄 page.tsx (6.4 KB)
 ├── 📁 lib/
 │   └── 📄 supabase.ts (265 B)
 ├── 📁 public/
@@ -3710,15 +3710,15 @@ FILE: app/page.tsx
 
 FILE INFORMATION:
 ----------------------------------------
-Size: 5.81 KB
+Size: 6.4 KB
 Extension: .tsx
 Language: typescript
 Location: app/page.tsx
 Relative Path: app
 Created: 2026-07-21 20:24:25 (America/Caracas / GMT-04:00)
-Modified: 2026-09-01 17:08:22 (America/Caracas / GMT-04:00)
-MD5: ab9457e8f4a17462aa501902513b3a66
-SHA256: c21b6db608940769e06a95843480676343958421c5b0fff1405c90b413b0082a
+Modified: 2026-09-01 17:25:15 (America/Caracas / GMT-04:00)
+MD5: 79e0d37fcf07e7dd2ed335f47764b85f
+SHA256: cf2e1837f86237372b8150f8e809dbfdb79b39b77cfb9e8c034ce6690dc02a1b
 Encoding: UTF-8
 
 FILE CONTENT:
@@ -3727,7 +3727,7 @@ FILE CONTENT:
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-// Asegúrate de que esta ruta apunte a donde tienes configurado tu cliente de Supabase
+// Asegúrate de que esta ruta apunte a tu configuración de Supabase
 import { supabase } from '@/lib/supabase' 
 
 export default function LoginPage() {
@@ -3743,7 +3743,7 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      // 1. Autenticar con el módulo de Auth de Supabase
+      // 1. Autenticar al usuario
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -3752,36 +3752,40 @@ export default function LoginPage() {
       if (authError) throw new Error('Correo o contraseña incorrectos.')
 
       if (authData.session) {
-        // 2. ¡LA CORRECCIÓN ESTÁ AQUÍ! Buscar en la tabla 'usuarios' usando la columna 'correo'
+        const userEmail = authData.session.user.email
+
+        // 2. Buscar el rol del usuario en la base de datos
         const { data: usuario, error: userError } = await supabase
           .from('usuarios')
           .select('rol')
-          .eq('correo', authData.session.user.email)
+          .eq('correo', userEmail)
           .single()
 
         if (userError || !usuario || !usuario.rol) {
-          // Si no encuentra el usuario o el rol está vacío
-          throw new Error(`El rol "${usuario?.rol}" no tiene un formulario asignado.`)
+          throw new Error('El usuario no tiene un rol asignado en el sistema.')
         }
 
-        // 3. Redirigir según el rol definido en la base de datos
         const rol = usuario.rol.toLowerCase().trim()
-        
-        switch (rol) {
-          case 'administrador':
-            router.push('/admin') // Ajusta esta ruta si tu panel de admin es diferente
-            break
-          case 'comercial':
-            router.push('/admin/comercial')
-            break
-          case 'flota':
-            router.push('/admin/flota')
-            break
-          case 'desechos':
-            router.push('/admin/desechos')
-            break
-          default:
-            throw new Error(`El rol "${rol}" no tiene un formulario asignado.`)
+
+        // 3. Control de Acceso y Redirección
+        // El correo de tecnología o el rol de administrador tienen acceso maestro
+        if (rol === 'administrador' || userEmail === 'serdefalcatecnologia@gmail.com') {
+          router.push('/admin') 
+        } 
+        // Personal Comercial: Registro de facturas
+        else if (rol === 'comercial') {
+          router.push('/admin/comercial')
+        } 
+        // Personal de Flota: Registro de vehículos
+        else if (rol === 'flota') {
+          router.push('/admin/flota')
+        } 
+        // Personal de Desechos: Registro de tipos de desechos
+        else if (rol === 'desechos') {
+          router.push('/admin/desechos')
+        } 
+        else {
+          throw new Error(`El rol "${rol}" no es válido.`)
         }
       }
     } catch (err: any) {
@@ -3792,14 +3796,22 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+    <div 
+      className="min-h-screen flex items-center justify-center bg-gray-100 bg-cover bg-center relative"
+      // Aquí se carga tu imagen de fondo desde la carpeta public
+      style={{ backgroundImage: "url('/imagen1.png')" }} 
+    >
+      {/* Capa oscura semitransparente para resaltar la tarjeta de login */}
+      <div className="absolute inset-0 bg-black/20 backdrop-blur-sm z-0"></div>
+
       {/* Contenedor principal de la tarjeta */}
-      <div className="bg-white rounded-3xl shadow-xl w-full max-w-md p-8 relative z-10">
+      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 relative z-10">
         
         {/* Logos institucionales */}
-        <div className="flex justify-center gap-4 mb-4">
-          <img src="/logo-falcon.png" alt="Falcón" className="h-12" />
-          <img src="/logo-serdefalca.png" alt="Serdefalca" className="h-12" />
+        <div className="flex justify-center gap-6 mb-4 items-center">
+          {/* Asegúrate de que el nombre de los logos coincida con tu carpeta public */}
+          <img src="/logo1.png" alt="Falcón" className="h-12 object-contain" />
+          <img src="/logo-serdefalca.png" alt="Serdefalca" className="h-12 object-contain" />
         </div>
 
         {/* Títulos */}
@@ -3813,32 +3825,32 @@ export default function LoginPage() {
         {/* Formulario */}
         <form onSubmit={handleLogin} className="space-y-6">
           <div>
-            <label className="block text-sm text-gray-600 mb-1">Correo Electrónico</label>
+            <label className="block text-sm text-gray-600 mb-1 font-medium">Correo Electrónico</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 border border-green-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
+              className="w-full px-4 py-2 border border-green-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 transition-shadow"
               placeholder="correo@ejemplo.com"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm text-gray-600 mb-1">Contraseña</label>
+            <label className="block text-sm text-gray-600 mb-1 font-medium">Contraseña</label>
             <div className="relative">
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500 transition-colors"
                 placeholder="••••••••"
                 required
               />
-              {/* Icono de ojito (opcional) */}
+              {/* Icono decorativo de contraseña */}
               <button 
                 type="button" 
-                className="absolute right-3 top-2.5 text-gray-400"
+                className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                   <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
@@ -3848,9 +3860,9 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Mensaje de error (se muestra solo si hay error) */}
+          {/* Manejo de Errores */}
           {error && (
-            <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg flex items-center gap-2">
+            <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg flex items-center gap-2 border border-red-100">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 shrink-0" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
               </svg>
@@ -3861,7 +3873,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[#008f5d] hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition-colors disabled:bg-gray-400"
+            className="w-full bg-[#008f5d] hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition-colors disabled:bg-gray-400 shadow-md"
           >
             {loading ? 'Ingresando...' : 'Ingresar al Sistema'}
           </button>
