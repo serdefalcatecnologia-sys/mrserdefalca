@@ -36,19 +36,21 @@ export default function LoginPage() {
             .eq("id", user.id)
             .single();
 
-          const rol = perfil?.rol || "admin";
+          const rol = perfil?.rol?.toLowerCase().trim();
 
+          // Redirección directa e independiente según cada módulo/formulario
           if (rol === "comercial") {
-            router.push("/admin/comercializacion");
-          } else if (rol === "transportista" || rol === "flota") {
-            router.push("/admin/flota");
-          } else if (rol === "pesaje") {
-            router.push("/admin/pesaje");
-          } else if (rol === "desechos") {
-            setErrorMsg("Acceso denegado: El rol \"desechos\" no está configurado en el sistema.");
-            await supabase.auth.signOut();
-          } else {
+            router.push("/comercial");
+          } else if (rol === "flota" || rol === "transportista") {
+            router.push("/flota");
+          } else if (rol === "desechos" || rol === "pesaje") {
+            router.push("/desechos");
+          } else if (rol === "admin" || rol === "superuser") {
             router.push("/admin");
+          } else {
+            setErrorMsg(`El rol "${perfil?.rol}" no tiene un formulario asignado.`);
+            await supabase.auth.signOut();
+            return;
           }
           router.refresh();
         }
@@ -61,7 +63,7 @@ export default function LoginPage() {
   return (
     <div className="relative min-h-screen flex items-center justify-center bg-zinc-200">
       
-      {/* Fondo de pantalla usando imagen1.png */}
+      {/* Fondo de pantalla */}
       <div 
         className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat" 
         style={{ backgroundImage: "url('/imagen1.png')" }} 
@@ -71,12 +73,12 @@ export default function LoginPage() {
       {/* Tarjeta de Login Principal */}
       <div className="relative z-10 w-full max-w-[420px] bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.15)] p-8 sm:p-10 mb-8">
         
-        {/* Cabecera con Logo */}
+        {/* Logos */}
         <div className="flex items-center justify-center gap-4 mb-4">
           <img src="/logo1.png" alt="SERDEFALCA" className="h-14 w-auto object-contain" />
         </div>
 
-        {/* Título y Subtítulo */}
+        {/* Encabezado */}
         <div className="text-center mb-8">
           <h1 className="text-xl font-bold text-emerald-800 tracking-wide mb-2">SERDEFAL, C.A</h1>
           <p className="text-[13px] text-zinc-500 leading-snug px-4">
@@ -95,7 +97,7 @@ export default function LoginPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="serdefalcatecnologia@gmail.com"
+              placeholder="operador@serdefalca.com"
               className="w-full rounded-xl border border-zinc-200 bg-[#f4f7fb] px-4 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all"
             />
           </div>
