@@ -18,10 +18,25 @@ export default function VistaComercializacion() {
   const [facturaSeleccionada, setFacturaSeleccionada] = useState<any>(null);
   const [modalAbierto, setModalAbierto] = useState(false);
   const [generandoPDF, setGenerandoPDF] = useState(false);
+  const [esAdmin, setEsAdmin] = useState(true);
 
   useEffect(() => {
     const cargarDatos = async () => {
       try {
+        const { data: authData } = await supabase.auth.getSession();
+        if (authData.session) {
+          const { data: perfil } = await supabase
+            .from('usuarios')
+            .select('rol')
+            .eq('id_usuario', authData.session.user.id)
+            .single();
+
+          const r = perfil?.rol?.toLowerCase().trim();
+          if (r === 'comercial' || r === 'flota' || r === 'desechos') {
+            setEsAdmin(false);
+          }
+        }
+
         const { data, error } = await supabase
           .from('facturas') 
           .select('*')
@@ -168,12 +183,14 @@ export default function VistaComercializacion() {
   return (
     <div className="min-h-screen bg-zinc-50 p-8 dark:bg-zinc-950 relative">
       
-      <div className="mb-6">
-        <Link href="/admin" className="inline-flex items-center gap-2 text-sm font-medium text-zinc-500 hover:text-emerald-600 dark:text-zinc-400 dark:hover:text-emerald-400 transition-colors">
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-          Volver al Menú Principal
-        </Link>
-      </div>
+      {esAdmin && (
+        <div className="mb-6">
+          <Link href="/admin" className="inline-flex items-center gap-2 text-sm font-medium text-zinc-500 hover:text-emerald-600 dark:text-zinc-400 dark:hover:text-emerald-400 transition-colors">
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+            Volver al Menú Principal
+          </Link>
+        </div>
+      )}
 
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>

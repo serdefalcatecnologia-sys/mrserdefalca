@@ -11,9 +11,24 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 export default function VistaDesechosAdmin() {
   const [registros, setRegistros] = useState<any[]>([]);
   const [cargando, setCargando] = useState(true);
+  const [esAdmin, setEsAdmin] = useState(true);
 
   useEffect(() => {
     async function cargarRegistros() {
+      const { data: authData } = await supabase.auth.getSession();
+      if (authData.session) {
+        const { data: perfil } = await supabase
+          .from("usuarios")
+          .select("rol")
+          .eq("id_usuario", authData.session.user.id)
+          .single();
+
+        const r = perfil?.rol?.toLowerCase().trim();
+        if (r === "comercial" || r === "flota" || r === "desechos") {
+          setEsAdmin(false);
+        }
+      }
+
       const { data, error } = await supabase
         .from("registro_desechos")
         .select("*")
@@ -30,11 +45,13 @@ export default function VistaDesechosAdmin() {
   return (
     <div className="min-h-screen bg-zinc-100 p-6 font-sans">
       <div className="mx-auto max-w-6xl">
-        <div className="mb-4">
-          <Link href="/admin" className="text-sm font-semibold text-emerald-700 hover:underline">
-            ← Volver al Menú Principal
-          </Link>
-        </div>
+        {esAdmin && (
+          <div className="mb-4">
+            <Link href="/admin" className="text-sm font-semibold text-emerald-700 hover:underline">
+              ← Volver al Menú Principal
+            </Link>
+          </div>
+        )}
 
         <div className="mb-6 rounded-2xl bg-white p-6 shadow-md">
           <h1 className="text-2xl font-bold text-emerald-800">Control de Desechos Sólidos</h1>
