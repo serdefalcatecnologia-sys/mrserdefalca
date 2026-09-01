@@ -1,138 +1,135 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
-import { createClient } from "@supabase/supabase-js";
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
-const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [cargando, setCargando] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+  const [isPending, startTransition] = useTransition();
   const router = useRouter();
+  const supabase = createClient();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setCargando(true);
-    setError("");
+    setErrorMsg("");
 
-    try {
-      // 1. Iniciar sesión en Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email: email,
-        password: password,
-      });
+    startTransition(async () => {
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
 
-      if (authError || !authData.session) {
-        setError("Correo o contraseña incorrectos. Verifica tus credenciales.");
-        setCargando(false);
-        return;
+        if (error) {
+          setErrorMsg("Credenciales incorrectas o usuario no registrado.");
+          return;
+        }
+
+        // Obtener el rol del usuario desde la base de datos para redirigir
+        const user = data.user;
+        if (user) {
+          const { data: perfil } = await supabase
+            .from("usuarios")
+            .select("rol")
+            .eq("id", user.id)
+            .single();
+
+          const rol = perfil?.rol || "admin";
+
+          if (rol === "comercial") {
+            router.push("/admin/comercializacion");
+          } else if (rol === "transportista" || rol === "flota") {
+            router.push("/admin/flota");
+          } else if (rol === "pesaje") {
+            router.push("/admin/pesaje");
+          } else {
+            router.push("/admin");
+          }
+          router.refresh();
+        }
+      } catch (err) {
+        setErrorMsg("Ocurrió un error inesperado al iniciar sesión.");
       }
-
-      // 2. Buscar el rol del usuario en la tabla 'usuarios'
-      const { data: userData, error: userError } = await supabase
-        .from('usuarios')
-        .select('rol')
-        .eq('id_usuario', authData.session.user.id)
-        .single();
-
-      if (userError || !userData) {
-        setError("No se encontró el perfil del usuario en la base de datos.");
-        setCargando(false);
-        return;
-      }
-
-      const rol = userData.rol?.toLowerCase().trim() || '';
-
-      // 3. Enrutamiento inteligente basado en el rol
-      if (rol === 'flota') {
-        router.push("/flota");
-      } else if (rol === 'desechos') {
-        router.push("/desechos");
-      } else if (rol === 'comercial') {
-        router.push("/comercial");
-      } else {
-        // Administradores y Super Usuarios van al panel central
-        router.push("/admin");
-      }
-
-    } catch (err) {
-      setError("Error de conexión con el servidor.");
-      setCargando(false);
-    }
+    });
   };
 
   return (
-    <div 
-      className="flex min-h-screen flex-col items-center justify-center p-4 font-sans bg-[#002b22] bg-cover bg-center relative"
-      style={{ backgroundImage: "url('/imagen1.png')" }} 
-    >
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+    <div className="relative min-h-screen flex items-center justify-center bg-zinc-900 overflow-hidden px-4">
+      {/* Fondo decorativo difuminado */}
+      <div className="absolute inset-0 z-0 opacity-40 bg-cover bg-center" style={{ backgroundImage: "url('/background.jpg')" }} />
+      <div className="absolute inset-0 z-0 bg-gradient-to-br from-zinc-950/80 via-zinc-900/90 to-emerald-950/70" />
 
-      <div className="relative z-10 w-full max-w-lg rounded-3xl bg-white p-10 shadow-2xl border border-zinc-200">
+      {/* Tarjeta de Login Principal */}
+      <div className="relative z-10 w-full max-w-md bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl border border-zinc-200/80 dark:border-zinc-800 p-8 sm:p-10 backdrop-blur-xl">
         
-        <div className="mb-10 text-center">
-          <div className="mx-auto mb-6 flex justify-center">
-            <img 
-              src="/logo1.png" 
-              alt="Logo Serdefalca" 
-              className="h-28 w-auto object-contain drop-shadow-sm"
-            />
-          </div>
-          <h1 className="text-3xl font-black tracking-wider text-[#004d3d]">SERDEFALCA</h1>
-          <p className="mt-2 text-base text-zinc-500">Sistema Central de Monitoreo</p>
+        {/* Cabecera con Logos */}
+        <div className="flex items-center justify-center gap-6 mb-6">
+          <img src="/logo1.png" alt="Gobierno de Falcón" className="h-12 w-auto object-contain" />
+          <div className="h-8 w-px bg-zinc-200 dark:bg-zinc-700" />
+          <img src="/logo2.png" alt="SERDEFALCA" className="h-10 w-auto object-contain" />
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-6">
-          {error && (
-            <div className="rounded-xl bg-red-50 p-4 text-sm font-medium text-red-600 border border-red-100 text-center">
-              {error}
+        {/* Títulos */}
+        <div className="text-center mb-8">
+          <h1 className="text-2xl font-black tracking-tight text-emerald-800 dark:text-emerald-400">SERDEFALCA</h1>
+          <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mt-1">
+            Sistema Central de Monitoreo
+          </p>
+        </div>
+
+        {/* Formulario */}
+        <form onSubmit={handleLogin} className="space-y-5">
+          {errorMsg && (
+            <div className="p-3 text-xs font-semibold text-red-600 bg-red-50 dark:bg-red-950/50 dark:text-red-400 rounded-xl border border-red-200 dark:border-red-900 text-center">
+              {errorMsg}
             </div>
           )}
 
           <div>
-            <label className="mb-2 block text-sm font-bold text-zinc-700">Correo Electrónico</label>
+            <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider mb-2">
+              Correo Electrónico
+            </label>
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="operador@serdefalca.com"
-              className="w-full rounded-xl border border-zinc-300 p-3.5 text-base text-zinc-800 outline-none transition-colors focus:border-[#004d3d] focus:ring-2 focus:ring-[#004d3d]/20"
+              className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 px-4 py-3 text-sm text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20 transition-all"
             />
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-bold text-zinc-700">Contraseña</label>
+            <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider mb-2">
+              Contraseña
+            </label>
             <input
               type="password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full rounded-xl border border-zinc-300 p-3.5 text-base text-zinc-800 outline-none transition-colors focus:border-[#004d3d] focus:ring-2 focus:ring-[#004d3d]/20"
+              className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 px-4 py-3 text-sm text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20 transition-all"
             />
           </div>
 
           <button
             type="submit"
-            disabled={cargando}
-            className="w-full rounded-xl bg-[#004d3d] py-4 text-base font-bold text-white shadow-lg transition-all hover:bg-[#00382c] disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center gap-3 mt-4"
+            disabled={isPending}
+            className="w-full mt-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3.5 px-4 text-sm shadow-lg shadow-emerald-700/30 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
           >
-            {cargando ? (
-              <>
-                <svg className="h-5 w-5 animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                Iniciando Sesión...
-              </>
-            ) : (
-              "Ingresar al Sistema"
-            )}
+            {isPending ? "Validando acceso..." : "Ingresar al Sistema"}
           </button>
         </form>
+
+        <div className="mt-8 text-center">
+          <p className="text-[11px] text-zinc-400 dark:text-zinc-500">
+            Sistema Regional de Gestión de Desechos Sólidos del Estado Falcón
+          </p>
+        </div>
       </div>
     </div>
   );
