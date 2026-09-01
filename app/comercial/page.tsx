@@ -1,325 +1,246 @@
 "use client";
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
-import { createClient } from '@/utils/supabase/client';
 
-export default function VistaComercializacion () {
-  const supabase = createClient();
-  const [datosComerciales, setDatosComerciales] = useState<any[]>([]);
-  const [cargando, setCargando] = useState(true);
+import { useState, useEffect, useTransition } from "react";
+import { createClient } from "@supabase/supabase-js";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
-  // Filtros
-  const [fechaInicio, setFechaInicio] = useState('');
-  const [fechaFin, setFechaFin] = useState('');
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-  // Estados para el Modal de Detalles
-  const [facturaSeleccionada, setFacturaSeleccionada] = useState<any>(null);
-  const [modalAbierto, setModalAbierto] = useState(false);
-  const [generandoPDF, setGenerandoPDF] = useState(false);
+export default function ComercialPage() {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
+  // Datos del usuario logueado
+  const [usuarioNombre, setUsuarioNombre] = useState("Cargando...");
+  const [usuarioIniciales, setUsuarioIniciales] = useState("--");
+
+  // Formulario de Comercialización
+  const [numFactura, setNumFactura] = useState("");
+  const [cliente, setCliente] = useState("");
+  const [cedulaRif, setCedulaRif] = useState("");
+  const [monto, setMonto] = useState("");
+  const [fecha, setFecha] = useState(new Date().toISOString().split("T")[0]);
+  const [estado, setEstado] = useState("Pagado");
+  const [concepto, setConcepto] = useState("");
+
+  const [mensaje, setMensaje] = useState({ texto: "", tipo: "" });
 
   useEffect(() => {
-    const cargarDatos = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('facturas')
-          .select('*')
-          .order('fecha_operacion', { ascending: false });
-        
-        if (error) {
-          console.error("Error obteniendo datos de Supabase:", error);
-        } else {
-          setDatosComerciales(data || []);
-        }
-      } catch (err) {
-        console.error("Error de conexión:", err);
-      } finally {
-        setCargando(false);
-      }
-    };
-    cargarDatos();
-  }, [supabase]);
+    obtenerUsuario();
+  }, []);
 
-  const datosFiltrados = datosComerciales.filter(item => {
-    const cumpleFechaInicio = fechaInicio === '' || item.fecha_operacion >= fechaInicio;
-    const cumpleFechaFin = fechaFin === '' || item.fecha_operacion <= fechaFin;
-    return cumpleFechaInicio && cumpleFechaFin;
-  });
-
-  const totalRecaudado = datosFiltrados
-    .filter(item => item.estado_cobro === 'Pagado')
-    .reduce((acc, curr) => acc + Number(curr.monto_usd || 0), 0);
-  
-  const totalFacturas = datosFiltrados.length;
-  const facturasEnMora = datosFiltrados.filter(item => item.estado_cobro === 'Pendiente').length;
-  const indiceMorosidad = totalFacturas > 0 ? ((facturasEnMora / totalFacturas) * 100).toFixed(1) : "0.0";
-
-  // --- REPORTE GENERAL EN PDF ---
-  const generarReporteGeneral = async () => {
-    if (datosFiltrados.length === 0) {
-      alert("No hay datos para exportar con estos filtros.");
+  const obtenerUsuario = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      router.push("/");
       return;
     }
-    const doc = new jsPDF();
-    const img = new Image();
-    img.src = '/logo1.png';
-    await new Promise((resolve) => {
-      img.onload = resolve;
-      img.onerror = resolve;
-    });
-
-    if (img.complete && img.naturalWidth > 0) doc.addImage(img, 'PNG', 0, 0, 210, 35);
-    
-    doc.setFontSize(14);
-    doc.setTextColor(50, 50, 50);
-    doc.text('Reporte de Comercialización y Recaudación', 14, 48);
-    
-    if (fechaInicio || fechaFin) {
-      doc.setFontSize(10);
-      doc.setTextColor(100, 100, 100);
-      doc.text(`Rango de fechas | Desde: ${fechaInicio || 'Inicio'} Hasta: ${fechaFin || 'Hoy'}`, 14, 54);
-    }
-    
-    const columnas = ["N° Factura", "Cliente", "Municipio", "Monto ($)", "Estado", "Fecha"];
-    const filas = datosFiltrados.map(item => [
-      item.num_factura || 'S/N', 
-      item.cliente, 
-      item.municipio,
-      Number(item.monto_usd || 0).toFixed(2), 
-      item.estado_cobro, 
-      item.fecha_operacion
-    ]);
-    
-    autoTable(doc, { head: [columnas], body: filas, startY: 60, theme: 'grid', headStyles: { fillColor: [16, 185, 129] } });
-    doc.save('Reporte_Comercializacion_SERDEFALCA.pdf');
+    const email = session.user.email || "";
+    const nombre = email.split("@")[0].toUpperCase();
+    setUsuarioNombre(nombre);
+    setUsuarioIniciales(nombre.substring(0, 2));
   };
 
-  // --- ABRIR MODAL DE DETALLES ---
-  const verDetalles = (factura: any) => {
-    setFacturaSeleccionada(factura);
-    setModalAbierto(true);
+  const handleCerrarSesion = async () => {
+    await supabase.auth.signOut();
+    router.push("/");
   };
 
-  // --- REIMPRIMIR FACTURA INDIVIDUAL ---
-  const reimprimirFactura = async (factura: any) => {
-    setGenerandoPDF(true);
-    try {
-      const { data: clienteInfo } = await supabase
-        .from('clientes')
-        .select('*')
-        .eq('razon_social', factura.cliente)
-        .single();
-        
-      const doc = new jsPDF();
-      const img = new Image();
-      img.src = '/logo1.png';
-      
-      await new Promise((resolve) => { 
-        img.onload = resolve; 
-        img.onerror = resolve; 
-      });
-      
-      if (img.complete && img.naturalWidth > 0) {
-        doc.addImage(img, 'PNG', 15, 10, 180, 25);
-      } else {
-        doc.setFont("helvetica", "bold"); 
-        doc.setFontSize(24);
-        doc.setTextColor(4, 120, 87); 
-        doc.text("SERDEFALCA", 105, 20, { align: "center" });
+  const handleGuardarFactura = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setMensaje({ texto: "", tipo: "" });
+
+    startTransition(async () => {
+      try {
+        const { error } = await supabase.from("facturas").insert([
+          {
+            num_factura: numFactura || `FES-${Math.floor(10000 + Math.random() * 90000)}`,
+            cliente,
+            cedula_rif: cedulaRif,
+            monto: parseFloat(monto),
+            fecha,
+            estado,
+            concepto,
+          },
+        ]);
+
+        if (error) throw error;
+
+        setMensaje({ texto: "✅ Factura registrada exitosamente en el sistema.", tipo: "exito" });
+        setNumFactura("");
+        setCliente("");
+        setCedulaRif("");
+        setMonto("");
+        setConcepto("");
+        setEstado("Pagado");
+      } catch (err: any) {
+        setMensaje({ texto: "❌ Error al guardar factura: " + (err.message || "Error inesperado"), tipo: "error" });
       }
-      
-      doc.setFillColor(245, 245, 245);
-      doc.rect(15, 40, 180, 35, 'F');
-      
-      doc.setFont("helvetica", "bold"); 
-      doc.setFontSize(10);
-      doc.setTextColor(0, 0, 0); 
-      doc.text("DATOS DE LA EMPRESA", 20, 47);
-      
-      doc.setFont("helvetica", "normal"); 
-      doc.setFontSize(9);
-      doc.text("Nombre: Servicio Regional de Gestión de Desechos Sólidos (SERDEFALCA)", 20, 53);
-      doc.text("RIF: G-20000000-0 (Pendiente de Configuración)", 20, 59);
-      doc.text("Teléfono: 0268-0000000", 20, 65);
-      doc.text("Director / Gerente Actual: Por Asignar", 20, 71);
-      
-      doc.setFont("helvetica", "bold"); 
-      doc.setFontSize(12);
-      doc.setTextColor(4, 120, 87);
-      doc.text(`Factura / Recibo N°: ${factura.num_factura || 'S/N'}`, 115, 53);
-      
-      doc.setFont("helvetica", "normal"); 
-      doc.setTextColor(0, 0, 0);
-      doc.setFontSize(10);
-      doc.text(`Fecha: ${factura.fecha_operacion}`, 115, 60);
-      
-      doc.setFont("helvetica", "bold"); 
-      doc.setFontSize(11); 
-      doc.text("DATOS DEL CLIENTE", 20, 90);
-      
-      doc.setFont("helvetica", "normal"); 
-      doc.setFontSize(10);
-      doc.text(`Razón Social: ${factura.cliente}`, 20, 98);
-      doc.text(`Cédula / RIF: ${clienteInfo?.cedula_rif || 'No registrado'}`, 20, 104);
-      doc.text(`Teléfono: ${clienteInfo?.telefono || 'No registrado'}`, 20, 110);
-      doc.text(`Dirección: ${clienteInfo?.direccion || 'No registrada'}`, 20, 116);
-      
-      doc.setDrawColor(220, 220, 220); 
-      doc.line(15, 122, 195, 122);
-      
-      doc.setFont("helvetica", "bold"); 
-      doc.setFontSize(11); 
-      doc.text("DETALLES DE LA OPERACIÓN", 20, 132);
-      
-      doc.setFont("helvetica", "normal");
-      doc.text(`Servicio: Recolección de Desechos Sólidos - Municipio ${factura.municipio}`, 20, 140);
-      doc.text(`Método de Pago: ${factura.metodo_pago || 'No especificado'}`, 20, 146);
-      doc.text(`Estado del Cobro: ${factura.estado_cobro}`, 20, 152);
-      
-      doc.setFillColor(236, 253, 245); 
-      doc.rect(15, 160, 180, 25, 'F');
-      
-      doc.setFont("helvetica", "bold"); 
-      doc.setFontSize(14);
-      doc.setTextColor(4, 120, 87);
-      doc.text(`Monto Total (Divisas): $ ${factura.monto_usd}`, 20, 170);
-      doc.text(`Monto Total (Bolívares): Bs. ${factura.monto_bs}`, 20, 178);
-      
-      doc.setFontSize(9); 
-      doc.setFont("helvetica", "normal");
-      doc.setTextColor(100, 100, 100);
-      doc.text(`Tasa BCV Aplicada: 1 USD = Bs. ${factura.tasa_bcv_aplicada || '0.00'}`, 20, 190);
-      
-      doc.setFontSize(10); 
-      doc.text("¡Gracias por su contribución para un estado más limpio!", 105, 210, { align: "center" });
-      
-      doc.save(`Factura_Copia_${factura.num_factura}_${factura.cliente}.pdf`);
-    } catch (error) {
-      console.error("Error al reimprimir:", error);
-      alert("Hubo un error al generar la factura.");
-    } finally {
-      setGenerandoPDF(false);
-    }
+    });
   };
 
   return (
-    <div className="min-h-screen bg-zinc-50 p-8 dark:bg-zinc-950 relative">
-      <div className="mb-6">
-        <Link href="/admin" className="inline-flex items-center gap-2 text-sm font-medium text-zinc-500 hover:text-emerald-600 dark:text-zinc-400 dark:hover:text-emerald-400 transition-colors">
-          Volver al Menú Principal
-        </Link>
-      </div>
-
-      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex min-h-screen bg-zinc-100 font-sans">
+      {/* Sidebar Lateral Estilo SERDEFALCA */}
+      <aside className="w-64 bg-emerald-950 text-white flex flex-col justify-between p-4 shadow-xl">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-800 dark:text-zinc-100">Panel de Comercialización</h1>
-          <p className="text-sm text-zinc-500">Gestión de recaudación, facturación y clientes.</p>
-        </div>
-        <button onClick={generarReporteGeneral} disabled={cargando} className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500 transition-all disabled:opacity-50">
-          Exportar Reporte General
-        </button>
-      </div>
-      
-      {/* Indicadores y Filtros */}
-      <div className="mb-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-          <p className="text-sm font-medium text-zinc-500">Total Recaudado (USD)</p>
-          <p className="mt-2 text-3xl font-bold text-emerald-600">${totalRecaudado.toFixed(2)}</p>
-        </div>
-        <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-          <p className="text-sm font-medium text-zinc-500">Facturas Registradas</p>
-          <p className="mt-2 text-3xl font-bold text-zinc-800 dark:text-zinc-100">{totalFacturas}</p>
-        </div>
-        <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-          <p className="text-sm font-medium text-zinc-500">Índice de Morosidad</p>
-          <p className="mt-2 text-3xl font-bold text-red-500">{indiceMorosidad}%</p>
-        </div>
-      </div>
+          <div className="py-4 px-2 border-b border-emerald-800/60 mb-6">
+            <h1 className="text-xl font-black tracking-wider text-white">SERDEFALCA</h1>
+            <p className="text-[10px] text-emerald-300 font-medium">Gestión Integral de Desechos</p>
+          </div>
 
-      <div className="mb-6 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 flex flex-col gap-4 sm:flex-row sm:items-end w-full max-w-2xl">
-        <div className="flex-1">
-          <label className="mb-1 block text-xs font-medium text-zinc-500">Desde</label>
-          <input type="date" value={fechaInicio} onChange={(e) => setFechaInicio(e.target.value)} className="w-full rounded-lg border border-zinc-300 p-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-white focus:border-emerald-500 focus:outline-none" />
-        </div>
-        <div className="flex-1">
-          <label className="mb-1 block text-xs font-medium text-zinc-500">Hasta</label>
-          <input type="date" value={fechaFin} onChange={(e) => setFechaFin(e.target.value)} className="w-full rounded-lg border border-zinc-300 p-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-white focus:border-emerald-500 focus:outline-none" />
-        </div>
-      </div>
-
-      <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-        <div className="overflow-x-auto">
-          {cargando ? (
-            <div className="p-8 text-center text-zinc-500">Cargando base de datos comercial...</div>
-          ) : datosFiltrados.length === 0 ? (
-            <div className="p-8 text-center text-zinc-500">No se encontraron registros en la base de datos.</div>
-          ) : (
-            <table className="w-full text-left text-sm text-zinc-600 dark:text-zinc-400">
-              <thead className="bg-zinc-50 text-xs uppercase text-zinc-500 dark:bg-zinc-800/50">
-                <tr>
-                  <th className="px-6 py-4 font-semibold">N° Factura</th>
-                  <th className="px-6 py-4 font-semibold">Fecha</th>
-                  <th className="px-6 py-4 font-semibold">Cliente / Entidad</th>
-                  <th className="px-6 py-4 font-semibold">Monto (USD)</th>
-                  <th className="px-6 py-4 font-semibold">Estado</th>
-                  <th className="px-6 py-4 font-semibold text-center">Acciones</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
-                {datosFiltrados.map((item, index) => (
-                  <tr key={index} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors">
-                    <td className="px-6 py-4 font-bold text-zinc-900 dark:text-zinc-100">{item.num_factura || 'S/N'}</td>
-                    <td className="px-6 py-4">{item.fecha_operacion}</td>
-                    <td className="px-6 py-4">{item.cliente}</td>
-                    <td className="px-6 py-4 font-semibold text-emerald-600">${Number(item.monto_usd || 0).toFixed(2)}</td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold ${item.estado_cobro === 'Pagado' ? 'bg-emerald-100 text-emerald-800' : ''} ${item.estado_cobro === 'Pendiente' ? 'bg-amber-100 text-amber-800' : ''} ${item.estado_cobro === 'Anulado' ? 'bg-red-100 text-red-800' : ''}`}>
-                        {item.estado_cobro || 'No definido'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center justify-center gap-2">
-                        <button onClick={() => verDetalles(item)} title="Ver Detalles" className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-100 text-zinc-500 hover:bg-blue-100 hover:text-blue-600 dark:bg-zinc-800 dark:text-zinc-400 transition-colors">
-                           Detalles
-                        </button>
-                        <button onClick={() => reimprimirFactura(item)} disabled={generandoPDF} title="Imprimir Factura Original" className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-100 text-zinc-500 hover:bg-emerald-100 hover:text-emerald-600 dark:bg-zinc-800 dark:text-zinc-400 transition-colors disabled:opacity-50">
-                           Imprimir
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      </div>
-      
-      {/* MODAL DE DETALLES DE LA FACTURA */}
-      {modalAbierto && facturaSeleccionada && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in zoom-in duration-200">
-          <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-zinc-200 dark:border-zinc-800">
-            <div className="bg-emerald-600 px-6 py-4 flex justify-between items-center">
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">Detalles de Factura</h3>
-              <button onClick={() => setModalAbierto(false)} className="text-emerald-200 hover:text-white transition-colors">Cerrar</button>
+          <nav className="space-y-1 text-sm font-medium">
+            <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-emerald-800 text-white shadow-inner">
+              <span className="text-lg">📝</span>
+              <span>Registro de Facturación</span>
             </div>
-            <div className="p-6">
-               <div className="flex justify-between items-start mb-6 pb-4 border-b border-zinc-100 dark:border-zinc-800">
-                  <div>
-                    <p className="text-xs font-bold text-zinc-400 uppercase">Cliente</p>
-                    <p className="text-lg font-bold text-zinc-800 dark:text-zinc-100">{facturaSeleccionada.cliente}</p>
-                  </div>
-               </div>
-               <div className="mt-6 flex justify-end">
-                  <button onClick={() => setModalAbierto(false)} className="px-6 py-2.5 bg-zinc-100 text-zinc-700 rounded-lg text-sm font-bold hover:bg-zinc-200 transition-colors">
-                     Cerrar
-                  </button>
-               </div>
+          </nav>
+        </div>
+
+        <button
+          onClick={handleCerrarSesion}
+          className="flex items-center gap-2 text-xs font-semibold text-red-300 hover:text-red-100 px-3 py-2 rounded-lg hover:bg-emerald-900 transition-colors"
+        >
+          <span>🚪</span>
+          <span>Cerrar Sesión</span>
+        </button>
+      </aside>
+
+      {/* Contenido Principal */}
+      <main className="flex-1 flex flex-col">
+        {/* Topbar */}
+        <header className="bg-emerald-900 text-white px-8 py-4 flex items-center justify-between shadow-md">
+          <h2 className="text-lg font-bold tracking-wide">SERDEFALCA | Módulo Comercial</h2>
+          <div className="flex items-center gap-3">
+            <div className="text-right text-xs">
+              <p className="font-bold text-white">{usuarioNombre}</p>
+              <p className="text-emerald-200">Operador Comercial</p>
+            </div>
+            <div className="w-9 h-9 rounded-full bg-emerald-500 text-emerald-950 font-bold flex items-center justify-center text-xs border-2 border-emerald-300">
+              {usuarioIniciales}
             </div>
           </div>
-        </div>
-      )}
+        </header>
+
+        {/* Área del Formulario */}
+        <section className="p-8 max-w-4xl w-full mx-auto">
+          <div className="bg-white rounded-2xl p-8 shadow-xl border border-zinc-200/80">
+            <div className="border-b border-zinc-100 pb-4 mb-6">
+              <h3 className="text-2xl font-extrabold text-emerald-900">Registro de Factura y Recaudación</h3>
+              <p className="text-xs text-zinc-500 mt-1">
+                Ingresa los datos para registrar un cobro o factura en el sistema comercial.
+              </p>
+            </div>
+
+            <form onSubmit={handleGuardarFactura} className="space-y-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-700 mb-1">N° de Factura / Control</label>
+                  <input
+                    type="text"
+                    placeholder="Ej: FES-61427 (Opcional)"
+                    value={numFactura}
+                    onChange={(e) => setNumFactura(e.target.value)}
+                    className="w-full p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-700 mb-1">Cédula / RIF del Cliente *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Ej: J-12345678-0"
+                    value={cedulaRif}
+                    onChange={(e) => setCedulaRif(e.target.value)}
+                    className="w-full p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-semibold text-zinc-700 mb-1">Nombre del Cliente o Razon Social *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Ej: Comercial Falcón C.A."
+                    value={cliente}
+                    onChange={(e) => setCliente(e.target.value)}
+                    className="w-full p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-700 mb-1">Monto Total (USD $) *</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    required
+                    placeholder="0.00"
+                    value={monto}
+                    onChange={(e) => setMonto(e.target.value)}
+                    className="w-full p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-700 mb-1">Fecha de Emisión *</label>
+                  <input
+                    type="date"
+                    required
+                    value={fecha}
+                    onChange={(e) => setFecha(e.target.value)}
+                    className="w-full p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-700 mb-1">Estado de Pago *</label>
+                  <select
+                    value={estado}
+                    onChange={(e) => setEstado(e.target.value)}
+                    className="w-full p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
+                  >
+                    <option value="Pagado">Pagado</option>
+                    <option value="Pendiente">Pendiente</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-700 mb-1">Concepto / Servicio</label>
+                  <input
+                    type="text"
+                    placeholder="Ej: Tarifas de recolección comercial"
+                    value={concepto}
+                    onChange={(e) => setConcepto(e.target.value)}
+                    className="w-full p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
+                  />
+                </div>
+              </div>
+
+              {mensaje.texto && (
+                <div
+                  className={`p-3.5 rounded-lg text-xs font-semibold text-center ${
+                    mensaje.tipo === "error" ? "bg-red-50 text-red-600 border border-red-200" : "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                  }`}
+                >
+                  {mensaje.texto}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={isPending}
+                className="w-full py-3.5 bg-emerald-600 text-white font-bold text-sm rounded-lg hover:bg-emerald-700 transition-colors disabled:bg-emerald-400 shadow-md"
+              >
+                {isPending ? "Guardando Factura..." : "Registrar Factura"}
+              </button>
+            </form>
+          </div>
+        </section>
+      </main>
     </div>
   );
 }
