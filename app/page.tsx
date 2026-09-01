@@ -21,20 +21,45 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      // 1. Iniciar sesión en Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email: email,
         password: password,
       });
 
-      if (error) {
+      if (authError || !authData.session) {
         setError("Correo o contraseña incorrectos. Verifica tus credenciales.");
         setCargando(false);
         return;
       }
 
-      if (data.session) {
+      // 2. Buscar el rol del usuario en la tabla 'usuarios'
+      const { data: userData, error: userError } = await supabase
+        .from('usuarios')
+        .select('rol')
+        .eq('id_usuario', authData.session.user.id)
+        .single();
+
+      if (userError || !userData) {
+        setError("No se encontró el perfil del usuario en la base de datos.");
+        setCargando(false);
+        return;
+      }
+
+      const rol = userData.rol?.toLowerCase().trim() || '';
+
+      // 3. Enrutamiento inteligente basado en el rol
+      if (rol === 'flota') {
+        router.push("/flota");
+      } else if (rol === 'desechos') {
+        router.push("/desechos");
+      } else if (rol === 'comercial') {
+        router.push("/comercial");
+      } else {
+        // Administradores y Super Usuarios van al panel central
         router.push("/admin");
       }
+
     } catch (err) {
       setError("Error de conexión con el servidor.");
       setCargando(false);
