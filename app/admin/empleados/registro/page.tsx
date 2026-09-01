@@ -39,14 +39,15 @@ export default function RegistroEmpleados() {
         return;
       }
 
+      // CORREGIDO: Se usa 'nombre' y 'apellido' en singular para coincidir exactamente con tu base de datos
       const { error: dbError } = await supabase.from("usuarios").insert([
         {
           id_usuario: authData.user.id,
           cedula,
           telefono,
-          nombres,
-          apellidos,
-          email,
+          nombre: nombres,
+          apellido: apellidos,
+          correo: email,
           rol,
         },
       ]);
@@ -93,7 +94,7 @@ export default function RegistroEmpleados() {
                   required
                   value={cedula}
                   onChange={(e) => setCedula(e.target.value)}
-                  placeholder="Ej: 22600509"
+                  placeholder="Ej: 21357148"
                   className="mt-1 w-full rounded-lg border border-zinc-300 p-3 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
                 />
               </div>
@@ -105,7 +106,7 @@ export default function RegistroEmpleados() {
                   required
                   value={telefono}
                   onChange={(e) => setTelefono(e.target.value)}
-                  placeholder="Ej: 04246652978"
+                  placeholder="Ej: 04123571468"
                   className="mt-1 w-full rounded-lg border border-zinc-300 p-3 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
                 />
               </div>
