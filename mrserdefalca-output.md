@@ -3,7 +3,7 @@
 ## 📊 Project Information
 
 - **Project Name**: `mrserdefalca`
-- **Generated On**: 2026-09-01 17:38:27 (America/Caracas / GMT-04:00)
+- **Generated On**: 2026-09-01 17:47:08 (America/Caracas / GMT-04:00)
 - **Total Files Processed**: 39
 - **Export Tool**: Easy Whole Project to Single Text File for LLMs v1.1.0
 - **Tool Author**: Jota / José Guilherme Pandolfi
@@ -56,7 +56,7 @@
 │   ├── 📄 favicon.ico (264.06 KB)
 │   ├── 📄 globals.css (488 B)
 │   ├── 📄 layout.tsx (821 B)
-│   └── 📄 page.tsx (5.73 KB)
+│   └── 📄 page.tsx (5.84 KB)
 ├── 📁 lib/
 │   └── 📄 supabase.ts (265 B)
 ├── 📁 public/
@@ -3724,15 +3724,15 @@ export default function RootLayout({
 ### <a id="📄-app-page-tsx"></a>📄 `app/page.tsx`
 
 **File Info:**
-- **Size**: 5.73 KB
+- **Size**: 5.84 KB
 - **Extension**: `.tsx`
 - **Language**: `typescript`
 - **Location**: `app/page.tsx`
 - **Relative Path**: `app`
 - **Created**: 2026-07-21 20:24:25 (America/Caracas / GMT-04:00)
-- **Modified**: 2026-09-01 17:38:26 (America/Caracas / GMT-04:00)
-- **MD5**: `fca1a65d972fdfd14200ea74d77b1335`
-- **SHA256**: `c9547a5cf37ed079815ee8db16df7664ff8b53630a83bcce3807412ea670a66d`
+- **Modified**: 2026-09-01 17:47:08 (America/Caracas / GMT-04:00)
+- **MD5**: `b01f00fa0e3a2ef06d94552b07c1d42c`
+- **SHA256**: `b605cd6bee9cb6048d350591305cb487777a1702bf4710fbdea8bf0d7ec60d39`
 - **Encoding**: UTF-8
 
 **File code content:**
@@ -3810,54 +3810,55 @@ export default function LoginPage() {
       className="min-h-screen flex items-center justify-center bg-gray-100 bg-cover bg-center relative"
       style={{ backgroundImage: "url('/imagen1.png')" }} 
     >
-      <div className="absolute inset-0 bg-black/20 backdrop-blur-sm z-0"></div>
+      {/* Capa ligera para proteger el contraste sin difuminar la imagen */}
+      <div className="absolute inset-0 bg-black/10 z-0"></div>
 
-      {/* Contenedor principal más pequeño (max-w-sm en lugar de max-w-md) */}
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-8 relative z-10">
+      {/* Contenedor principal reducido a max-w-[340px] y padding p-6 */}
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[340px] p-6 relative z-10">
         
-        {/* Logo único centrado */}
-        <div className="flex justify-center mb-4">
-          <img src="/logo1.png" alt="Logos Institucionales" className="h-12 object-contain" />
+        {/* Logo ampliado a h-20 */}
+        <div className="flex justify-center mb-3">
+          <img src="/logo1.png" alt="Logos Institucionales" className="h-20 object-contain" />
         </div>
 
-        {/* Títulos */}
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-green-800 tracking-wide mb-1">SERDEFAL, C.A</h1>
-          <p className="text-xs text-gray-500 px-2">
+        {/* Títulos con espaciado ajustado */}
+        <div className="text-center mb-5">
+          <h1 className="text-xl font-bold text-green-800 tracking-wide mb-0.5">SERDEFAL, C.A</h1>
+          <p className="text-[11px] text-gray-500 px-1 leading-tight">
             Sistema Regional de Gestión de Desechos Sólidos del Estado Falcón
           </p>
         </div>
 
         {/* Formulario */}
-        <form onSubmit={handleLogin} className="space-y-5">
+        <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-sm text-gray-600 mb-1 font-medium">Correo Electrónico</label>
+            <label className="block text-xs text-gray-600 mb-1 font-medium">Correo Electrónico</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 border border-green-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 transition-shadow text-sm"
+              className="w-full px-3 py-1.5 border border-green-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 transition-shadow text-xs"
               placeholder="correo@ejemplo.com"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm text-gray-600 mb-1 font-medium">Contraseña</label>
+            <label className="block text-xs text-gray-600 mb-1 font-medium">Contraseña</label>
             <div className="relative">
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500 transition-colors text-sm"
+                className="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500 transition-colors text-xs"
                 placeholder="••••••••"
                 required
               />
               <button 
                 type="button" 
-                className="absolute right-3 top-2 text-gray-400 hover:text-gray-600"
+                className="absolute right-2.5 top-1.5 text-gray-400 hover:text-gray-600"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                   <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
                   <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
                 </svg>
@@ -3866,8 +3867,8 @@ export default function LoginPage() {
           </div>
 
           {error && (
-            <div className="bg-red-50 text-red-600 text-xs p-3 rounded-lg flex items-center gap-2 border border-red-100">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+            <div className="bg-red-50 text-red-600 text-[11px] p-2.5 rounded-lg flex items-center gap-2 border border-red-100">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 shrink-0" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
               </svg>
               {error}
@@ -3877,13 +3878,13 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[#008f5d] hover:bg-green-700 text-white font-semibold py-2.5 rounded-lg transition-colors disabled:bg-gray-400 shadow-md text-sm mt-2"
+            className="w-full bg-[#008f5d] hover:bg-green-700 text-white font-semibold py-2 rounded-lg transition-colors disabled:bg-gray-400 shadow-md text-xs mt-1"
           >
             {loading ? 'Ingresando...' : 'Ingresar al Sistema'}
           </button>
         </form>
 
-        <div className="mt-6 text-center text-xs text-gray-400">
+        <div className="mt-5 text-center text-[10px] text-gray-400">
           <p>© 2026 Gobernación del Estado Falcón.</p>
           <p>Trabajando por un estado más limpio.</p>
         </div>
