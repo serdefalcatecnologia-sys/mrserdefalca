@@ -3,7 +3,7 @@
 ## 📊 Project Information
 
 - **Project Name**: `mrserdefalca`
-- **Generated On**: 2026-09-01 16:51:58 (America/Caracas / GMT-04:00)
+- **Generated On**: 2026-09-01 17:08:23 (America/Caracas / GMT-04:00)
 - **Total Files Processed**: 39
 - **Export Tool**: Easy Whole Project to Single Text File for LLMs v1.1.0
 - **Tool Author**: Jota / José Guilherme Pandolfi
@@ -56,7 +56,7 @@
 │   ├── 📄 favicon.ico (264.06 KB)
 │   ├── 📄 globals.css (488 B)
 │   ├── 📄 layout.tsx (821 B)
-│   └── 📄 page.tsx (7.67 KB)
+│   └── 📄 page.tsx (5.81 KB)
 ├── 📁 lib/
 │   └── 📄 supabase.ts (265 B)
 ├── 📁 public/
@@ -3724,188 +3724,171 @@ export default function RootLayout({
 ### <a id="📄-app-page-tsx"></a>📄 `app/page.tsx`
 
 **File Info:**
-- **Size**: 7.67 KB
+- **Size**: 5.81 KB
 - **Extension**: `.tsx`
 - **Language**: `typescript`
 - **Location**: `app/page.tsx`
 - **Relative Path**: `app`
 - **Created**: 2026-07-21 20:24:25 (America/Caracas / GMT-04:00)
-- **Modified**: 2026-09-01 14:07:24 (America/Caracas / GMT-04:00)
-- **MD5**: `8eeb9b5f6e488d2aec1be987b04bac28`
-- **SHA256**: `0c7fd3d4bf3ba542bb98321dee85bc72c3000eae3253f0758782ccb899027dd3`
-- **Encoding**: ASCII
+- **Modified**: 2026-09-01 17:08:22 (America/Caracas / GMT-04:00)
+- **MD5**: `ab9457e8f4a17462aa501902513b3a66`
+- **SHA256**: `c21b6db608940769e06a95843480676343958421c5b0fff1405c90b413b0082a`
+- **Encoding**: UTF-8
 
 **File code content:**
 
 ```typescript
-"use client";
+'use client'
 
-import { useState, useTransition } from "react";
-import { supabase } from "@/lib/supabase"; 
-import { useRouter } from "next/navigation";
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+// Asegúrate de que esta ruta apunte a donde tienes configurado tu cliente de Supabase
+import { supabase } from '@/lib/supabase' 
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [errorMsg, setErrorMsg] = useState("");
-  const [isPending, startTransition] = useTransition();
-  const router = useRouter();
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const router = useRouter()
 
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMsg("");
+    e.preventDefault()
+    setError('')
+    setLoading(true)
 
-    startTransition(async () => {
-      try {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
+    try {
+      // 1. Autenticar con el módulo de Auth de Supabase
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
 
-        if (error) {
-          setErrorMsg("Credenciales incorrectas o usuario no registrado.");
-          return;
+      if (authError) throw new Error('Correo o contraseña incorrectos.')
+
+      if (authData.session) {
+        // 2. ¡LA CORRECCIÓN ESTÁ AQUÍ! Buscar en la tabla 'usuarios' usando la columna 'correo'
+        const { data: usuario, error: userError } = await supabase
+          .from('usuarios')
+          .select('rol')
+          .eq('correo', authData.session.user.email)
+          .single()
+
+        if (userError || !usuario || !usuario.rol) {
+          // Si no encuentra el usuario o el rol está vacío
+          throw new Error(`El rol "${usuario?.rol}" no tiene un formulario asignado.`)
         }
 
-        const user = data.user;
-        if (user) {
-          const { data: perfil } = await supabase
-            .from("usuarios")
-            .select("rol")
-            .eq("id", user.id)
-            .single();
-
-          const rol = perfil?.rol?.toLowerCase().trim();
-
-          // Redirección directa e independiente según cada módulo/formulario
-          if (rol === "comercial") {
-            router.push("/comercial");
-          } else if (rol === "flota" || rol === "transportista") {
-            router.push("/flota");
-          } else if (rol === "desechos" || rol === "pesaje") {
-            router.push("/desechos");
-          } else if (rol === "admin" || rol === "superuser") {
-            router.push("/admin");
-          } else {
-            setErrorMsg(`El rol "${perfil?.rol}" no tiene un formulario asignado.`);
-            await supabase.auth.signOut();
-            return;
-          }
-          router.refresh();
+        // 3. Redirigir según el rol definido en la base de datos
+        const rol = usuario.rol.toLowerCase().trim()
+        
+        switch (rol) {
+          case 'administrador':
+            router.push('/admin') // Ajusta esta ruta si tu panel de admin es diferente
+            break
+          case 'comercial':
+            router.push('/admin/comercial')
+            break
+          case 'flota':
+            router.push('/admin/flota')
+            break
+          case 'desechos':
+            router.push('/admin/desechos')
+            break
+          default:
+            throw new Error(`El rol "${rol}" no tiene un formulario asignado.`)
         }
-      } catch (err) {
-        setErrorMsg("Ocurrió un error inesperado al iniciar sesión.");
       }
-    });
-  };
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-zinc-200">
-      
-      {/* Fondo de pantalla */}
-      <div 
-        className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat" 
-        style={{ backgroundImage: "url('/imagen1.png')" }} 
-      />
-      <div className="absolute inset-0 z-0 bg-black/20 backdrop-blur-[2px]" />
-
-      {/* Tarjeta de Login Principal */}
-      <div className="relative z-10 w-full max-w-[420px] bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.15)] p-8 sm:p-10 mb-8">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      {/* Contenedor principal de la tarjeta */}
+      <div className="bg-white rounded-3xl shadow-xl w-full max-w-md p-8 relative z-10">
         
-        {/* Logos */}
-        <div className="flex items-center justify-center gap-4 mb-4">
-          <img src="/logo1.png" alt="SERDEFALCA" className="h-14 w-auto object-contain" />
+        {/* Logos institucionales */}
+        <div className="flex justify-center gap-4 mb-4">
+          <img src="/logo-falcon.png" alt="Falcón" className="h-12" />
+          <img src="/logo-serdefalca.png" alt="Serdefalca" className="h-12" />
         </div>
 
-        {/* Encabezado */}
+        {/* Títulos */}
         <div className="text-center mb-8">
-          <h1 className="text-xl font-bold text-emerald-800 tracking-wide mb-2">SERDEFAL, C.A</h1>
-          <p className="text-[13px] text-zinc-500 leading-snug px-4">
+          <h1 className="text-2xl font-bold text-green-800 tracking-wide mb-1">SERDEFAL, C.A</h1>
+          <p className="text-sm text-gray-500 px-4">
             Sistema Regional de Gestión de Desechos Sólidos del Estado Falcón
           </p>
         </div>
 
         {/* Formulario */}
-        <form onSubmit={handleLogin} className="space-y-4">
+        <form onSubmit={handleLogin} className="space-y-6">
           <div>
-            <label className="block text-[13px] font-medium text-zinc-600 mb-1.5">
-              Correo Electrónico
-            </label>
+            <label className="block text-sm text-gray-600 mb-1">Correo Electrónico</label>
             <input
               type="email"
-              required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="operador@serdefalca.com"
-              className="w-full rounded-xl border border-zinc-200 bg-[#f4f7fb] px-4 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all"
+              className="w-full px-4 py-2 border border-green-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
+              placeholder="correo@ejemplo.com"
+              required
             />
           </div>
 
           <div>
-            <label className="block text-[13px] font-medium text-zinc-600 mb-1.5">
-              Contraseña
-            </label>
+            <label className="block text-sm text-gray-600 mb-1">Contraseña</label>
             <div className="relative">
               <input
-                type={showPassword ? "text" : "password"}
-                required
+                type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500"
                 placeholder="••••••••"
-                className="w-full rounded-xl border border-zinc-200 bg-[#f4f7fb] pl-4 pr-10 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all"
+                required
               />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 focus:outline-none"
+              {/* Icono de ojito (opcional) */}
+              <button 
+                type="button" 
+                className="absolute right-3 top-2.5 text-gray-400"
               >
-                {showPassword ? (
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/><line x1="3" y1="3" x2="21" y2="21"/></svg>
-                ) : (
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-                )}
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                  <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+                </svg>
               </button>
             </div>
           </div>
 
-          {errorMsg && (
-            <div className="mt-4 flex items-center justify-center gap-2 rounded-lg bg-red-100 px-4 py-3 text-center text-xs text-red-600">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-              <span>{errorMsg}</span>
+          {/* Mensaje de error (se muestra solo si hay error) */}
+          {error && (
+            <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+              {error}
             </div>
           )}
 
           <button
             type="submit"
-            disabled={isPending}
-            className="w-full mt-6 rounded-xl bg-[#009b62] hover:bg-[#008050] text-white py-3 px-4 text-sm font-medium transition-all disabled:opacity-50"
+            disabled={loading}
+            className="w-full bg-[#008f5d] hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition-colors disabled:bg-gray-400"
           >
-            {isPending ? "Validando..." : "Ingresar al Sistema"}
+            {loading ? 'Ingresando...' : 'Ingresar al Sistema'}
           </button>
         </form>
 
-        <div className="mt-8 text-center text-[11px] text-zinc-400 leading-relaxed">
+        <div className="mt-8 text-center text-xs text-gray-400">
           <p>© 2026 Gobernación del Estado Falcón.</p>
           <p>Trabajando por un estado más limpio.</p>
         </div>
       </div>
-
-      {/* Pie de página exterior */}
-      <div className="absolute bottom-0 w-full bg-zinc-200/90 backdrop-blur-sm py-2 px-6 flex flex-col sm:flex-row justify-between items-center gap-2 text-[11px] text-zinc-600 border-t border-zinc-300">
-        <p>© Gobernación del Estado Falcón. Trabajando por un estado más limpio.</p>
-        <div className="flex items-center gap-3 font-semibold">
-          <div className="flex items-center gap-1 cursor-pointer hover:text-zinc-900 transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
-          </div>
-          <div className="flex items-center gap-1 cursor-pointer hover:text-zinc-900 transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
-            <span className="ml-1">SERDEFAL_VE</span>
-          </div>
-        </div>
-      </div>
     </div>
-  );
+  )
 }
 ```
 
