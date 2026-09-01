@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { createClient } from "@supabase/supabase-js";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
@@ -18,58 +17,55 @@ export default function RegistroEmpleados() {
   const [password, setPassword] = useState("");
   const [rol, setRol] = useState("comercial");
   const [mensaje, setMensaje] = useState({ texto: "", tipo: "" });
-  const [cargando, setCargando] = useState(false);
   
-  const router = useRouter();
+  // useTransition evita que las actualizaciones de estado bloqueen la interfaz (INP)
+  const [isPending, startTransition] = useTransition();
 
   const handleCrearEmpleado = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setCargando(true);
     setMensaje({ texto: "", tipo: "" });
 
-    try {
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email,
-        password,
-      });
+    startTransition(async () => {
+      try {
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+          email,
+          password,
+        });
 
-      if (authError || !authData.user) {
-        setMensaje({ texto: "❌ Error al crear credenciales: " + (authError?.message || ""), tipo: "error" });
-        setCargando(false);
-        return;
+        if (authError || !authData.user) {
+          setMensaje({ texto: "❌ Error al crear credenciales: " + (authError?.message || ""), tipo: "error" });
+          return;
+        }
+
+        const { error: dbError } = await supabase.from("usuarios").insert([
+          {
+            id_usuario: authData.user.id,
+            cedula,
+            telefono,
+            nombre: nombres,
+            apellido: apellidos,
+            correo: email,
+            rol,
+          },
+        ]);
+
+        if (dbError) {
+          setMensaje({ texto: "❌ Error al guardar datos en la tabla usuarios: " + dbError.message, tipo: "error" });
+        } else {
+          setMensaje({ texto: "✅ Empleado registrado con éxito.", tipo: "exito" });
+          setCedula("");
+          setTelefono("");
+          setNombres("");
+          setApellidos("");
+          setEmail("");
+          setPassword("");
+          setRol("comercial");
+        }
+      } catch (err) {
+        setMensaje({ texto: "❌ Ocurrió un error inesperado.", tipo: "error" });
+        console.error(err);
       }
-
-      // CORREGIDO: Se usa 'nombre' y 'apellido' en singular para coincidir exactamente con tu base de datos
-      const { error: dbError } = await supabase.from("usuarios").insert([
-        {
-          id_usuario: authData.user.id,
-          cedula,
-          telefono,
-          nombre: nombres,
-          apellido: apellidos,
-          correo: email,
-          rol,
-        },
-      ]);
-
-      if (dbError) {
-        setMensaje({ texto: "❌ Error al guardar datos en la tabla usuarios: " + dbError.message, tipo: "error" });
-      } else {
-        setMensaje({ texto: "✅ Empleado registrado con éxito.", tipo: "exito" });
-        setCedula("");
-        setTelefono("");
-        setNombres("");
-        setApellidos("");
-        setEmail("");
-        setPassword("");
-        setRol("comercial");
-      }
-    } catch (err) {
-      setMensaje({ texto: "❌ Ocurrió un error inesperado.", tipo: "error" });
-      console.error(err);
-    } finally {
-      setCargando(false);
-    }
+    });
   };
 
   return (
@@ -184,12 +180,12 @@ export default function RegistroEmpleados() {
 
             <button
               type="submit"
-              disabled={cargando}
+              disabled={isPending}
               className={`w-full rounded-lg py-3 text-sm font-semibold text-white transition-colors ${
-                cargando ? 'bg-emerald-400 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-700'
+                isPending ? 'bg-emerald-400 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-700'
               }`}
             >
-              {cargando ? 'Registrando en el sistema...' : 'Guardar y Registrar Empleado'}
+              {isPending ? 'Registrando en el sistema...' : 'Guardar y Registrar Empleado'}
             </button>
           </form>
         </div>
