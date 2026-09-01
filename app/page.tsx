@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { createClient } from "@/utils/supabase/client";
+// Importamos la constante 'supabase' directamente desde tu archivo lib/supabase.ts
+import { supabase } from "@/lib/supabase"; 
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
@@ -10,7 +11,6 @@ export default function LoginPage() {
   const [errorMsg, setErrorMsg] = useState("");
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
-  const supabase = createClient();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,7 +28,6 @@ export default function LoginPage() {
           return;
         }
 
-        // Obtener el rol del usuario desde la base de datos para redirigir
         const user = data.user;
         if (user) {
           const { data: perfil } = await supabase
@@ -39,6 +38,7 @@ export default function LoginPage() {
 
           const rol = perfil?.rol || "admin";
 
+          // Lógica de redirección basada en roles
           if (rol === "comercial") {
             router.push("/admin/comercializacion");
           } else if (rol === "transportista" || rol === "flota") {
