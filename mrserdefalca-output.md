@@ -3,7 +3,7 @@
 ## 📊 Project Information
 
 - **Project Name**: `mrserdefalca`
-- **Generated On**: 2026-09-02 14:44:22 (America/Caracas / GMT-04:00)
+- **Generated On**: 2026-09-02 23:39:39 (America/Caracas / GMT-04:00)
 - **Total Files Processed**: 36
 - **Export Tool**: Easy Whole Project to Single Text File for LLMs v1.1.0
 - **Tool Author**: Jota / José Guilherme Pandolfi
@@ -50,7 +50,7 @@
 │   ├── 📄 favicon.ico (264.06 KB)
 │   ├── 📄 globals.css (488 B)
 │   ├── 📄 layout.tsx (821 B)
-│   └── 📄 page.tsx (5.84 KB)
+│   └── 📄 page.tsx (5.83 KB)
 ├── 📁 lib/
 │   └── 📄 supabase.ts (265 B)
 ├── 📁 public/
@@ -2955,15 +2955,15 @@ export default function RootLayout({
 ### <a id="📄-app-page-tsx"></a>📄 `app/page.tsx`
 
 **File Info:**
-- **Size**: 5.84 KB
+- **Size**: 5.83 KB
 - **Extension**: `.tsx`
 - **Language**: `typescript`
 - **Location**: `app/page.tsx`
 - **Relative Path**: `app`
 - **Created**: 2026-07-21 20:24:25 (America/Caracas / GMT-04:00)
-- **Modified**: 2026-09-02 14:44:21 (America/Caracas / GMT-04:00)
-- **MD5**: `b01f00fa0e3a2ef06d94552b07c1d42c`
-- **SHA256**: `b605cd6bee9cb6048d350591305cb487777a1702bf4710fbdea8bf0d7ec60d39`
+- **Modified**: 2026-09-02 23:39:38 (America/Caracas / GMT-04:00)
+- **MD5**: `b621d7720af85721893c59ff5fcad280`
+- **SHA256**: `29eb82de51e9941616ced12a236123cbadcbf1adb6391bf759141a2065596302`
 - **Encoding**: UTF-8
 
 **File code content:**
@@ -3017,7 +3017,7 @@ export default function LoginPage() {
           router.push('/admin') 
         } 
         else if (rol === 'comercial') {
-          router.push('/admin/comercial')
+          router.push('/comercial')
         } 
         else if (rol === 'flota') {
           router.push('/admin/flota')
