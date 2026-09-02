@@ -5,7 +5,7 @@ PROJECT EXPORT FOR LLMs
 PROJECT INFORMATION:
 --------------------------------------------------
 Project Name: mrserdefalca
-Generated On: 2026-09-02 14:02:27 (America/Caracas / GMT-04:00)
+Generated On: 2026-09-02 14:22:27 (America/Caracas / GMT-04:00)
 Total Files Processed: 36
 Export Tool: Easy Whole Project to Single Text File for LLMs v1.1.0
 Tool Author: Jota / José Guilherme Pandolfi
@@ -25,7 +25,7 @@ PROJECT STRUCTURE
 ├── 📁 app/
 │   ├── 📁 admin/
 │   │   ├── 📁 comercial/
-│   │   │   └── 📄 page.tsx (19.26 KB)
+│   │   │   └── 📄 page.tsx (20.71 KB)
 │   │   ├── 📁 configuracion/
 │   │   │   └── 📄 page.tsx (13.58 KB)
 │   │   ├── 📁 desechos/
@@ -39,7 +39,7 @@ PROJECT STRUCTURE
 │   │   ├── 📄 layout.tsx (8.53 KB)
 │   │   └── 📄 page.tsx (5.11 KB)
 │   ├── 📁 comercial/
-│   │   └── 📄 page.tsx (5.33 KB)
+│   │   └── 📄 page.tsx (8.36 KB)
 │   ├── 📁 desechos/
 │   │   └── 📄 page.tsx (10.79 KB)
 │   ├── 📁 flota/
@@ -83,7 +83,7 @@ Total Files: 36
 Total Directories: 17
 Text Files: 26
 Binary Files: 10
-Total Size: 1.45 MB
+Total Size: 1.46 MB
 
 FILE TYPES DISTRIBUTION:
 ------------------------------
@@ -109,15 +109,15 @@ FILE: app/admin/comercial/page.tsx
 
 FILE INFORMATION:
 ----------------------------------------
-Size: 19.26 KB
+Size: 20.71 KB
 Extension: .tsx
 Language: typescript
 Location: app/admin/comercial/page.tsx
 Relative Path: app/admin/comercial
 Created: 2026-08-27 19:14:58 (America/Caracas / GMT-04:00)
-Modified: 2026-09-02 14:02:27 (America/Caracas / GMT-04:00)
-MD5: a7b5872cba29e889ce870dba042885c0
-SHA256: 8d46788927a4df7d4f050ab25179993b54f4a57ae0e3847a9f319b4a1eaba753
+Modified: 2026-09-02 14:22:27 (America/Caracas / GMT-04:00)
+MD5: f8de4085f77fea1bcff9ee59fd624349
+SHA256: 6f79adf983cc8cbd418a488b65396f71b54ea2d9486cf3e2e42bd626f6159d75
 Encoding: ASCII
 
 FILE CONTENT:
@@ -161,7 +161,6 @@ export default function VistaComercializacion() {
           }
         }
 
-        // Se corrige la consulta para apuntar a registro_comercial
         const { data, error } = await supabase
           .from('registro_comercial') 
           .select('*')
@@ -187,9 +186,10 @@ export default function VistaComercializacion() {
     return cumpleFechaInicio && cumpleFechaFin;
   });
 
-  const totalRecaudado = datosFiltrados
+  // Calculamos el total recaudado basándonos en los Dólares (USD)
+  const totalRecaudadoUSD = datosFiltrados
     .filter(item => item.estatus_pago === 'Pagado')
-    .reduce((acc, curr) => acc + Number(curr.monto_bs || 0), 0);
+    .reduce((acc, curr) => acc + Number(curr.monto_usd || 0), 0);
   
   const totalFacturas = datosFiltrados.length;
   const facturasEnMora = datosFiltrados.filter(item => item.estatus_pago === 'Pendiente').length;
@@ -212,7 +212,7 @@ export default function VistaComercializacion() {
 
     doc.setFontSize(14);
     doc.setTextColor(50, 50, 50);
-    doc.text('Reporte de Comercialización y Recaudación', 14, 48);
+    doc.text('Reporte General de Facturación Comercial', 14, 48);
 
     if (fechaInicio || fechaFin) {
       doc.setFontSize(10);
@@ -220,17 +220,17 @@ export default function VistaComercializacion() {
       doc.text(`Rango de fechas | Desde: ${fechaInicio || 'Inicio'} Hasta: ${fechaFin || 'Hoy'}`, 14, 54);
     }
 
-    const columnas = ["Ref", "Cliente", "Servicio", "Monto (Bs)", "Estatus", "Fecha"];
+    const columnas = ["Factura", "Cliente", "Municipio", "Monto ($)", "Monto (Bs)", "Estatus"];
     const filas = datosFiltrados.map(item => [
       item.id.substring(0, 8).toUpperCase(), 
       item.cliente, 
-      item.tipo_servicio, 
-      Number(item.monto_bs || 0).toFixed(2), 
-      item.estatus_pago, 
-      item.fecha
+      item.municipio, 
+      `$${Number(item.monto_usd || 0).toFixed(2)}`,
+      `Bs ${Number(item.monto_bs || 0).toFixed(2)}`, 
+      item.estatus_pago
     ]);
 
-    autoTable(doc, { head: [columnas], body: filas, startY: 60, theme: 'grid', headStyles: { fillColor: [16, 185, 129] } });
+    autoTable(doc, { head: [columnas], body: filas, startY: 60, theme: 'grid', headStyles: { fillColor: [4, 120, 87] } });
     doc.save('Reporte_Comercializacion.pdf');
   };
 
@@ -252,43 +252,48 @@ export default function VistaComercializacion() {
       if (img.complete && img.naturalWidth > 0) {
         doc.addImage(img, 'PNG', 15, 10, 180, 25);
       } else {
-        doc.setFont("helvetica", "bold"); doc.setFontSize(24); doc.setTextColor(4, 120, 87); doc.text("SISTEMA", 105, 20, { align: "center" });
+        doc.setFont("helvetica", "bold"); doc.setFontSize(24); doc.setTextColor(4, 120, 87); doc.text("SERDEFALCA", 105, 20, { align: "center" });
       }
 
       doc.setFillColor(245, 245, 245); 
       doc.rect(15, 40, 180, 35, 'F');
       
-      doc.setFont("helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(0, 0, 0); doc.text("DATOS DE LA ENTIDAD", 20, 47);
+      doc.setFont("helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(0, 0, 0); doc.text("DATOS DE LA EMPRESA", 20, 47);
       doc.setFont("helvetica", "normal"); doc.setFontSize(9);
-      doc.text("Nombre: Gestión de Desechos Sólidos", 20, 53);
-      doc.text("RIF: G-20000000-0", 20, 59);
-      doc.text("Teléfono: 0268-0000000", 20, 65);
+      doc.text("Razón Social: SERDEFAL C.A", 20, 53);
+      doc.text("Dirección: Estado Falcón", 20, 59);
       
       doc.setFont("helvetica", "bold"); doc.setFontSize(12); doc.setTextColor(4, 120, 87);
-      doc.text(`Recibo / Ref N°: ${numRef}`, 115, 53);
+      doc.text(`Factura N°: ${numRef}`, 115, 53);
       doc.setFont("helvetica", "normal"); doc.setTextColor(0, 0, 0); doc.setFontSize(10);
       doc.text(`Fecha: ${factura.fecha}`, 115, 60);
 
       doc.setFont("helvetica", "bold"); doc.setFontSize(11); doc.text("DATOS DEL CLIENTE", 20, 90);
       doc.setFont("helvetica", "normal"); doc.setFontSize(10);
-      doc.text(`Razón Social: ${factura.cliente}`, 20, 98);
-      doc.text(`Cédula / RIF: ${factura.rif_cedula || 'No registrado'}`, 20, 104);
+      doc.text(`Razón Social / Nombre: ${factura.cliente}`, 20, 98);
+      doc.text(`Cédula / RIF: ${factura.rif_cedula}`, 20, 104);
+      doc.text(`Municipio: ${factura.municipio}`, 20, 110);
 
-      doc.setDrawColor(220, 220, 220); doc.line(15, 112, 195, 112);
+      doc.setDrawColor(220, 220, 220); doc.line(15, 116, 195, 116);
 
-      doc.setFont("helvetica", "bold"); doc.setFontSize(11); doc.text("DETALLES DE LA OPERACIÓN", 20, 122);
+      doc.setFont("helvetica", "bold"); doc.setFontSize(11); doc.text("DETALLES DEL SERVICIO", 20, 128);
       doc.setFont("helvetica", "normal");
-      doc.text(`Servicio: ${factura.tipo_servicio}`, 20, 130);
-      doc.text(`Estatus del Pago: ${factura.estatus_pago}`, 20, 136);
+      doc.text(`Descripción: ${factura.tipo_servicio}`, 20, 136);
+      doc.text(`Método de Pago: ${factura.metodo_pago || 'No especificado'}`, 20, 142);
+      doc.text(`Estatus: ${factura.estatus_pago}`, 20, 148);
       
-      doc.setFillColor(236, 253, 245); doc.rect(15, 145, 180, 20, 'F');
+      doc.setFillColor(236, 253, 245); doc.rect(15, 155, 180, 30, 'F');
       
       doc.setFont("helvetica", "bold"); doc.setFontSize(14); doc.setTextColor(4, 120, 87);
-      doc.text(`Monto Total: Bs. ${Number(factura.monto_bs || 0).toFixed(2)}`, 20, 158);
+      doc.text(`Total en Divisas: $ ${Number(factura.monto_usd || 0).toFixed(2)}`, 20, 167);
+      doc.text(`Total en Bolívares: Bs. ${Number(factura.monto_bs || 0).toFixed(2)}`, 20, 178);
       
-      doc.setFontSize(10); doc.text("¡Gracias por su contribución para un estado más limpio!", 105, 190, { align: "center" });
+      doc.setFontSize(9); doc.setFont("helvetica", "normal"); doc.setTextColor(100, 100, 100);
+      doc.text(`Tasa BCV Aplicada: 1 USD = Bs. ${Number(factura.tasa_bcv || 0).toFixed(4)}`, 115, 178);
 
-      doc.save(`Recibo_${numRef}_${factura.cliente}.pdf`);
+      doc.setFontSize(10); doc.text("¡Gracias por su contribución para un estado más limpio!", 105, 210, { align: "center" });
+
+      doc.save(`Factura_${numRef}_${factura.cliente}.pdf`);
     } catch (error) {
       console.error("Error al reimprimir:", error);
       alert("Hubo un error al generar la factura.");
@@ -311,11 +316,11 @@ export default function VistaComercializacion() {
 
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-800 dark:text-zinc-100">Panel de Comercialización</h1>
-          <p className="text-sm text-zinc-500">Gestión de recaudación, facturación y clientes.</p>
+          <h1 className="text-2xl font-bold text-zinc-800 dark:text-zinc-100">Módulo de Comercialización</h1>
+          <p className="text-sm text-zinc-500">Gestión de recaudación, facturación en divisas y control de clientes.</p>
         </div>
         
-        <button onClick={generarReporteGeneral} disabled={cargando} className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500 transition-all disabled:opacity-50">
+        <button onClick={generarReporteGeneral} disabled={cargando} className="flex items-center gap-2 rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-600 transition-all disabled:opacity-50">
           <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
           Exportar Reporte General
         </button>
@@ -323,11 +328,11 @@ export default function VistaComercializacion() {
 
       <div className="mb-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-          <p className="text-sm font-medium text-zinc-500">Total Recaudado (Bs)</p>
-          <p className="mt-2 text-3xl font-bold text-emerald-600">Bs. {totalRecaudado.toFixed(2)}</p>
+          <p className="text-sm font-medium text-zinc-500">Recaudación Total Pagada (USD)</p>
+          <p className="mt-2 text-3xl font-bold text-emerald-700">$ {totalRecaudadoUSD.toFixed(2)}</p>
         </div>
         <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-          <p className="text-sm font-medium text-zinc-500">Registros Procesados</p>
+          <p className="text-sm font-medium text-zinc-500">Facturas Emitidas</p>
           <p className="mt-2 text-3xl font-bold text-zinc-800 dark:text-zinc-100">{totalFacturas}</p>
         </div>
         <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
@@ -357,9 +362,10 @@ export default function VistaComercializacion() {
             <table className="w-full text-left text-sm text-zinc-600 dark:text-zinc-400">
               <thead className="bg-zinc-50 text-xs uppercase text-zinc-500 dark:bg-zinc-800/50">
                 <tr>
-                  <th className="px-6 py-4 font-semibold">Referencia</th>
+                  <th className="px-6 py-4 font-semibold">Factura</th>
                   <th className="px-6 py-4 font-semibold">Fecha</th>
-                  <th className="px-6 py-4 font-semibold">Cliente / Entidad</th>
+                  <th className="px-6 py-4 font-semibold">Cliente / Razón Social</th>
+                  <th className="px-6 py-4 font-semibold">Monto (USD)</th>
                   <th className="px-6 py-4 font-semibold">Monto (Bs)</th>
                   <th className="px-6 py-4 font-semibold">Estatus</th>
                   <th className="px-6 py-4 font-semibold text-center">Acciones</th>
@@ -368,15 +374,18 @@ export default function VistaComercializacion() {
               <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
                 {datosFiltrados.map((item, index) => (
                   <tr key={index} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors">
-                    <td className="px-6 py-4 font-bold text-zinc-900 dark:text-zinc-100">{item.id.substring(0, 8).toUpperCase()}</td>
+                    <td className="px-6 py-4 font-bold text-zinc-900 dark:text-zinc-100 uppercase">{item.id.substring(0, 8)}</td>
                     <td className="px-6 py-4">{item.fecha}</td>
-                    <td className="px-6 py-4">{item.cliente}</td>
-                    <td className="px-6 py-4 font-semibold text-emerald-600">Bs. {Number(item.monto_bs || 0).toFixed(2)}</td>
+                    <td className="px-6 py-4">
+                      <div>{item.cliente}</div>
+                      <div className="text-xs text-zinc-400">{item.rif_cedula}</div>
+                    </td>
+                    <td className="px-6 py-4 font-semibold text-emerald-700">$ {Number(item.monto_usd || 0).toFixed(2)}</td>
+                    <td className="px-6 py-4 font-medium text-zinc-500">Bs. {Number(item.monto_bs || 0).toFixed(2)}</td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold
                         ${item.estatus_pago === 'Pagado' ? 'bg-emerald-100 text-emerald-800' : ''}
                         ${item.estatus_pago === 'Pendiente' ? 'bg-amber-100 text-amber-800' : ''}
-                        ${item.estatus_pago === 'Exonerado' ? 'bg-blue-100 text-blue-800' : ''}
                       `}>
                         {item.estatus_pago}
                       </span>
@@ -393,8 +402,8 @@ export default function VistaComercializacion() {
                         <button 
                           onClick={() => reimprimirFactura(item)}
                           disabled={generandoPDF}
-                          title="Imprimir Factura Original"
-                          className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-100 text-zinc-500 hover:bg-emerald-100 hover:text-emerald-600 dark:bg-zinc-800 dark:text-zinc-400 transition-colors disabled:opacity-50"
+                          title="Imprimir Factura"
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-100 text-zinc-500 hover:bg-emerald-100 hover:text-emerald-700 dark:bg-zinc-800 dark:text-zinc-400 transition-colors disabled:opacity-50"
                         >
                           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
                         </button>
@@ -412,10 +421,10 @@ export default function VistaComercializacion() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in zoom-in duration-200">
           <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-zinc-200 dark:border-zinc-800">
             
-            <div className="bg-emerald-600 px-6 py-4 flex justify-between items-center">
+            <div className="bg-emerald-700 px-6 py-4 flex justify-between items-center">
               <h3 className="text-lg font-bold text-white flex items-center gap-2">
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                Detalles del Recibo
+                Detalles de Factura
               </h3>
               <button onClick={() => setModalAbierto(false)} className="text-emerald-200 hover:text-white transition-colors">
                 <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
@@ -430,8 +439,8 @@ export default function VistaComercializacion() {
                   <p className="text-sm text-zinc-500">{facturaSeleccionada.rif_cedula}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-xs font-bold text-zinc-400 uppercase">Referencia</p>
-                  <p className="text-lg font-bold text-emerald-600">{facturaSeleccionada.id.substring(0, 8).toUpperCase()}</p>
+                  <p className="text-xs font-bold text-zinc-400 uppercase">N° Factura</p>
+                  <p className="text-lg font-bold text-emerald-700 uppercase">{facturaSeleccionada.id.substring(0, 8)}</p>
                 </div>
               </div>
 
@@ -441,26 +450,34 @@ export default function VistaComercializacion() {
                   <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">{facturaSeleccionada.fecha}</p>
                 </div>
                 <div className="bg-zinc-50 dark:bg-zinc-800/50 p-3 rounded-lg border border-zinc-100 dark:border-zinc-700/50">
-                  <p className="text-xs font-bold text-zinc-500 mb-1">TIPO DE SERVICIO</p>
-                  <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">{facturaSeleccionada.tipo_servicio}</p>
+                  <p className="text-xs font-bold text-zinc-500 mb-1">MUNICIPIO</p>
+                  <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">{facturaSeleccionada.municipio}</p>
                 </div>
-                <div className="bg-zinc-50 dark:bg-zinc-800/50 p-3 rounded-lg border border-zinc-100 dark:border-zinc-700/50 col-span-2">
-                  <p className="text-xs font-bold text-zinc-500 mb-1">ESTATUS DEL COBRO</p>
+                <div className="bg-zinc-50 dark:bg-zinc-800/50 p-3 rounded-lg border border-zinc-100 dark:border-zinc-700/50">
+                  <p className="text-xs font-bold text-zinc-500 mb-1">ESTADO DEL COBRO</p>
                   <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-bold
                     ${facturaSeleccionada.estatus_pago === 'Pagado' ? 'bg-emerald-100 text-emerald-800' : ''}
                     ${facturaSeleccionada.estatus_pago === 'Pendiente' ? 'bg-amber-100 text-amber-800' : ''}
-                    ${facturaSeleccionada.estatus_pago === 'Exonerado' ? 'bg-blue-100 text-blue-800' : ''}
                   `}>
                     {facturaSeleccionada.estatus_pago}
                   </span>
                 </div>
+                <div className="bg-zinc-50 dark:bg-zinc-800/50 p-3 rounded-lg border border-zinc-100 dark:border-zinc-700/50">
+                  <p className="text-xs font-bold text-zinc-500 mb-1">MÉTODO DE PAGO</p>
+                  <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">{facturaSeleccionada.metodo_pago || 'N/A'}</p>
+                </div>
               </div>
 
               <div className="bg-emerald-50 dark:bg-emerald-900/10 p-4 rounded-xl border border-emerald-100 dark:border-emerald-900/30">
-                <div className="flex justify-between items-center">
-                  <p className="text-sm font-bold text-emerald-800 dark:text-emerald-400">Monto Total</p>
-                  <p className="text-xl font-bold text-emerald-700 dark:text-emerald-300">Bs. {Number(facturaSeleccionada.monto_bs || 0).toFixed(2)}</p>
+                <div className="flex justify-between items-center mb-2">
+                  <p className="text-sm font-bold text-emerald-900 dark:text-emerald-400">Total en Divisas (USD)</p>
+                  <p className="text-xl font-bold text-emerald-700 dark:text-emerald-300">$ {Number(facturaSeleccionada.monto_usd || 0).toFixed(2)}</p>
                 </div>
+                <div className="flex justify-between items-center">
+                  <p className="text-sm font-bold text-emerald-900 dark:text-emerald-400">Total en Bolívares (Bs.)</p>
+                  <p className="text-lg font-bold text-emerald-700 dark:text-emerald-500">Bs. {Number(facturaSeleccionada.monto_bs || 0).toFixed(2)}</p>
+                </div>
+                <p className="text-right text-xs text-emerald-600 mt-2">Tasa BCV Aplicada: 1 USD = Bs. {Number(facturaSeleccionada.tasa_bcv || 0).toFixed(2)}</p>
               </div>
 
               <div className="mt-6 flex justify-end">
@@ -2015,15 +2032,15 @@ FILE: app/comercial/page.tsx
 
 FILE INFORMATION:
 ----------------------------------------
-Size: 5.33 KB
+Size: 8.36 KB
 Extension: .tsx
 Language: typescript
 Location: app/comercial/page.tsx
 Relative Path: app/comercial
 Created: 2026-07-21 22:06:40 (America/Caracas / GMT-04:00)
-Modified: 2026-09-02 14:01:34 (America/Caracas / GMT-04:00)
-MD5: d3d30c64c3a61f4d92420315ec8e9c12
-SHA256: 586a9eb7b945d243b168f609085d02b4c240fbbc06bf0c8fd4e9b8afb9d1d31a
+Modified: 2026-09-02 14:21:38 (America/Caracas / GMT-04:00)
+MD5: 8544e7912f33979ad314a0588082a9e5
+SHA256: 0d7ab631d5aea52af8f8972bb3ce21a2780f153e6be6c1eeed44b7825a458dad
 Encoding: UTF-8
 
 FILE CONTENT:
@@ -2041,11 +2058,18 @@ const supabase = createClient(
 export default function RegistroComercial() {
   const [cliente, setCliente] = useState("");
   const [rif, setRif] = useState("");
+  const [municipio, setMunicipio] = useState("Miranda");
   const [servicio, setServicio] = useState("Recolección Especial");
-  const [monto, setMonto] = useState("");
+  const [montoUsd, setMontoUsd] = useState("");
+  const [tasaBcv, setTasaBcv] = useState("");
+  const [metodoPago, setMetodoPago] = useState("");
   const [estatusPago, setEstatusPago] = useState("Pendiente");
+  
   const [mensaje, setMensaje] = useState("");
   const [cargando, setCargando] = useState(false);
+
+  // Conversión automática a Bolívares
+  const montoBsCalculado = (parseFloat(montoUsd || "0") * parseFloat(tasaBcv || "0")).toFixed(2);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -2056,8 +2080,12 @@ export default function RegistroComercial() {
       {
         cliente: cliente,
         rif_cedula: rif,
+        municipio: municipio,
         tipo_servicio: servicio,
-        monto_bs: monto ? parseFloat(monto) : 0,
+        monto_usd: parseFloat(montoUsd),
+        tasa_bcv: parseFloat(tasaBcv),
+        monto_bs: parseFloat(montoBsCalculado),
+        metodo_pago: metodoPago,
         estatus_pago: estatusPago,
       },
     ]);
@@ -2068,75 +2096,107 @@ export default function RegistroComercial() {
       console.error(error);
       setMensaje("Error al guardar el registro comercial.");
     } else {
-      setMensaje("¡Registro comercial creado exitosamente!");
-      setCliente(""); 
-      setRif(""); 
-      setMonto(""); 
-      setEstatusPago("Pendiente");
+      setMensaje("¡Factura / Registro creado exitosamente!");
+      // Limpiar formulario
+      setCliente(""); setRif(""); setMontoUsd(""); setMetodoPago("");
       
-      // Limpiar mensaje de éxito después de 3 segundos
-      setTimeout(() => setMensaje(""), 3000);
+      setTimeout(() => setMensaje(""), 4000);
     }
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white shadow-md rounded-md mt-10">
-      <h2 className="text-2xl font-bold mb-6 text-blue-800">Registro de Servicios Comerciales</h2>
+    <div className="max-w-3xl mx-auto p-6 bg-white shadow-xl rounded-xl mt-10 border border-gray-100">
+      <h2 className="text-2xl font-bold mb-2 text-emerald-800">Generar Factura / Servicio Comercial</h2>
+      <p className="text-sm text-gray-500 mb-6">Complete los datos para emitir la orden de recolección.</p>
       
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Cliente / Empresa</label>
-            <input type="text" required value={cliente} onChange={(e) => setCliente(e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500" />
+            <label className="block text-sm font-semibold text-gray-700 mb-1">Cliente / Razón Social *</label>
+            <input type="text" required value={cliente} onChange={(e) => setCliente(e.target.value)} placeholder="Nombre de la empresa o persona" className="block w-full border border-gray-300 rounded-lg p-2.5 focus:ring-emerald-500 focus:border-emerald-500 text-sm" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">RIF / Cédula</label>
-            <input type="text" required value={rif} onChange={(e) => setRif(e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500" placeholder="J-12345678-9" />
+            <label className="block text-sm font-semibold text-gray-700 mb-1">Cédula / RIF *</label>
+            <input type="text" required value={rif} onChange={(e) => setRif(e.target.value)} placeholder="Ej: J-12345678-9" className="block w-full border border-gray-300 rounded-lg p-2.5 focus:ring-emerald-500 focus:border-emerald-500 text-sm uppercase" />
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Tipo de Servicio</label>
-            <select value={servicio} onChange={(e) => setServicio(e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500">
-              <option value="Recolección Especial">Recolección Especial</option>
-              <option value="Alquiler de Maquinaria">Alquiler de Maquinaria</option>
-              <option value="Disposición Final">Disposición Final</option>
-              <option value="Asesoría Ambiental">Asesoría Ambiental</option>
+            <label className="block text-sm font-semibold text-gray-700 mb-1">Municipio *</label>
+            <select value={municipio} onChange={(e) => setMunicipio(e.target.value)} className="block w-full border border-gray-300 rounded-lg p-2.5 focus:ring-emerald-500 focus:border-emerald-500 text-sm">
+              <option value="Miranda">Miranda</option>
+              <option value="Carirubana">Carirubana</option>
+              <option value="Colina">Colina</option>
+              <option value="Zamora">Zamora</option>
+              <option value="Falcón">Falcón</option>
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Monto (Bs)</label>
-            <input type="number" step="0.01" required value={monto} onChange={(e) => setMonto(e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500" />
+            <label className="block text-sm font-semibold text-gray-700 mb-1">Tipo de Servicio *</label>
+            <select value={servicio} onChange={(e) => setServicio(e.target.value)} className="block w-full border border-gray-300 rounded-lg p-2.5 focus:ring-emerald-500 focus:border-emerald-500 text-sm">
+              <option value="Recolección Comercial">Recolección Comercial</option>
+              <option value="Recolección Especial">Recolección Especial</option>
+              <option value="Alquiler de Maquinaria">Alquiler de Maquinaria</option>
+              <option value="Disposición Final">Disposición Final</option>
+            </select>
           </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Estatus de Pago</label>
-          <div className="flex flex-wrap gap-4">
-            <label className="inline-flex items-center">
-              <input type="radio" value="Pendiente" checked={estatusPago === "Pendiente"} onChange={(e) => setEstatusPago(e.target.value)} className="text-blue-600 form-radio focus:ring-blue-500" />
-              <span className="ml-2 text-sm text-gray-700">Pendiente</span>
-            </label>
-            <label className="inline-flex items-center">
-              <input type="radio" value="Pagado" checked={estatusPago === "Pagado"} onChange={(e) => setEstatusPago(e.target.value)} className="text-blue-600 form-radio focus:ring-blue-500" />
-              <span className="ml-2 text-sm text-gray-700">Pagado</span>
-            </label>
-            <label className="inline-flex items-center">
-              <input type="radio" value="Exonerado" checked={estatusPago === "Exonerado"} onChange={(e) => setEstatusPago(e.target.value)} className="text-blue-600 form-radio focus:ring-blue-500" />
-              <span className="ml-2 text-sm text-gray-700">Exonerado</span>
-            </label>
+        <div className="bg-emerald-50/50 p-4 rounded-lg border border-emerald-100">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div>
+              <label className="block text-sm font-semibold text-emerald-900 mb-1">Monto en Dólares ($) *</label>
+              <input type="number" step="0.01" required value={montoUsd} onChange={(e) => setMontoUsd(e.target.value)} placeholder="0.00" className="block w-full border border-emerald-200 rounded-lg p-2.5 focus:ring-emerald-500 focus:border-emerald-500 text-sm" />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-emerald-900 mb-1">Tasa BCV Actual *</label>
+              <input type="number" step="0.0001" required value={tasaBcv} onChange={(e) => setTasaBcv(e.target.value)} placeholder="Ej: 36.50" className="block w-full border border-emerald-200 rounded-lg p-2.5 focus:ring-emerald-500 focus:border-emerald-500 text-sm" />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-500 mb-1">Total a Pagar (Bs)</label>
+              <div className="block w-full border border-gray-200 bg-gray-100 rounded-lg p-2.5 text-sm font-bold text-gray-700">
+                Bs. {montoBsCalculado}
+              </div>
+            </div>
           </div>
         </div>
 
-        <button type="submit" disabled={cargando} className="w-full bg-blue-800 text-white font-bold py-2 px-4 rounded hover:bg-blue-900 disabled:opacity-50 transition-colors mt-4">
-          {cargando ? "Procesando..." : "Procesar Facturación / Servicio"}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1">Método de Pago</label>
+            <select value={metodoPago} onChange={(e) => setMetodoPago(e.target.value)} className="block w-full border border-gray-300 rounded-lg p-2.5 focus:ring-emerald-500 focus:border-emerald-500 text-sm">
+              <option value="">Seleccione un método...</option>
+              <option value="Transferencia Bs">Transferencia Bs</option>
+              <option value="Pago Móvil">Pago Móvil</option>
+              <option value="Divisas Efectivo">Divisas Efectivo</option>
+              <option value="Zelle / Binance">Zelle / Binance</option>
+            </select>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Estatus del Registro *</label>
+            <div className="flex flex-wrap gap-3">
+              <label className="inline-flex items-center bg-gray-50 px-3 py-2 rounded-lg border border-gray-200 cursor-pointer hover:bg-gray-100">
+                <input type="radio" value="Pendiente" checked={estatusPago === "Pendiente"} onChange={(e) => setEstatusPago(e.target.value)} className="text-amber-500 form-radio focus:ring-amber-500" />
+                <span className="ml-2 text-sm font-medium text-gray-700">Pendiente</span>
+              </label>
+              <label className="inline-flex items-center bg-gray-50 px-3 py-2 rounded-lg border border-gray-200 cursor-pointer hover:bg-gray-100">
+                <input type="radio" value="Pagado" checked={estatusPago === "Pagado"} onChange={(e) => setEstatusPago(e.target.value)} className="text-emerald-600 form-radio focus:ring-emerald-500" />
+                <span className="ml-2 text-sm font-medium text-gray-700">Pagado</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" disabled={cargando} className="w-full bg-emerald-700 text-white font-bold py-3 px-4 rounded-lg hover:bg-emerald-800 disabled:opacity-50 transition-colors mt-4 shadow-md">
+          {cargando ? "Registrando Factura..." : "Generar Factura Comercial"}
         </button>
 
         {mensaje && (
-          <p className={`mt-4 text-center font-medium ${mensaje.includes("Error") ? "text-red-600" : "text-green-600"}`}>
+          <div className={`p-4 rounded-lg mt-4 text-center font-bold text-sm ${mensaje.includes("Error") ? "bg-red-50 text-red-600" : "bg-emerald-50 text-emerald-700"}`}>
             {mensaje}
-          </p>
+          </div>
         )}
       </form>
     </div>
