@@ -46,13 +46,13 @@ export default function LoginPage() {
           router.push('/admin') 
         } 
         else if (rol === 'comercial') {
-          router.push('/admin/comercial')
+          router.push('/comercial') // ← Corregido: va directo al registro
         } 
         else if (rol === 'flota') {
-          router.push('/admin/flota')
+          router.push('/flota') // ← Corregido: va directo al registro
         } 
         else if (rol === 'desechos') {
-          router.push('/admin/desechos')
+          router.push('/desechos') // ← Corregido: va directo al registro
         } 
         else {
           throw new Error(`El rol "${rol}" no es válido.`)
