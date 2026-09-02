@@ -5,7 +5,7 @@ PROJECT EXPORT FOR LLMs
 PROJECT INFORMATION:
 --------------------------------------------------
 Project Name: mrserdefalca
-Generated On: 2026-09-02 13:40:30 (America/Caracas / GMT-04:00)
+Generated On: 2026-09-02 13:48:45 (America/Caracas / GMT-04:00)
 Total Files Processed: 36
 Export Tool: Easy Whole Project to Single Text File for LLMs v1.1.0
 Tool Author: Jota / José Guilherme Pandolfi
@@ -35,18 +35,15 @@ PROJECT STRUCTURE
 │   │   │   │   └── 📄 page.tsx (8.17 KB)
 │   │   │   └── 📄 page.tsx (22.27 KB)
 │   │   ├── 📁 flota/
-│   │   │   └── 📄 page.tsx (15.51 KB)
+│   │   │   └── 📄 page.tsx (3.95 KB)
 │   │   ├── 📄 layout.tsx (8.53 KB)
 │   │   └── 📄 page.tsx (5.11 KB)
 │   ├── 📁 comercial/
-│   │   ├── 📁 registro/
-│   │   └── 📄 page.tsx (10.43 KB)
+│   │   └── 📄 page.tsx (4.56 KB)
 │   ├── 📁 desechos/
-│   │   ├── 📁 registro/
 │   │   └── 📄 page.tsx (10.79 KB)
 │   ├── 📁 flota/
-│   │   ├── 📁 registro/
-│   │   └── 📄 page.tsx (10.39 KB)
+│   │   └── 📄 page.tsx (4.59 KB)
 │   ├── 📁 llave/
 │   │   └── 📄 page.tsx (4.98 KB)
 │   ├── 📁 mantenimiento/
@@ -83,10 +80,10 @@ PROJECT STRUCTURE
 PROJECT STATISTICS
 ================================================================================
 Total Files: 36
-Total Directories: 20
+Total Directories: 17
 Text Files: 26
 Binary Files: 10
-Total Size: 1.48 MB
+Total Size: 1.45 MB
 
 FILE TYPES DISTRIBUTION:
 ------------------------------
@@ -1597,309 +1594,104 @@ FILE: app/admin/flota/page.tsx
 
 FILE INFORMATION:
 ----------------------------------------
-Size: 15.51 KB
+Size: 3.95 KB
 Extension: .tsx
 Language: typescript
 Location: app/admin/flota/page.tsx
 Relative Path: app/admin/flota
 Created: 2026-07-23 14:18:32 (America/Caracas / GMT-04:00)
-Modified: 2026-09-01 16:51:28 (America/Caracas / GMT-04:00)
-MD5: 5c6a420de46a17c7b6a64ba6ff183894
-SHA256: 1db7cd3a5510bf6168327191250d423e0106d4b20e12d493f9a47261033ac837
+Modified: 2026-09-02 13:47:58 (America/Caracas / GMT-04:00)
+MD5: f442397cf1ac5ff88066f8328ec92f19
+SHA256: 2b42fb73c269f87fd7b949101d25d75b1344aec508b292f48bd4e20f1968e1c4
 Encoding: ASCII
 
 FILE CONTENT:
 ----------------------------------------
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
-import { createClient } from '@supabase/supabase-js';
+import { useState } from "react";
+import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
-export default function VistaFlotaRutas() {
-  const [datosFlota, setDatosFlota] = useState<any[]>([]);
-  const [datosVehiculos, setDatosVehiculos] = useState<any[]>([]);
-  const [cargando, setCargando] = useState(true);
+export default function RegistroDesechos() {
+  const [tipoDesecho, setTipoDesecho] = useState("Residuos Domiciliarios");
+  const [pesoToneladas, setPesoToneladas] = useState("");
+  const [municipioOrigen, setMunicipioOrigen] = useState("");
+  const [placaVehiculo, setPlacaVehiculo] = useState("");
+  const [observaciones, setObservaciones] = useState("");
+  const [mensaje, setMensaje] = useState("");
 
-  const [fechaInicio, setFechaInicio] = useState('');
-  const [fechaFin, setFechaFin] = useState('');
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setMensaje("Registrando entrada...");
 
-  const [flotaSeleccionada, setFlotaSeleccionada] = useState<any>(null);
-  const [modalAbierto, setModalAbierto] = useState(false);
-  const [esAdmin, setEsAdmin] = useState(true);
-
-  useEffect(() => {
-    const cargarDatos = async () => {
-      try {
-        const { data: authData } = await supabase.auth.getSession();
-        if (authData.session) {
-          const { data: perfil } = await supabase
-            .from('usuarios')
-            .select('rol')
-            .eq('id_usuario', authData.session.user.id)
-            .single();
-
-          const r = perfil?.rol?.toLowerCase().trim();
-          if (r === 'comercial' || r === 'flota' || r === 'desechos') {
-            setEsAdmin(false);
-          }
-        }
-
-        const { data: flotaData, error: flotaError } = await supabase
-          .from('flota_rutas')
-          .select('*')
-          .order('fecha', { ascending: false });
-
-        if (flotaError) {
-          console.error("Error obteniendo flota_rutas:", flotaError);
-        } else {
-          setDatosFlota(flotaData || []);
-        }
-
-        const { data: vehiculosData, error: vehiculosError } = await supabase
-          .from('vehiculos')
-          .select('*');
-
-        if (vehiculosError) {
-          console.error("Error obteniendo vehículos:", vehiculosError);
-        } else {
-          setDatosVehiculos(vehiculosData || []);
-        }
-      } catch (err) {
-        console.error("Error de conexión:", err);
-      } finally {
-        setCargando(false);
-      }
-    };
-
-    cargarDatos();
-  }, []);
-
-  const datosFiltrados = datosFlota.filter(item => {
-    const cumpleFechaInicio = fechaInicio === '' || item.fecha >= fechaInicio;
-    const cumpleFechaFin = fechaFin === '' || item.fecha <= fechaFin;
-    return cumpleFechaInicio && cumpleFechaFin;
-  });
-
-  const totalTonelaje = datosFiltrados.reduce((acc, curr) => acc + Number(curr.tonelaje || 0), 0);
-  const totalViajes = datosFiltrados.length;
-  const unidadesActivas = datosVehiculos.length;
-
-  const generarReporteGeneral = async () => {
-    if (datosFiltrados.length === 0) {
-      alert("No hay datos para exportar con estos filtros.");
-      return;
-    }
-
-    const doc = new jsPDF();
-    const img = new Image();
-    img.src = '/logo1.png';
-    await new Promise((resolve) => {
-      img.onload = resolve; img.onerror = resolve;
-    });
-
-    if (img.complete && img.naturalWidth > 0) doc.addImage(img, 'PNG', 0, 0, 210, 35);
-
-    doc.setFontSize(14);
-    doc.setTextColor(50, 50, 50);
-    doc.text('Reporte de Flota y Control de Rutas', 14, 48);
-
-    if (fechaInicio || fechaFin) {
-      doc.setFontSize(10);
-      doc.setTextColor(100, 100, 100);
-      doc.text(`Rango de fechas | Desde: ${fechaInicio || 'Inicio'} Hasta: ${fechaFin || 'Hoy'}`, 14, 54);
-    }
-
-    const columnas = ["Placa", "Conductor", "Ruta / Municipio", "Toneladas", "Estatus", "Fecha"];
-    const filas = datosFiltrados.map(item => [
-      item.placa || 'S/N', item.conductor, item.ruta, Number(item.tonelaje || 0).toFixed(2), item.estatus, item.fecha
+    const { error } = await supabase.from("registro_desechos").insert([
+      {
+        tipo_desecho: tipoDesecho,
+        peso_toneladas: pesoToneladas ? parseFloat(pesoToneladas) : 0,
+        municipio_origen: municipioOrigen,
+        placa_vehiculo: placaVehiculo,
+        observaciones: observaciones,
+        estatus: "Procesado",
+      },
     ]);
 
-    autoTable(doc, { head: [columnas], body: filas, startY: 60, theme: 'grid', headStyles: { fillColor: [16, 185, 129] } });
-    doc.save('Reporte_Flota_Rutas.pdf');
-  };
-
-  const verDetalles = (item: any) => {
-    setFlotaSeleccionada(item);
-    setModalAbierto(true);
+    if (error) {
+      console.error(error);
+      setMensaje("Error al guardar el registro de desechos.");
+    } else {
+      setMensaje("¡Desechos registrados exitosamente!");
+      setPesoToneladas(""); setMunicipioOrigen(""); setPlacaVehiculo(""); setObservaciones("");
+    }
   };
 
   return (
-    <div className="min-h-screen bg-zinc-50 p-8 dark:bg-zinc-950 relative">
+    <div className="max-w-2xl mx-auto p-6 bg-white shadow-md rounded-md mt-10">
+      <h2 className="text-2xl font-bold mb-6 text-green-700">Ingreso de Desechos Sólidos</h2>
       
-      {esAdmin && (
-        <div className="mb-6">
-          <Link href="/admin" className="inline-flex items-center gap-2 text-sm font-medium text-zinc-500 hover:text-emerald-600 dark:text-zinc-400 dark:hover:text-emerald-400 transition-colors">
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-            Volver al Menú Principal
-          </Link>
-        </div>
-      )}
-
-      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-zinc-800 dark:text-zinc-100">Supervisión de Flota y Rutas</h1>
-          <p className="text-sm text-zinc-500">Monitoreo de camiones, tonelajes y estatus logístico.</p>
-        </div>
-        
-        <button onClick={generarReporteGeneral} disabled={cargando} className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500 transition-all disabled:opacity-50">
-          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-          Exportar Reporte General
-        </button>
-      </div>
-
-      <div className="mb-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-          <p className="text-sm font-medium text-zinc-500">Tonelaje Total Procesado</p>
-          <p className="mt-2 text-3xl font-bold text-emerald-600">{totalTonelaje.toFixed(2)} Ton</p>
-        </div>
-        <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-          <p className="text-sm font-medium text-zinc-500">Viajes Registrados</p>
-          <p className="mt-2 text-3xl font-bold text-zinc-800 dark:text-zinc-100">{totalViajes}</p>
-        </div>
-        <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-          <p className="text-sm font-medium text-zinc-500">Unidades en Flota</p>
-          <p className="mt-2 text-3xl font-bold text-blue-600">{unidadesActivas}</p>
-        </div>
-      </div>
-
-      <div className="mb-6 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 flex flex-col gap-4 sm:flex-row sm:items-end w-full max-w-2xl">
-        <div className="flex-1">
-          <label className="mb-1 block text-xs font-medium text-zinc-500">Desde</label>
-          <input type="date" value={fechaInicio} onChange={(e) => setFechaInicio(e.target.value)} className="w-full rounded-lg border border-zinc-300 p-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-white focus:border-emerald-500 focus:outline-none" />
-        </div>
-        <div className="flex-1">
-          <label className="mb-1 block text-xs font-medium text-zinc-500">Hasta</label>
-          <input type="date" value={fechaFin} onChange={(e) => setFechaFin(e.target.value)} className="w-full rounded-lg border border-zinc-300 p-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-white focus:border-emerald-500 focus:outline-none" />
-        </div>
-      </div>
-
-      <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-        <div className="overflow-x-auto">
-          {cargando ? (
-            <div className="p-8 text-center text-zinc-500">Cargando base de datos de flota...</div>
-          ) : datosFiltrados.length === 0 ? (
-            <div className="p-8 text-center text-zinc-500">No se encontraron registros logísticos.</div>
-          ) : (
-            <table className="w-full text-left text-sm text-zinc-600 dark:text-zinc-400">
-              <thead className="bg-zinc-50 text-xs uppercase text-zinc-500 dark:bg-zinc-800/50">
-                <tr>
-                  <th className="px-6 py-4 font-semibold">Placa</th>
-                  <th className="px-6 py-4 font-semibold">Fecha</th>
-                  <th className="px-6 py-4 font-semibold">Conductor</th>
-                  <th className="px-6 py-4 font-semibold">Ruta</th>
-                  <th className="px-6 py-4 font-semibold">Tonelaje (Ton)</th>
-                  <th className="px-6 py-4 font-semibold">Estatus</th>
-                  <th className="px-6 py-4 font-semibold text-center">Acciones</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
-                {datosFiltrados.map((item, index) => (
-                  <tr key={index} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors">
-                    <td className="px-6 py-4 font-bold font-mono text-zinc-900 dark:text-zinc-100 uppercase">{item.placa || 'S/N'}</td>
-                    <td className="px-6 py-4">{item.fecha}</td>
-                    <td className="px-6 py-4">{item.conductor}</td>
-                    <td className="px-6 py-4">{item.ruta}</td>
-                    <td className="px-6 py-4 font-semibold text-emerald-600">{Number(item.tonelaje || 0).toFixed(2)} Ton</td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold
-                        ${item.estatus === 'Completado' ? 'bg-emerald-100 text-emerald-800' : ''}
-                        ${item.estatus === 'En Ruta' ? 'bg-blue-100 text-blue-800' : ''}
-                        ${item.estatus === 'Incidencia' ? 'bg-red-100 text-red-800' : ''}
-                      `}>
-                        {item.estatus || 'Activo'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center justify-center">
-                        <button 
-                          onClick={() => verDetalles(item)}
-                          title="Ver Detalles"
-                          className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-100 text-zinc-500 hover:bg-blue-100 hover:text-blue-600 dark:bg-zinc-800 dark:text-zinc-400 transition-colors"
-                        >
-                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      </div>
-
-      {modalAbierto && flotaSeleccionada && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in zoom-in duration-200">
-          <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-zinc-200 dark:border-zinc-800">
-            
-            <div className="bg-emerald-600 px-6 py-4 flex justify-between items-center">
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                Detalles del Viaje / Flota
-              </h3>
-              <button onClick={() => setModalAbierto(false)} className="text-emerald-200 hover:text-white transition-colors">
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-              </button>
-            </div>
-
-            <div className="p-6">
-              <div className="flex justify-between items-start mb-6 pb-4 border-b border-zinc-100 dark:border-zinc-800">
-                <div>
-                  <p className="text-xs font-bold text-zinc-400 uppercase">Conductor</p>
-                  <p className="text-lg font-bold text-zinc-800 dark:text-zinc-100">{flotaSeleccionada.conductor}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-xs font-bold text-zinc-400 uppercase">Placa</p>
-                  <p className="text-lg font-bold text-emerald-600 font-mono uppercase">{flotaSeleccionada.placa || 'S/N'}</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                <div className="bg-zinc-50 dark:bg-zinc-800/50 p-3 rounded-lg border border-zinc-100 dark:border-zinc-700/50">
-                  <p className="text-xs font-bold text-zinc-500 mb-1">FECHA</p>
-                  <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">{flotaSeleccionada.fecha}</p>
-                </div>
-                <div className="bg-zinc-50 dark:bg-zinc-800/50 p-3 rounded-lg border border-zinc-100 dark:border-zinc-700/50">
-                  <p className="text-xs font-bold text-zinc-500 mb-1">RUTA ASIGNADA</p>
-                  <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">{flotaSeleccionada.ruta}</p>
-                </div>
-                <div className="bg-zinc-50 dark:bg-zinc-800/50 p-3 rounded-lg border border-zinc-100 dark:border-zinc-700/50">
-                  <p className="text-xs font-bold text-zinc-500 mb-1">ESTATUS</p>
-                  <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-bold
-                    ${flotaSeleccionada.estatus === 'Completado' ? 'bg-emerald-100 text-emerald-800' : ''}
-                    ${flotaSeleccionada.estatus === 'En Ruta' ? 'bg-blue-100 text-blue-800' : ''}
-                    ${flotaSeleccionada.estatus === 'Incidencia' ? 'bg-red-100 text-red-800' : ''}
-                  `}>
-                    {flotaSeleccionada.estatus}
-                  </span>
-                </div>
-                <div className="bg-zinc-50 dark:bg-zinc-800/50 p-3 rounded-lg border border-zinc-100 dark:border-zinc-700/50">
-                  <p className="text-xs font-bold text-zinc-500 mb-1">TONELAJE</p>
-                  <p className="text-sm font-semibold text-emerald-600">{Number(flotaSeleccionada.tonelaje || 0).toFixed(2)} Ton</p>
-                </div>
-              </div>
-
-              <div className="mt-6 flex justify-end">
-                <button 
-                  onClick={() => setModalAbierto(false)}
-                  className="px-6 py-2.5 bg-zinc-100 text-zinc-700 rounded-lg text-sm font-bold hover:bg-zinc-200 transition-colors"
-                >
-                  Cerrar
-                </button>
-              </div>
-            </div>
-
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Tipo de Desecho</label>
+            <select value={tipoDesecho} onChange={(e) => setTipoDesecho(e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md p-2">
+              <option value="Residuos Domiciliarios">Residuos Domiciliarios</option>
+              <option value="Desechos Comerciales">Desechos Comerciales</option>
+              <option value="Desechos Biocontaminados">Desechos Biocontaminados</option>
+              <option value="Escombros">Escombros</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Peso (Toneladas)</label>
+            <input type="number" step="0.01" required value={pesoToneladas} onChange={(e) => setPesoToneladas(e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md p-2" />
           </div>
         </div>
-      )}
 
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Municipio de Origen</label>
+            <input type="text" required value={municipioOrigen} onChange={(e) => setMunicipioOrigen(e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md p-2" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Placa del Vehículo</label>
+            <input type="text" required value={placaVehiculo} onChange={(e) => setPlacaVehiculo(e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md p-2" />
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Observaciones</label>
+          <textarea value={observaciones} onChange={(e) => setObservaciones(e.target.value)} rows={3} className="mt-1 block w-full border border-gray-300 rounded-md p-2"></textarea>
+        </div>
+
+        <button type="submit" className="w-full bg-green-600 text-white font-bold py-2 px-4 rounded hover:bg-green-700">
+          Registrar Ingreso
+        </button>
+
+        {mensaje && <p className="mt-4 text-center font-medium text-gray-700">{mensaje}</p>}
+      </form>
     </div>
   );
 }
@@ -2238,262 +2030,116 @@ FILE: app/comercial/page.tsx
 
 FILE INFORMATION:
 ----------------------------------------
-Size: 10.43 KB
+Size: 4.56 KB
 Extension: .tsx
 Language: typescript
 Location: app/comercial/page.tsx
 Relative Path: app/comercial
 Created: 2026-07-21 22:06:40 (America/Caracas / GMT-04:00)
-Modified: 2026-09-01 19:34:48 (America/Caracas / GMT-04:00)
-MD5: d7d5baed27602fa7a7b238bca0e689f7
-SHA256: c88d76cff5bdf3488ee383dcd525efb260961e94baeade3fddb19e06d629ce04
+Modified: 2026-09-02 13:48:44 (America/Caracas / GMT-04:00)
+MD5: 30d034d5e536ca88c2a140fb289d9e74
+SHA256: 8f380a61711a9898fb0c505873d364143044249bd225ad3758358dc265d92df0
 Encoding: UTF-8
 
 FILE CONTENT:
 ----------------------------------------
 "use client";
 
-import { useState, useEffect, useTransition } from "react";
+import { useState } from "react";
 import { createClient } from "@supabase/supabase-js";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
-export default function ComercialPage() {
-  const router = useRouter();
-  const [isPending, startTransition] = useTransition();
-
-  // Datos del usuario logueado
-  const [usuarioNombre, setUsuarioNombre] = useState("Cargando...");
-  const [usuarioIniciales, setUsuarioIniciales] = useState("--");
-
-  // Formulario de Comercialización
-  const [numFactura, setNumFactura] = useState("");
+export default function RegistroComercial() {
   const [cliente, setCliente] = useState("");
-  const [cedulaRif, setCedulaRif] = useState("");
+  const [rif, setRif] = useState("");
+  const [servicio, setServicio] = useState("Recolección Especial");
   const [monto, setMonto] = useState("");
-  const [fecha, setFecha] = useState(new Date().toISOString().split("T")[0]);
-  const [estado, setEstado] = useState("Pagado");
-  const [concepto, setConcepto] = useState("");
+  const [estatusPago, setEstatusPago] = useState("Pendiente");
+  const [mensaje, setMensaje] = useState("");
 
-  const [mensaje, setMensaje] = useState({ texto: "", tipo: "" });
-
-  useEffect(() => {
-    obtenerUsuario();
-  }, []);
-
-  const obtenerUsuario = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      router.push("/");
-      return;
-    }
-    const email = session.user.email || "";
-    const nombre = email.split("@")[0].toUpperCase();
-    setUsuarioNombre(nombre);
-    setUsuarioIniciales(nombre.substring(0, 2));
-  };
-
-  const handleCerrarSesion = async () => {
-    await supabase.auth.signOut();
-    router.push("/");
-  };
-
-  const handleGuardarFactura = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setMensaje({ texto: "", tipo: "" });
+    setMensaje("Procesando registro...");
 
-    startTransition(async () => {
-      try {
-        const { error } = await supabase.from("facturas").insert([
-          {
-            num_factura: numFactura || `FES-${Math.floor(10000 + Math.random() * 90000)}`,
-            cliente,
-            cedula_rif: cedulaRif,
-            monto: parseFloat(monto),
-            fecha,
-            estado,
-            concepto,
-          },
-        ]);
+    const { error } = await supabase.from("registro_comercial").insert([
+      {
+        cliente: cliente,
+        rif_cedula: rif,
+        tipo_servicio: servicio,
+        monto_bs: monto ? parseFloat(monto) : 0,
+        estatus_pago: estatusPago,
+      },
+    ]);
 
-        if (error) throw error;
-
-        setMensaje({ texto: "✅ Factura registrada exitosamente en el sistema.", tipo: "exito" });
-        setNumFactura("");
-        setCliente("");
-        setCedulaRif("");
-        setMonto("");
-        setConcepto("");
-        setEstado("Pagado");
-      } catch (err: any) {
-        setMensaje({ texto: "❌ Error al guardar factura: " + (err.message || "Error inesperado"), tipo: "error" });
-      }
-    });
+    if (error) {
+      console.error(error);
+      setMensaje("Error al guardar el registro comercial.");
+    } else {
+      setMensaje("¡Registro comercial creado exitosamente!");
+      setCliente(""); setRif(""); setMonto(""); 
+    }
   };
 
   return (
-    <div className="flex min-h-screen bg-zinc-100 font-sans">
-      {/* Sidebar Lateral Estilo SERDEFALCA */}
-      <aside className="w-64 bg-emerald-950 text-white flex flex-col justify-between p-4 shadow-xl">
-        <div>
-          <div className="py-4 px-2 border-b border-emerald-800/60 mb-6">
-            <h1 className="text-xl font-black tracking-wider text-white">SERDEFALCA</h1>
-            <p className="text-[10px] text-emerald-300 font-medium">Gestión Integral de Desechos</p>
+    <div className="max-w-2xl mx-auto p-6 bg-white shadow-md rounded-md mt-10">
+      <h2 className="text-2xl font-bold mb-6 text-blue-800">Registro de Servicios Comerciales</h2>
+      
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Cliente / Empresa</label>
+            <input type="text" required value={cliente} onChange={(e) => setCliente(e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md p-2" />
           </div>
-
-          <nav className="space-y-1 text-sm font-medium">
-            <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-emerald-800 text-white shadow-inner">
-              <span className="text-lg">📝</span>
-              <span>Registro de Facturación</span>
-            </div>
-          </nav>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">RIF / Cédula</label>
+            <input type="text" required value={rif} onChange={(e) => setRif(e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md p-2" placeholder="J-12345678-9" />
+          </div>
         </div>
 
-        <button
-          onClick={handleCerrarSesion}
-          className="flex items-center gap-2 text-xs font-semibold text-red-300 hover:text-red-100 px-3 py-2 rounded-lg hover:bg-emerald-900 transition-colors"
-        >
-          <span>🚪</span>
-          <span>Cerrar Sesión</span>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Tipo de Servicio</label>
+            <select value={servicio} onChange={(e) => setServicio(e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md p-2">
+              <option value="Recolección Especial">Recolección Especial</option>
+              <option value="Alquiler de Maquinaria">Alquiler de Maquinaria</option>
+              <option value="Disposición Final">Disposición Final</option>
+              <option value="Asesoría Ambiental">Asesoría Ambiental</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Monto (Bs / Ref)</label>
+            <input type="number" step="0.01" required value={monto} onChange={(e) => setMonto(e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md p-2" />
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Estatus de Pago</label>
+          <div className="mt-2 flex space-x-4">
+            <label className="inline-flex items-center">
+              <input type="radio" value="Pendiente" checked={estatusPago === "Pendiente"} onChange={(e) => setEstatusPago(e.target.value)} className="text-blue-600 form-radio" />
+              <span className="ml-2">Pendiente</span>
+            </label>
+            <label className="inline-flex items-center">
+              <input type="radio" value="Pagado" checked={estatusPago === "Pagado"} onChange={(e) => setEstatusPago(e.target.value)} className="text-blue-600 form-radio" />
+              <span className="ml-2">Pagado</span>
+            </label>
+            <label className="inline-flex items-center">
+              <input type="radio" value="Exonerado" checked={estatusPago === "Exonerado"} onChange={(e) => setEstatusPago(e.target.value)} className="text-blue-600 form-radio" />
+              <span className="ml-2">Exonerado</span>
+            </label>
+          </div>
+        </div>
+
+        <button type="submit" className="w-full bg-blue-800 text-white font-bold py-2 px-4 rounded hover:bg-blue-900">
+          Procesar Facturación / Servicio
         </button>
-      </aside>
 
-      {/* Contenido Principal */}
-      <main className="flex-1 flex flex-col">
-        {/* Topbar */}
-        <header className="bg-emerald-900 text-white px-8 py-4 flex items-center justify-between shadow-md">
-          <h2 className="text-lg font-bold tracking-wide">SERDEFALCA | Módulo Comercial</h2>
-          <div className="flex items-center gap-3">
-            <div className="text-right text-xs">
-              <p className="font-bold text-white">{usuarioNombre}</p>
-              <p className="text-emerald-200">Operador Comercial</p>
-            </div>
-            <div className="w-9 h-9 rounded-full bg-emerald-500 text-emerald-950 font-bold flex items-center justify-center text-xs border-2 border-emerald-300">
-              {usuarioIniciales}
-            </div>
-          </div>
-        </header>
-
-        {/* Área del Formulario */}
-        <section className="p-8 max-w-4xl w-full mx-auto">
-          <div className="bg-white rounded-2xl p-8 shadow-xl border border-zinc-200/80">
-            <div className="border-b border-zinc-100 pb-4 mb-6">
-              <h3 className="text-2xl font-extrabold text-emerald-900">Registro de Factura y Recaudación</h3>
-              <p className="text-xs text-zinc-500 mt-1">
-                Ingresa los datos para registrar un cobro o factura en el sistema comercial.
-              </p>
-            </div>
-
-            <form onSubmit={handleGuardarFactura} className="space-y-5">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-zinc-700 mb-1">N° de Factura / Control</label>
-                  <input
-                    type="text"
-                    placeholder="Ej: FES-61427 (Opcional)"
-                    value={numFactura}
-                    onChange={(e) => setNumFactura(e.target.value)}
-                    className="w-full p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-zinc-700 mb-1">Cédula / RIF del Cliente *</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Ej: J-12345678-0"
-                    value={cedulaRif}
-                    onChange={(e) => setCedulaRif(e.target.value)}
-                    className="w-full p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
-                  />
-                </div>
-
-                <div className="sm:col-span-2">
-                  <label className="block text-xs font-semibold text-zinc-700 mb-1">Nombre del Cliente o Razon Social *</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Ej: Comercial Falcón C.A."
-                    value={cliente}
-                    onChange={(e) => setCliente(e.target.value)}
-                    className="w-full p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-zinc-700 mb-1">Monto Total (USD $) *</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    required
-                    placeholder="0.00"
-                    value={monto}
-                    onChange={(e) => setMonto(e.target.value)}
-                    className="w-full p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-zinc-700 mb-1">Fecha de Emisión *</label>
-                  <input
-                    type="date"
-                    required
-                    value={fecha}
-                    onChange={(e) => setFecha(e.target.value)}
-                    className="w-full p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-zinc-700 mb-1">Estado de Pago *</label>
-                  <select
-                    value={estado}
-                    onChange={(e) => setEstado(e.target.value)}
-                    className="w-full p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
-                  >
-                    <option value="Pagado">Pagado</option>
-                    <option value="Pendiente">Pendiente</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-zinc-700 mb-1">Concepto / Servicio</label>
-                  <input
-                    type="text"
-                    placeholder="Ej: Tarifas de recolección comercial"
-                    value={concepto}
-                    onChange={(e) => setConcepto(e.target.value)}
-                    className="w-full p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
-                  />
-                </div>
-              </div>
-
-              {mensaje.texto && (
-                <div
-                  className={`p-3.5 rounded-lg text-xs font-semibold text-center ${
-                    mensaje.tipo === "error" ? "bg-red-50 text-red-600 border border-red-200" : "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                  }`}
-                >
-                  {mensaje.texto}
-                </div>
-              )}
-
-              <button
-                type="submit"
-                disabled={isPending}
-                className="w-full py-3.5 bg-emerald-600 text-white font-bold text-sm rounded-lg hover:bg-emerald-700 transition-colors disabled:bg-emerald-400 shadow-md"
-              >
-                {isPending ? "Guardando Factura..." : "Registrar Factura"}
-              </button>
-            </form>
-          </div>
-        </section>
-      </main>
+        {mensaje && <p className="mt-4 text-center font-medium text-gray-700">{mensaje}</p>}
+      </form>
     </div>
   );
 }
@@ -2776,259 +2422,123 @@ FILE: app/flota/page.tsx
 
 FILE INFORMATION:
 ----------------------------------------
-Size: 10.39 KB
+Size: 4.59 KB
 Extension: .tsx
 Language: typescript
 Location: app/flota/page.tsx
 Relative Path: app/flota
 Created: 2026-07-24 01:45:52 (America/Caracas / GMT-04:00)
-Modified: 2026-09-02 13:40:29 (America/Caracas / GMT-04:00)
-MD5: 86da513bcb64fe6b181880375adda51a
-SHA256: 2ef0d89c0852acb61c3bb7f00ac95e8d661aaa4bfdb2ad290eeb307180453a73
+Modified: 2026-09-02 13:44:45 (America/Caracas / GMT-04:00)
+MD5: 9456609188692f8bf4c210eb21a66106
+SHA256: df70ba96b19c207350b361c610b239b84043181977934e7455d7988241b0457e
 Encoding: UTF-8
 
 FILE CONTENT:
 ----------------------------------------
 "use client";
 
-import { useState, useEffect, useTransition } from "react";
+import { useState } from "react";
 import { createClient } from "@supabase/supabase-js";
-import { useRouter } from "next/navigation";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Asegúrate de usar tus variables de entorno correctas
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
-export default function FlotaPage() {
-  const router = useRouter();
-  const [isPending, startTransition] = useTransition();
-
-  const [usuarioNombre, setUsuarioNombre] = useState("Cargando...");
-  const [usuarioIniciales, setUsuarioIniciales] = useState("--");
-
-  // Formulario de Flota
-  const [vehiculo, setVehiculo] = useState("");
-  const [chofer, setChofer] = useState("");
-  const [cedulaChofer, setCedulaChofer] = useState("");
-  const [rutaSector, setRutaSector] = useState("");
+export default function RegistroFlota() {
+  const [placa, setPlaca] = useState("");
+  const [conductor, setConductor] = useState("");
+  const [cedulaConductor, setCedulaConductor] = useState("");
+  const [ruta, setRuta] = useState("");
   const [turno, setTurno] = useState("Mañana");
   const [kilometraje, setKilometraje] = useState("");
   const [observaciones, setObservaciones] = useState("");
+  
+  const [mensaje, setMensaje] = useState("");
 
-  const [mensaje, setMensaje] = useState({ texto: "", tipo: "" });
-
-  useEffect(() => {
-    obtenerUsuario();
-  }, []);
-
-  const obtenerUsuario = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      router.push("/");
-      return;
-    }
-    const email = session.user.email || "";
-    const nombre = email.split("@")[0].toUpperCase();
-    setUsuarioNombre(nombre);
-    setUsuarioIniciales(nombre.substring(0, 2));
-  };
-
-  const handleCerrarSesion = async () => {
-    await supabase.auth.signOut();
-    router.push("/");
-  };
-
-  const handleGuardarRuta = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setMensaje({ texto: "", tipo: "" });
+    setMensaje("Guardando...");
 
-    startTransition(async () => {
-      try {
-        const { error } = await supabase.from("rutas_flota").insert([
-          {
-            vehiculo,
-            chofer,
-            cedula_chofer: cedulaChofer,
-            ruta_sector: rutaSector,
-            turno,
-            kilometraje: kilometraje ? parseFloat(kilometraje) : null,
-            observaciones,
-          },
-        ]);
+    const { error } = await supabase.from("flota_rutas").insert([
+      {
+        placa: placa,
+        conductor: conductor,
+        cedula_conductor: cedulaConductor,
+        ruta: ruta,
+        turno: turno,
+        kilometraje: kilometraje ? parseFloat(kilometraje) : null,
+        observaciones: observaciones,
+        estatus: "En Ruta", // Por defecto
+        tonelaje: 0,        // Inicializado en 0
+      },
+    ]);
 
-        if (error) throw error;
-
-        setMensaje({ texto: "✅ Salida de ruta registrada exitosamente.", tipo: "exito" });
-        setVehiculo("");
-        setChofer("");
-        setCedulaChofer("");
-        setRutaSector("");
-        setKilometraje("");
-        setObservaciones("");
-        setTurno("Mañana");
-      } catch (err: any) {
-        setMensaje({ texto: "❌ Error al guardar ruta: " + (err.message || "Error inesperado"), tipo: "error" });
-      }
-    });
+    if (error) {
+      console.error(error);
+      setMensaje("Error al guardar el registro.");
+    } else {
+      setMensaje("¡Registro guardado exitosamente!");
+      // Limpiar el formulario
+      setPlaca(""); setConductor(""); setCedulaConductor("");
+      setRuta(""); setKilometraje(""); setObservaciones("");
+    }
   };
 
   return (
-    <div className="flex min-h-screen bg-zinc-100 font-sans">
-      {/* Sidebar Lateral */}
-      <aside className="w-64 bg-emerald-950 text-white flex flex-col justify-between p-4 shadow-xl">
-        <div>
-          <div className="py-4 px-2 border-b border-emerald-800/60 mb-6">
-            <h1 className="text-xl font-black tracking-wider text-white">SERDEFALCA</h1>
-            <p className="text-[10px] text-emerald-300 font-medium">Gestión Integral de Desechos</p>
+    <div className="max-w-2xl mx-auto p-6 bg-white shadow-md rounded-md mt-10">
+      <h2 className="text-2xl font-bold mb-6 text-gray-800">Registro de Flota y Rutas</h2>
+      
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Placa del Vehículo</label>
+            <input type="text" required value={placa} onChange={(e) => setPlaca(e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md p-2" />
           </div>
-
-          <nav className="space-y-1 text-sm font-medium">
-            <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-emerald-800 text-white shadow-inner">
-              <span className="text-lg">🚛</span>
-              <span>Registro de Ruta / Flota</span>
-            </div>
-          </nav>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Conductor</label>
+            <input type="text" required value={conductor} onChange={(e) => setConductor(e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md p-2" />
+          </div>
         </div>
 
-        <button
-          onClick={handleCerrarSesion}
-          className="flex items-center gap-2 text-xs font-semibold text-red-300 hover:text-red-100 px-3 py-2 rounded-lg hover:bg-emerald-900 transition-colors"
-        >
-          <span>🚪</span>
-          <span>Cerrar Sesión</span>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Cédula del Conductor</label>
+            <input type="text" value={cedulaConductor} onChange={(e) => setCedulaConductor(e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md p-2" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Ruta / Sector</label>
+            <input type="text" required value={ruta} onChange={(e) => setRuta(e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md p-2" />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Turno</label>
+            <select value={turno} onChange={(e) => setTurno(e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md p-2">
+              <option value="Mañana">Mañana</option>
+              <option value="Tarde">Tarde</option>
+              <option value="Noche">Noche</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Kilometraje Inicial</label>
+            <input type="number" step="0.1" value={kilometraje} onChange={(e) => setKilometraje(e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md p-2" />
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Observaciones</label>
+          <textarea value={observaciones} onChange={(e) => setObservaciones(e.target.value)} rows={3} className="mt-1 block w-full border border-gray-300 rounded-md p-2"></textarea>
+        </div>
+
+        <button type="submit" className="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700">
+          Registrar Salida
         </button>
-      </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col">
-        <header className="bg-emerald-900 text-white px-8 py-4 flex items-center justify-between shadow-md">
-          <h2 className="text-lg font-bold tracking-wide">SERDEFALCA | Módulo Flota de Rutas</h2>
-          <div className="flex items-center gap-3">
-            <div className="text-right text-xs">
-              <p className="font-bold text-white">{usuarioNombre}</p>
-              <p className="text-emerald-200">Operador de Flota</p>
-            </div>
-            <div className="w-9 h-9 rounded-full bg-emerald-500 text-emerald-950 font-bold flex items-center justify-center text-xs border-2 border-emerald-300">
-              {usuarioIniciales}
-            </div>
-          </div>
-        </header>
-
-        <section className="p-8 max-w-4xl w-full mx-auto">
-          <div className="bg-white rounded-2xl p-8 shadow-xl border border-zinc-200/80">
-            <div className="border-b border-zinc-100 pb-4 mb-6">
-              <h3 className="text-2xl font-extrabold text-emerald-900">Despacho y Asignación de Rutas</h3>
-              <p className="text-xs text-zinc-500 mt-1">
-                Registra la asignación de unidades, conductores y sectores de recolección.
-              </p>
-            </div>
-
-            <form onSubmit={handleGuardarRuta} className="space-y-5">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-zinc-700 mb-1">Unidad / Placa del Vehículo *</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Ej: Camión Compactador #04 (A82BK9)"
-                    value={vehiculo}
-                    onChange={(e) => setVehiculo(e.target.value)}
-                    className="w-full p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-zinc-700 mb-1">Nombre del Conductor *</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Ej: Pedro Pérez"
-                    value={chofer}
-                    onChange={(e) => setChofer(e.target.value)}
-                    className="w-full p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-zinc-700 mb-1">Cédula del Conductor</label>
-                  <input
-                    type="text"
-                    placeholder="Ej: V-15487963"
-                    value={cedulaChofer}
-                    onChange={(e) => setCedulaChofer(e.target.value)}
-                    className="w-full p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-zinc-700 mb-1">Ruta / Sector Asignado *</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Ej: Coro - Sector Centro / Bobare"
-                    value={rutaSector}
-                    onChange={(e) => setRutaSector(e.target.value)}
-                    className="w-full p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-zinc-700 mb-1">Turno *</label>
-                  <select
-                    value={turno}
-                    onChange={(e) => setTurno(e.target.value)}
-                    className="w-full p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
-                  >
-                    <option value="Mañana">Mañana</option>
-                    <option value="Tarde">Tarde</option>
-                    <option value="Noche">Noche</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-zinc-700 mb-1">Kilometraje Inicial (Km)</label>
-                  <input
-                    type="number"
-                    placeholder="Ej: 145200"
-                    value={kilometraje}
-                    onChange={(e) => setKilometraje(e.target.value)}
-                    className="w-full p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
-                  />
-                </div>
-
-                <div className="sm:col-span-2">
-                  <label className="block text-xs font-semibold text-zinc-700 mb-1">Observaciones / Estado del Vehículo</label>
-                  <input
-                    type="text"
-                    placeholder="Ej: Nivel de cauchos ok, combustible tanque lleno"
-                    value={observaciones}
-                    onChange={(e) => setObservaciones(e.target.value)}
-                    className="w-full p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
-                  />
-                </div>
-              </div>
-
-              {mensaje.texto && (
-                <div
-                  className={`p-3.5 rounded-lg text-xs font-semibold text-center ${
-                    mensaje.tipo === "error" ? "bg-red-50 text-red-600 border border-red-200" : "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                  }`}
-                >
-                  {mensaje.texto}
-                </div>
-              )}
-
-              <button
-                type="submit"
-                disabled={isPending}
-                className="w-full py-3.5 bg-emerald-600 text-white font-bold text-sm rounded-lg hover:bg-emerald-700 transition-colors disabled:bg-emerald-400 shadow-md"
-              >
-                {isPending ? "Registrando Salida..." : "Registrar Salida de Ruta"}
-              </button>
-            </form>
-          </div>
-        </section>
-      </main>
+        {mensaje && <p className="mt-4 text-center font-medium text-gray-700">{mensaje}</p>}
+      </form>
     </div>
   );
 }
