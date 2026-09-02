@@ -5,7 +5,7 @@ PROJECT EXPORT FOR LLMs
 PROJECT INFORMATION:
 --------------------------------------------------
 Project Name: mrserdefalca
-Generated On: 2026-09-01 19:35:25 (America/Caracas / GMT-04:00)
+Generated On: 2026-09-02 13:18:29 (America/Caracas / GMT-04:00)
 Total Files Processed: 39
 Export Tool: Easy Whole Project to Single Text File for LLMs v1.1.0
 Tool Author: Jota / José Guilherme Pandolfi
@@ -58,7 +58,7 @@ PROJECT STRUCTURE
 │   ├── 📄 favicon.ico (264.06 KB)
 │   ├── 📄 globals.css (488 B)
 │   ├── 📄 layout.tsx (821 B)
-│   └── 📄 page.tsx (5.84 KB)
+│   └── 📄 page.tsx (5.85 KB)
 ├── 📁 lib/
 │   └── 📄 supabase.ts (265 B)
 ├── 📁 public/
@@ -3710,15 +3710,15 @@ FILE: app/page.tsx
 
 FILE INFORMATION:
 ----------------------------------------
-Size: 5.84 KB
+Size: 5.85 KB
 Extension: .tsx
 Language: typescript
 Location: app/page.tsx
 Relative Path: app
 Created: 2026-07-21 20:24:25 (America/Caracas / GMT-04:00)
-Modified: 2026-09-01 17:47:08 (America/Caracas / GMT-04:00)
-MD5: b01f00fa0e3a2ef06d94552b07c1d42c
-SHA256: b605cd6bee9cb6048d350591305cb487777a1702bf4710fbdea8bf0d7ec60d39
+Modified: 2026-09-02 13:18:29 (America/Caracas / GMT-04:00)
+MD5: 98a545fea63adc74c4038d14cb5c2fcb
+SHA256: ea23a6b5403ab5b34de0024a6219289c26352812f95231dfeb455db2a9addd9a
 Encoding: UTF-8
 
 FILE CONTENT:
@@ -3771,7 +3771,7 @@ export default function LoginPage() {
           router.push('/admin') 
         } 
         else if (rol === 'comercial') {
-          router.push('/admin/comercial')
+          router.push('app/comercial/registro')
         } 
         else if (rol === 'flota') {
           router.push('/admin/flota')

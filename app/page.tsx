@@ -46,7 +46,7 @@ export default function LoginPage() {
           router.push('/admin') 
         } 
         else if (rol === 'comercial') {
-          router.push('/admin/comercial')
+          router.push('app/comercial/registro')
         } 
         else if (rol === 'flota') {
           router.push('/admin/flota')
