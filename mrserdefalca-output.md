@@ -3,7 +3,7 @@
 ## 📊 Project Information
 
 - **Project Name**: `mrserdefalca`
-- **Generated On**: 2026-09-02 13:48:45 (America/Caracas / GMT-04:00)
+- **Generated On**: 2026-09-02 14:02:27 (America/Caracas / GMT-04:00)
 - **Total Files Processed**: 36
 - **Export Tool**: Easy Whole Project to Single Text File for LLMs v1.1.0
 - **Tool Author**: Jota / José Guilherme Pandolfi
@@ -23,7 +23,7 @@
 ├── 📁 app/
 │   ├── 📁 admin/
 │   │   ├── 📁 comercial/
-│   │   │   └── 📄 page.tsx (20.74 KB)
+│   │   │   └── 📄 page.tsx (19.26 KB)
 │   │   ├── 📁 configuracion/
 │   │   │   └── 📄 page.tsx (13.58 KB)
 │   │   ├── 📁 desechos/
@@ -37,7 +37,7 @@
 │   │   ├── 📄 layout.tsx (8.53 KB)
 │   │   └── 📄 page.tsx (5.11 KB)
 │   ├── 📁 comercial/
-│   │   └── 📄 page.tsx (4.56 KB)
+│   │   └── 📄 page.tsx (5.33 KB)
 │   ├── 📁 desechos/
 │   │   └── 📄 page.tsx (10.79 KB)
 │   ├── 📁 flota/
@@ -138,15 +138,15 @@
 ### <a id="📄-app-admin-comercial-page-tsx"></a>📄 `app/admin/comercial/page.tsx`
 
 **File Info:**
-- **Size**: 20.74 KB
+- **Size**: 19.26 KB
 - **Extension**: `.tsx`
 - **Language**: `typescript`
 - **Location**: `app/admin/comercial/page.tsx`
 - **Relative Path**: `app/admin/comercial`
 - **Created**: 2026-08-27 19:14:58 (America/Caracas / GMT-04:00)
-- **Modified**: 2026-09-01 16:50:43 (America/Caracas / GMT-04:00)
-- **MD5**: `e6e2ca51206fb18003266623ccc12e2a`
-- **SHA256**: `28968b769b3f6c8acd436f92612143149727590561109eac5c31c90f222e3ea8`
+- **Modified**: 2026-09-02 14:02:27 (America/Caracas / GMT-04:00)
+- **MD5**: `a7b5872cba29e889ce870dba042885c0`
+- **SHA256**: `8d46788927a4df7d4f050ab25179993b54f4a57ae0e3847a9f319b4a1eaba753`
 - **Encoding**: ASCII
 
 **File code content:**
@@ -191,10 +191,11 @@ export default function VistaComercializacion() {
           }
         }
 
+        // Se corrige la consulta para apuntar a registro_comercial
         const { data, error } = await supabase
-          .from('facturas') 
+          .from('registro_comercial') 
           .select('*')
-          .order('fecha_operacion', { ascending: false });
+          .order('fecha', { ascending: false });
 
         if (error) {
           console.error("Error obteniendo datos de Supabase:", error);
@@ -211,17 +212,17 @@ export default function VistaComercializacion() {
   }, []);
 
   const datosFiltrados = datosComerciales.filter(item => {
-    const cumpleFechaInicio = fechaInicio === '' || item.fecha_operacion >= fechaInicio;
-    const cumpleFechaFin = fechaFin === '' || item.fecha_operacion <= fechaFin;
+    const cumpleFechaInicio = fechaInicio === '' || item.fecha >= fechaInicio;
+    const cumpleFechaFin = fechaFin === '' || item.fecha <= fechaFin;
     return cumpleFechaInicio && cumpleFechaFin;
   });
 
   const totalRecaudado = datosFiltrados
-    .filter(item => item.estado_cobro === 'Pagado')
-    .reduce((acc, curr) => acc + Number(curr.monto_usd || 0), 0);
+    .filter(item => item.estatus_pago === 'Pagado')
+    .reduce((acc, curr) => acc + Number(curr.monto_bs || 0), 0);
   
   const totalFacturas = datosFiltrados.length;
-  const facturasEnMora = datosFiltrados.filter(item => item.estado_cobro === 'Pendiente').length;
+  const facturasEnMora = datosFiltrados.filter(item => item.estatus_pago === 'Pendiente').length;
   const indiceMorosidad = totalFacturas > 0 ? ((facturasEnMora / totalFacturas) * 100).toFixed(1) : "0.0";
 
   const generarReporteGeneral = async () => {
@@ -249,9 +250,14 @@ export default function VistaComercializacion() {
       doc.text(`Rango de fechas | Desde: ${fechaInicio || 'Inicio'} Hasta: ${fechaFin || 'Hoy'}`, 14, 54);
     }
 
-    const columnas = ["N° Factura", "Cliente", "Municipio", "Monto ($)", "Estado", "Fecha"];
+    const columnas = ["Ref", "Cliente", "Servicio", "Monto (Bs)", "Estatus", "Fecha"];
     const filas = datosFiltrados.map(item => [
-      item.num_factura || 'S/N', item.cliente, item.municipio, Number(item.monto_usd || 0).toFixed(2), item.estado_cobro, item.fecha_operacion
+      item.id.substring(0, 8).toUpperCase(), 
+      item.cliente, 
+      item.tipo_servicio, 
+      Number(item.monto_bs || 0).toFixed(2), 
+      item.estatus_pago, 
+      item.fecha
     ]);
 
     autoTable(doc, { head: [columnas], body: filas, startY: 60, theme: 'grid', headStyles: { fillColor: [16, 185, 129] } });
@@ -266,13 +272,8 @@ export default function VistaComercializacion() {
   const reimprimirFactura = async (factura: any) => {
     setGenerandoPDF(true);
     try {
-      const { data: clienteInfo } = await supabase
-        .from('clientes')
-        .select('*')
-        .eq('razon_social', factura.cliente)
-        .single();
-
       const doc = new jsPDF();
+      const numRef = factura.id.substring(0, 8).toUpperCase();
       
       const img = new Image();
       img.src = '/logo1.png';
@@ -287,45 +288,37 @@ export default function VistaComercializacion() {
       doc.setFillColor(245, 245, 245); 
       doc.rect(15, 40, 180, 35, 'F');
       
-      doc.setFont("helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(0, 0, 0); doc.text("DATOS DE LA EMPRESA", 20, 47);
+      doc.setFont("helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(0, 0, 0); doc.text("DATOS DE LA ENTIDAD", 20, 47);
       doc.setFont("helvetica", "normal"); doc.setFontSize(9);
       doc.text("Nombre: Gestión de Desechos Sólidos", 20, 53);
       doc.text("RIF: G-20000000-0", 20, 59);
       doc.text("Teléfono: 0268-0000000", 20, 65);
-      doc.text("Director / Gerente Actual: Por Asignar", 20, 71);
-
+      
       doc.setFont("helvetica", "bold"); doc.setFontSize(12); doc.setTextColor(4, 120, 87);
-      doc.text(`Factura / Recibo N°: ${factura.num_factura || 'S/N'}`, 115, 53);
+      doc.text(`Recibo / Ref N°: ${numRef}`, 115, 53);
       doc.setFont("helvetica", "normal"); doc.setTextColor(0, 0, 0); doc.setFontSize(10);
-      doc.text(`Fecha: ${factura.fecha_operacion}`, 115, 60);
+      doc.text(`Fecha: ${factura.fecha}`, 115, 60);
 
       doc.setFont("helvetica", "bold"); doc.setFontSize(11); doc.text("DATOS DEL CLIENTE", 20, 90);
       doc.setFont("helvetica", "normal"); doc.setFontSize(10);
       doc.text(`Razón Social: ${factura.cliente}`, 20, 98);
-      doc.text(`Cédula / RIF: ${clienteInfo?.cedula_rif || 'No registrado'}`, 20, 104);
-      doc.text(`Teléfono: ${clienteInfo?.telefono || 'No registrado'}`, 20, 110);
-      doc.text(`Dirección: ${clienteInfo?.direccion || 'No registrada'}`, 20, 116);
+      doc.text(`Cédula / RIF: ${factura.rif_cedula || 'No registrado'}`, 20, 104);
 
-      doc.setDrawColor(220, 220, 220); doc.line(15, 122, 195, 122);
+      doc.setDrawColor(220, 220, 220); doc.line(15, 112, 195, 112);
 
-      doc.setFont("helvetica", "bold"); doc.setFontSize(11); doc.text("DETALLES DE LA OPERACIÓN", 20, 132);
+      doc.setFont("helvetica", "bold"); doc.setFontSize(11); doc.text("DETALLES DE LA OPERACIÓN", 20, 122);
       doc.setFont("helvetica", "normal");
-      doc.text(`Servicio: Recolección de Desechos Sólidos - Municipio ${factura.municipio}`, 20, 140);
-      doc.text(`Método de Pago: ${factura.metodo_pago || 'No especificado'}`, 20, 146);
-      doc.text(`Estado del Cobro: ${factura.estado_cobro}`, 20, 152);
+      doc.text(`Servicio: ${factura.tipo_servicio}`, 20, 130);
+      doc.text(`Estatus del Pago: ${factura.estatus_pago}`, 20, 136);
       
-      doc.setFillColor(236, 253, 245); doc.rect(15, 160, 180, 25, 'F');
+      doc.setFillColor(236, 253, 245); doc.rect(15, 145, 180, 20, 'F');
       
       doc.setFont("helvetica", "bold"); doc.setFontSize(14); doc.setTextColor(4, 120, 87);
-      doc.text(`Monto Total (Divisas): $ ${factura.monto_usd}`, 20, 170);
-      doc.text(`Monto Total (Bolívares): Bs. ${factura.monto_bs}`, 20, 178);
+      doc.text(`Monto Total: Bs. ${Number(factura.monto_bs || 0).toFixed(2)}`, 20, 158);
       
-      doc.setFontSize(9); doc.setFont("helvetica", "normal"); doc.setTextColor(100, 100, 100);
-      doc.text(`Tasa BCV Aplicada: 1 USD = Bs. ${factura.tasa_bcv_aplicada || '0.00'}`, 20, 190);
-      
-      doc.setFontSize(10); doc.text("¡Gracias por su contribución para un estado más limpio!", 105, 210, { align: "center" });
+      doc.setFontSize(10); doc.text("¡Gracias por su contribución para un estado más limpio!", 105, 190, { align: "center" });
 
-      doc.save(`Factura_Copia_${factura.num_factura}_${factura.cliente}.pdf`);
+      doc.save(`Recibo_${numRef}_${factura.cliente}.pdf`);
     } catch (error) {
       console.error("Error al reimprimir:", error);
       alert("Hubo un error al generar la factura.");
@@ -360,11 +353,11 @@ export default function VistaComercializacion() {
 
       <div className="mb-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-          <p className="text-sm font-medium text-zinc-500">Total Recaudado (USD)</p>
-          <p className="mt-2 text-3xl font-bold text-emerald-600">${totalRecaudado.toFixed(2)}</p>
+          <p className="text-sm font-medium text-zinc-500">Total Recaudado (Bs)</p>
+          <p className="mt-2 text-3xl font-bold text-emerald-600">Bs. {totalRecaudado.toFixed(2)}</p>
         </div>
         <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-          <p className="text-sm font-medium text-zinc-500">Facturas Registradas</p>
+          <p className="text-sm font-medium text-zinc-500">Registros Procesados</p>
           <p className="mt-2 text-3xl font-bold text-zinc-800 dark:text-zinc-100">{totalFacturas}</p>
         </div>
         <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
@@ -394,28 +387,28 @@ export default function VistaComercializacion() {
             <table className="w-full text-left text-sm text-zinc-600 dark:text-zinc-400">
               <thead className="bg-zinc-50 text-xs uppercase text-zinc-500 dark:bg-zinc-800/50">
                 <tr>
-                  <th className="px-6 py-4 font-semibold">N° Factura</th>
+                  <th className="px-6 py-4 font-semibold">Referencia</th>
                   <th className="px-6 py-4 font-semibold">Fecha</th>
                   <th className="px-6 py-4 font-semibold">Cliente / Entidad</th>
-                  <th className="px-6 py-4 font-semibold">Monto (USD)</th>
-                  <th className="px-6 py-4 font-semibold">Estado</th>
+                  <th className="px-6 py-4 font-semibold">Monto (Bs)</th>
+                  <th className="px-6 py-4 font-semibold">Estatus</th>
                   <th className="px-6 py-4 font-semibold text-center">Acciones</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
                 {datosFiltrados.map((item, index) => (
                   <tr key={index} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors">
-                    <td className="px-6 py-4 font-bold text-zinc-900 dark:text-zinc-100">{item.num_factura || 'S/N'}</td>
-                    <td className="px-6 py-4">{item.fecha_operacion}</td>
+                    <td className="px-6 py-4 font-bold text-zinc-900 dark:text-zinc-100">{item.id.substring(0, 8).toUpperCase()}</td>
+                    <td className="px-6 py-4">{item.fecha}</td>
                     <td className="px-6 py-4">{item.cliente}</td>
-                    <td className="px-6 py-4 font-semibold text-emerald-600">${Number(item.monto_usd || 0).toFixed(2)}</td>
+                    <td className="px-6 py-4 font-semibold text-emerald-600">Bs. {Number(item.monto_bs || 0).toFixed(2)}</td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold
-                        ${item.estado_cobro === 'Pagado' ? 'bg-emerald-100 text-emerald-800' : ''}
-                        ${item.estado_cobro === 'Pendiente' ? 'bg-amber-100 text-amber-800' : ''}
-                        ${item.estado_cobro === 'Anulado' ? 'bg-red-100 text-red-800' : ''}
+                        ${item.estatus_pago === 'Pagado' ? 'bg-emerald-100 text-emerald-800' : ''}
+                        ${item.estatus_pago === 'Pendiente' ? 'bg-amber-100 text-amber-800' : ''}
+                        ${item.estatus_pago === 'Exonerado' ? 'bg-blue-100 text-blue-800' : ''}
                       `}>
-                        {item.estado_cobro || 'No definido'}
+                        {item.estatus_pago}
                       </span>
                     </td>
                     <td className="px-6 py-4">
@@ -452,7 +445,7 @@ export default function VistaComercializacion() {
             <div className="bg-emerald-600 px-6 py-4 flex justify-between items-center">
               <h3 className="text-lg font-bold text-white flex items-center gap-2">
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                Detalles de Factura
+                Detalles del Recibo
               </h3>
               <button onClick={() => setModalAbierto(false)} className="text-emerald-200 hover:text-white transition-colors">
                 <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
@@ -464,48 +457,40 @@ export default function VistaComercializacion() {
                 <div>
                   <p className="text-xs font-bold text-zinc-400 uppercase">Cliente</p>
                   <p className="text-lg font-bold text-zinc-800 dark:text-zinc-100">{facturaSeleccionada.cliente}</p>
+                  <p className="text-sm text-zinc-500">{facturaSeleccionada.rif_cedula}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-xs font-bold text-zinc-400 uppercase">N° Factura</p>
-                  <p className="text-lg font-bold text-emerald-600">{facturaSeleccionada.num_factura || 'S/N'}</p>
+                  <p className="text-xs font-bold text-zinc-400 uppercase">Referencia</p>
+                  <p className="text-lg font-bold text-emerald-600">{facturaSeleccionada.id.substring(0, 8).toUpperCase()}</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4 mb-6">
                 <div className="bg-zinc-50 dark:bg-zinc-800/50 p-3 rounded-lg border border-zinc-100 dark:border-zinc-700/50">
                   <p className="text-xs font-bold text-zinc-500 mb-1">FECHA DE OPERACIÓN</p>
-                  <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">{facturaSeleccionada.fecha_operacion}</p>
+                  <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">{facturaSeleccionada.fecha}</p>
                 </div>
                 <div className="bg-zinc-50 dark:bg-zinc-800/50 p-3 rounded-lg border border-zinc-100 dark:border-zinc-700/50">
-                  <p className="text-xs font-bold text-zinc-500 mb-1">MUNICIPIO</p>
-                  <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">{facturaSeleccionada.municipio}</p>
+                  <p className="text-xs font-bold text-zinc-500 mb-1">TIPO DE SERVICIO</p>
+                  <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">{facturaSeleccionada.tipo_servicio}</p>
                 </div>
-                <div className="bg-zinc-50 dark:bg-zinc-800/50 p-3 rounded-lg border border-zinc-100 dark:border-zinc-700/50">
-                  <p className="text-xs font-bold text-zinc-500 mb-1">ESTADO DEL COBRO</p>
+                <div className="bg-zinc-50 dark:bg-zinc-800/50 p-3 rounded-lg border border-zinc-100 dark:border-zinc-700/50 col-span-2">
+                  <p className="text-xs font-bold text-zinc-500 mb-1">ESTATUS DEL COBRO</p>
                   <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-bold
-                    ${facturaSeleccionada.estado_cobro === 'Pagado' ? 'bg-emerald-100 text-emerald-800' : ''}
-                    ${facturaSeleccionada.estado_cobro === 'Pendiente' ? 'bg-amber-100 text-amber-800' : ''}
-                    ${facturaSeleccionada.estado_cobro === 'Anulado' ? 'bg-red-100 text-red-800' : ''}
+                    ${facturaSeleccionada.estatus_pago === 'Pagado' ? 'bg-emerald-100 text-emerald-800' : ''}
+                    ${facturaSeleccionada.estatus_pago === 'Pendiente' ? 'bg-amber-100 text-amber-800' : ''}
+                    ${facturaSeleccionada.estatus_pago === 'Exonerado' ? 'bg-blue-100 text-blue-800' : ''}
                   `}>
-                    {facturaSeleccionada.estado_cobro}
+                    {facturaSeleccionada.estatus_pago}
                   </span>
-                </div>
-                <div className="bg-zinc-50 dark:bg-zinc-800/50 p-3 rounded-lg border border-zinc-100 dark:border-zinc-700/50">
-                  <p className="text-xs font-bold text-zinc-500 mb-1">MÉTODO DE PAGO</p>
-                  <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">{facturaSeleccionada.metodo_pago || 'N/A'}</p>
                 </div>
               </div>
 
               <div className="bg-emerald-50 dark:bg-emerald-900/10 p-4 rounded-xl border border-emerald-100 dark:border-emerald-900/30">
-                <div className="flex justify-between items-center mb-2">
-                  <p className="text-sm font-bold text-emerald-800 dark:text-emerald-400">Total en Divisas (USD)</p>
-                  <p className="text-xl font-bold text-emerald-700 dark:text-emerald-300">${Number(facturaSeleccionada.monto_usd || 0).toFixed(2)}</p>
-                </div>
                 <div className="flex justify-between items-center">
-                  <p className="text-sm font-bold text-emerald-800 dark:text-emerald-400">Total en Bolívares (Bs.)</p>
-                  <p className="text-lg font-bold text-emerald-600 dark:text-emerald-500">Bs. {Number(facturaSeleccionada.monto_bs || 0).toFixed(2)}</p>
+                  <p className="text-sm font-bold text-emerald-800 dark:text-emerald-400">Monto Total</p>
+                  <p className="text-xl font-bold text-emerald-700 dark:text-emerald-300">Bs. {Number(facturaSeleccionada.monto_bs || 0).toFixed(2)}</p>
                 </div>
-                <p className="text-right text-xs text-emerald-600 mt-2">Tasa BCV Aplicada: 1 USD = {facturaSeleccionada.tasa_bcv_aplicada || '0.00'}</p>
               </div>
 
               <div className="mt-6 flex justify-end">
@@ -2051,15 +2036,15 @@ export default function AdminDashboard() {
 ### <a id="📄-app-comercial-page-tsx"></a>📄 `app/comercial/page.tsx`
 
 **File Info:**
-- **Size**: 4.56 KB
+- **Size**: 5.33 KB
 - **Extension**: `.tsx`
 - **Language**: `typescript`
 - **Location**: `app/comercial/page.tsx`
 - **Relative Path**: `app/comercial`
 - **Created**: 2026-07-21 22:06:40 (America/Caracas / GMT-04:00)
-- **Modified**: 2026-09-02 13:48:44 (America/Caracas / GMT-04:00)
-- **MD5**: `30d034d5e536ca88c2a140fb289d9e74`
-- **SHA256**: `8f380a61711a9898fb0c505873d364143044249bd225ad3758358dc265d92df0`
+- **Modified**: 2026-09-02 14:01:34 (America/Caracas / GMT-04:00)
+- **MD5**: `d3d30c64c3a61f4d92420315ec8e9c12`
+- **SHA256**: `586a9eb7b945d243b168f609085d02b4c240fbbc06bf0c8fd4e9b8afb9d1d31a`
 - **Encoding**: UTF-8
 
 **File code content:**
@@ -2082,9 +2067,11 @@ export default function RegistroComercial() {
   const [monto, setMonto] = useState("");
   const [estatusPago, setEstatusPago] = useState("Pendiente");
   const [mensaje, setMensaje] = useState("");
+  const [cargando, setCargando] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setCargando(true);
     setMensaje("Procesando registro...");
 
     const { error } = await supabase.from("registro_comercial").insert([
@@ -2097,12 +2084,20 @@ export default function RegistroComercial() {
       },
     ]);
 
+    setCargando(false);
+
     if (error) {
       console.error(error);
       setMensaje("Error al guardar el registro comercial.");
     } else {
       setMensaje("¡Registro comercial creado exitosamente!");
-      setCliente(""); setRif(""); setMonto(""); 
+      setCliente(""); 
+      setRif(""); 
+      setMonto(""); 
+      setEstatusPago("Pendiente");
+      
+      // Limpiar mensaje de éxito después de 3 segundos
+      setTimeout(() => setMensaje(""), 3000);
     }
   };
 
@@ -2111,21 +2106,21 @@ export default function RegistroComercial() {
       <h2 className="text-2xl font-bold mb-6 text-blue-800">Registro de Servicios Comerciales</h2>
       
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">Cliente / Empresa</label>
-            <input type="text" required value={cliente} onChange={(e) => setCliente(e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md p-2" />
+            <input type="text" required value={cliente} onChange={(e) => setCliente(e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500" />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">RIF / Cédula</label>
-            <input type="text" required value={rif} onChange={(e) => setRif(e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md p-2" placeholder="J-12345678-9" />
+            <input type="text" required value={rif} onChange={(e) => setRif(e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500" placeholder="J-12345678-9" />
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">Tipo de Servicio</label>
-            <select value={servicio} onChange={(e) => setServicio(e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md p-2">
+            <select value={servicio} onChange={(e) => setServicio(e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500">
               <option value="Recolección Especial">Recolección Especial</option>
               <option value="Alquiler de Maquinaria">Alquiler de Maquinaria</option>
               <option value="Disposición Final">Disposición Final</option>
@@ -2133,34 +2128,38 @@ export default function RegistroComercial() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Monto (Bs / Ref)</label>
-            <input type="number" step="0.01" required value={monto} onChange={(e) => setMonto(e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md p-2" />
+            <label className="block text-sm font-medium text-gray-700">Monto (Bs)</label>
+            <input type="number" step="0.01" required value={monto} onChange={(e) => setMonto(e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500" />
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">Estatus de Pago</label>
-          <div className="mt-2 flex space-x-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">Estatus de Pago</label>
+          <div className="flex flex-wrap gap-4">
             <label className="inline-flex items-center">
-              <input type="radio" value="Pendiente" checked={estatusPago === "Pendiente"} onChange={(e) => setEstatusPago(e.target.value)} className="text-blue-600 form-radio" />
-              <span className="ml-2">Pendiente</span>
+              <input type="radio" value="Pendiente" checked={estatusPago === "Pendiente"} onChange={(e) => setEstatusPago(e.target.value)} className="text-blue-600 form-radio focus:ring-blue-500" />
+              <span className="ml-2 text-sm text-gray-700">Pendiente</span>
             </label>
             <label className="inline-flex items-center">
-              <input type="radio" value="Pagado" checked={estatusPago === "Pagado"} onChange={(e) => setEstatusPago(e.target.value)} className="text-blue-600 form-radio" />
-              <span className="ml-2">Pagado</span>
+              <input type="radio" value="Pagado" checked={estatusPago === "Pagado"} onChange={(e) => setEstatusPago(e.target.value)} className="text-blue-600 form-radio focus:ring-blue-500" />
+              <span className="ml-2 text-sm text-gray-700">Pagado</span>
             </label>
             <label className="inline-flex items-center">
-              <input type="radio" value="Exonerado" checked={estatusPago === "Exonerado"} onChange={(e) => setEstatusPago(e.target.value)} className="text-blue-600 form-radio" />
-              <span className="ml-2">Exonerado</span>
+              <input type="radio" value="Exonerado" checked={estatusPago === "Exonerado"} onChange={(e) => setEstatusPago(e.target.value)} className="text-blue-600 form-radio focus:ring-blue-500" />
+              <span className="ml-2 text-sm text-gray-700">Exonerado</span>
             </label>
           </div>
         </div>
 
-        <button type="submit" className="w-full bg-blue-800 text-white font-bold py-2 px-4 rounded hover:bg-blue-900">
-          Procesar Facturación / Servicio
+        <button type="submit" disabled={cargando} className="w-full bg-blue-800 text-white font-bold py-2 px-4 rounded hover:bg-blue-900 disabled:opacity-50 transition-colors mt-4">
+          {cargando ? "Procesando..." : "Procesar Facturación / Servicio"}
         </button>
 
-        {mensaje && <p className="mt-4 text-center font-medium text-gray-700">{mensaje}</p>}
+        {mensaje && (
+          <p className={`mt-4 text-center font-medium ${mensaje.includes("Error") ? "text-red-600" : "text-green-600"}`}>
+            {mensaje}
+          </p>
+        )}
       </form>
     </div>
   );
