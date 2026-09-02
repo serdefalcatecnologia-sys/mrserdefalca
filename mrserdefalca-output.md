@@ -3,8 +3,8 @@
 ## 📊 Project Information
 
 - **Project Name**: `mrserdefalca`
-- **Generated On**: 2026-09-02 13:20:36 (America/Caracas / GMT-04:00)
-- **Total Files Processed**: 39
+- **Generated On**: 2026-09-02 13:37:54 (America/Caracas / GMT-04:00)
+- **Total Files Processed**: 36
 - **Export Tool**: Easy Whole Project to Single Text File for LLMs v1.1.0
 - **Tool Author**: Jota / José Guilherme Pandolfi
 
@@ -37,16 +37,10 @@
 │   │   ├── 📄 layout.tsx (8.53 KB)
 │   │   └── 📄 page.tsx (5.11 KB)
 │   ├── 📁 comercial/
-│   │   ├── 📁 registro/
-│   │   │   └── 📄 page.tsx (4.9 KB)
 │   │   └── 📄 page.tsx (10.43 KB)
 │   ├── 📁 desechos/
-│   │   ├── 📁 registro/
-│   │   │   └── 📄 page.tsx (5.03 KB)
 │   │   └── 📄 page.tsx (10.79 KB)
 │   ├── 📁 flota/
-│   │   ├── 📁 registro/
-│   │   │   └── 📄 page.tsx (4.75 KB)
 │   │   └── 📄 page.tsx (10.39 KB)
 │   ├── 📁 llave/
 │   │   └── 📄 page.tsx (4.98 KB)
@@ -93,11 +87,8 @@
 - [📄 app/admin/flota/page.tsx](#📄-app-admin-flota-page-tsx)
 - [📄 app/admin/layout.tsx](#📄-app-admin-layout-tsx)
 - [📄 app/admin/page.tsx](#📄-app-admin-page-tsx)
-- [📄 app/comercial/registro/page.tsx](#📄-app-comercial-registro-page-tsx)
 - [📄 app/comercial/page.tsx](#📄-app-comercial-page-tsx)
-- [📄 app/desechos/registro/page.tsx](#📄-app-desechos-registro-page-tsx)
 - [📄 app/desechos/page.tsx](#📄-app-desechos-page-tsx)
-- [📄 app/flota/registro/page.tsx](#📄-app-flota-registro-page-tsx)
 - [📄 app/flota/page.tsx](#📄-app-flota-page-tsx)
 - [📄 app/llave/page.tsx](#📄-app-llave-page-tsx)
 - [📄 app/mantenimiento/page.tsx](#📄-app-mantenimiento-page-tsx)
@@ -121,17 +112,17 @@
 
 | Metric | Count |
 |--------|-------|
-| Total Files | 39 |
-| Total Directories | 20 |
-| Text Files | 29 |
+| Total Files | 36 |
+| Total Directories | 17 |
+| Text Files | 26 |
 | Binary Files | 10 |
-| Total Size | 1.49 MB |
+| Total Size | 1.48 MB |
 
 ### 📄 File Types Distribution
 
 | Extension | Count |
 |-----------|-------|
-| `.tsx` | 18 |
+| `.tsx` | 15 |
 | `.svg` | 5 |
 | `.ts` | 3 |
 | `.md` | 3 |
@@ -2262,134 +2253,6 @@ export default function AdminDashboard() {
 
 ---
 
-### <a id="📄-app-comercial-registro-page-tsx"></a>📄 `app/comercial/registro/page.tsx`
-
-**File Info:**
-- **Size**: 4.9 KB
-- **Extension**: `.tsx`
-- **Language**: `typescript`
-- **Location**: `app/comercial/registro/page.tsx`
-- **Relative Path**: `app/comercial/registro`
-- **Created**: 2026-09-01 02:00:06 (America/Caracas / GMT-04:00)
-- **Modified**: 2026-09-01 02:00:32 (America/Caracas / GMT-04:00)
-- **MD5**: `776935f4c81af676b040a6b9b00500cb`
-- **SHA256**: `b4e363b423442f7b5d0a9e661d96e6b3a4c1f2af13db1c10809d1a3e5b3fd5e4`
-- **Encoding**: ASCII
-
-**File code content:**
-
-```typescript
-"use client";
-
-import { useState, useTransition } from "react";
-import { createClient } from "@supabase/supabase-js";
-import { useRouter } from "next/navigation";
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-export default function RegistroComercial() {
-  const router = useRouter();
-  const [isPending, startTransition] = useTransition();
-  const [mensaje, setMensaje] = useState({ texto: "", tipo: "" });
-
-  // Estados del formulario
-  const [cliente, setCliente] = useState("");
-  const [cedulaRif, setCedulaRif] = useState("");
-  const [monto, setMonto] = useState("");
-  const [estado, setEstado] = useState("Pagado");
-
-  const handleGuardarFactura = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setMensaje({ texto: "", tipo: "" });
-
-    startTransition(async () => {
-      try {
-        // NOTA: Ajusta 'facturas' al nombre real de tu tabla
-        const { error } = await supabase.from("facturas").insert([
-          {
-            cliente,
-            cedula_rif: cedulaRif,
-            monto: parseFloat(monto),
-            estado,
-          },
-        ]);
-
-        if (error) throw error;
-
-        setMensaje({ texto: "✅ Factura registrada con éxito.", tipo: "exito" });
-        setCliente("");
-        setCedulaRif("");
-        setMonto("");
-        setEstado("Pagado");
-      } catch (err: any) {
-        setMensaje({ texto: "❌ Error al registrar: " + err.message, tipo: "error" });
-      }
-    });
-  };
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push("/");
-  };
-
-  return (
-    <div className="min-h-screen bg-zinc-100 p-6 font-sans">
-      <div className="mx-auto max-w-3xl">
-        <div className="mb-6 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-emerald-800">SERDEFALCA | Módulo Comercial</h1>
-          <button onClick={handleLogout} className="text-sm font-semibold text-red-600 hover:underline">
-            Cerrar Sesión
-          </button>
-        </div>
-
-        <div className="rounded-2xl bg-white p-8 shadow-xl">
-          <h2 className="text-xl font-bold text-zinc-800">Registro de Nueva Facturación</h2>
-          <p className="mt-1 text-xs text-zinc-500">Ingresa los datos del pago o facturación del cliente.</p>
-
-          <form onSubmit={handleGuardarFactura} className="mt-6 space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label className="block text-xs font-semibold text-zinc-700">Nombre del Cliente / Entidad *</label>
-                <input type="text" required value={cliente} onChange={(e) => setCliente(e.target.value)} className="mt-1 w-full rounded-lg border border-zinc-300 p-3 text-sm outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600" />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-zinc-700">Cédula o RIF *</label>
-                <input type="text" required value={cedulaRif} onChange={(e) => setCedulaRif(e.target.value)} className="mt-1 w-full rounded-lg border border-zinc-300 p-3 text-sm outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600" />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-zinc-700">Monto (USD) *</label>
-                <input type="number" step="0.01" required value={monto} onChange={(e) => setMonto(e.target.value)} className="mt-1 w-full rounded-lg border border-zinc-300 p-3 text-sm outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600" />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-zinc-700">Estado del Pago *</label>
-                <select value={estado} onChange={(e) => setEstado(e.target.value)} className="mt-1 w-full rounded-lg border border-zinc-300 p-3 text-sm outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600">
-                  <option value="Pagado">Pagado</option>
-                  <option value="Pendiente">Pendiente</option>
-                </select>
-              </div>
-            </div>
-
-            {mensaje.texto && (
-              <div className={`rounded-lg p-3 text-center text-xs font-medium ${mensaje.tipo === 'error' ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-700'}`}>
-                {mensaje.texto}
-              </div>
-            )}
-
-            <button type="submit" disabled={isPending} className="mt-4 w-full rounded-lg bg-emerald-600 py-3 text-sm font-semibold text-white hover:bg-emerald-700 disabled:bg-emerald-400">
-              {isPending ? 'Guardando...' : 'Registrar Factura'}
-            </button>
-          </form>
-        </div>
-      </div>
-    </div>
-  );
-}
-```
-
----
-
 ### <a id="📄-app-comercial-page-tsx"></a>📄 `app/comercial/page.tsx`
 
 **File Info:**
@@ -2650,122 +2513,6 @@ export default function ComercialPage() {
           </div>
         </section>
       </main>
-    </div>
-  );
-}
-```
-
----
-
-### <a id="📄-app-desechos-registro-page-tsx"></a>📄 `app/desechos/registro/page.tsx`
-
-**File Info:**
-- **Size**: 5.03 KB
-- **Extension**: `.tsx`
-- **Language**: `typescript`
-- **Location**: `app/desechos/registro/page.tsx`
-- **Relative Path**: `app/desechos/registro`
-- **Created**: 2026-09-01 02:03:14 (America/Caracas / GMT-04:00)
-- **Modified**: 2026-09-01 02:03:32 (America/Caracas / GMT-04:00)
-- **MD5**: `f41ea00184ca4961a164ede10271f39d`
-- **SHA256**: `216448320c0494818c378f15f76befc65a1d2e573a1dbc175d4555dfe44d4920`
-- **Encoding**: UTF-8
-
-**File code content:**
-
-```typescript
-"use client";
-
-import { useState, useTransition } from "react";
-import { createClient } from "@supabase/supabase-js";
-import { useRouter } from "next/navigation";
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-export default function RegistroDesechos() {
-  const router = useRouter();
-  const [isPending, startTransition] = useTransition();
-  const [mensaje, setMensaje] = useState({ texto: "", tipo: "" });
-
-  const [placa, setPlaca] = useState("");
-  const [tipoDesecho, setTipoDesecho] = useState("Sólidos Urbanos");
-  const [peso, setPeso] = useState("");
-  const [observaciones, setObservaciones] = useState("");
-
-  const handleGuardarPesaje = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setMensaje({ texto: "", tipo: "" });
-
-    startTransition(async () => {
-      try {
-        // NOTA: Ajusta 'registro_desechos' al nombre real de tu tabla
-        const { error } = await supabase.from("registro_desechos").insert([
-          { placa_vehiculo: placa, tipo_desecho: tipoDesecho, peso_kg: parseFloat(peso), observaciones },
-        ]);
-
-        if (error) throw error;
-
-        setMensaje({ texto: "✅ Pesaje y recepción registrados con éxito.", tipo: "exito" });
-        setPlaca(""); setPeso(""); setObservaciones(""); setTipoDesecho("Sólidos Urbanos");
-      } catch (err: any) {
-        setMensaje({ texto: "❌ Error al registrar: " + err.message, tipo: "error" });
-      }
-    });
-  };
-
-  return (
-    <div className="min-h-screen bg-zinc-100 p-6 font-sans">
-      <div className="mx-auto max-w-3xl">
-        <div className="mb-6 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-emerald-800">SERDEFALCA | Control de Desechos</h1>
-          <button onClick={() => { supabase.auth.signOut(); router.push("/"); }} className="text-sm font-semibold text-red-600 hover:underline">
-            Cerrar Sesión
-          </button>
-        </div>
-
-        <div className="rounded-2xl bg-white p-8 shadow-xl">
-          <h2 className="text-xl font-bold text-zinc-800">Registro de Pesaje y Recepción</h2>
-          <p className="mt-1 text-xs text-zinc-500">Ingresa los datos de los desechos recibidos en planta.</p>
-
-          <form onSubmit={handleGuardarPesaje} className="mt-6 space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label className="block text-xs font-semibold text-zinc-700">Placa del Vehículo Recolector *</label>
-                <input type="text" required value={placa} onChange={(e) => setPlaca(e.target.value)} className="mt-1 w-full rounded-lg border border-zinc-300 p-3 text-sm outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600" />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-zinc-700">Tipo de Desecho *</label>
-                <select value={tipoDesecho} onChange={(e) => setTipoDesecho(e.target.value)} className="mt-1 w-full rounded-lg border border-zinc-300 p-3 text-sm outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600">
-                  <option value="Sólidos Urbanos">Sólidos Urbanos</option>
-                  <option value="Orgánicos">Orgánicos</option>
-                  <option value="Plástico/Reciclable">Plástico / Reciclable</option>
-                  <option value="Peligrosos">Peligrosos / Biológicos</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-zinc-700">Peso Total (Kg) *</label>
-                <input type="number" step="0.1" required value={peso} onChange={(e) => setPeso(e.target.value)} className="mt-1 w-full rounded-lg border border-zinc-300 p-3 text-sm outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600" />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-zinc-700">Observaciones (Opcional)</label>
-                <input type="text" value={observaciones} onChange={(e) => setObservaciones(e.target.value)} className="mt-1 w-full rounded-lg border border-zinc-300 p-3 text-sm outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600" />
-              </div>
-            </div>
-
-            {mensaje.texto && (
-              <div className={`rounded-lg p-3 text-center text-xs font-medium ${mensaje.tipo === 'error' ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-700'}`}>
-                {mensaje.texto}
-              </div>
-            )}
-
-            <button type="submit" disabled={isPending} className="mt-4 w-full rounded-lg bg-emerald-600 py-3 text-sm font-semibold text-white hover:bg-emerald-700 disabled:bg-emerald-400">
-              {isPending ? 'Guardando...' : 'Registrar Ingreso de Desechos'}
-            </button>
-          </form>
-        </div>
-      </div>
     </div>
   );
 }
@@ -3042,121 +2789,6 @@ export default function DesechosPage() {
 
 ---
 
-### <a id="📄-app-flota-registro-page-tsx"></a>📄 `app/flota/registro/page.tsx`
-
-**File Info:**
-- **Size**: 4.75 KB
-- **Extension**: `.tsx`
-- **Language**: `typescript`
-- **Location**: `app/flota/registro/page.tsx`
-- **Relative Path**: `app/flota/registro`
-- **Created**: 2026-09-01 02:02:04 (America/Caracas / GMT-04:00)
-- **Modified**: 2026-09-01 02:02:21 (America/Caracas / GMT-04:00)
-- **MD5**: `b9617bb82244ad24bc3f64319887b7b1`
-- **SHA256**: `f03c5cd01d271b195ae129ec8d61b3a2f16aff2ea007c34bb4b9f1b268ba1896`
-- **Encoding**: UTF-8
-
-**File code content:**
-
-```typescript
-"use client";
-
-import { useState, useTransition } from "react";
-import { createClient } from "@supabase/supabase-js";
-import { useRouter } from "next/navigation";
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-export default function RegistroFlota() {
-  const router = useRouter();
-  const [isPending, startTransition] = useTransition();
-  const [mensaje, setMensaje] = useState({ texto: "", tipo: "" });
-
-  const [vehiculo, setVehiculo] = useState("");
-  const [chofer, setChofer] = useState("");
-  const [ruta, setRuta] = useState("");
-  const [turno, setTurno] = useState("Mañana");
-
-  const handleGuardarRuta = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setMensaje({ texto: "", tipo: "" });
-
-    startTransition(async () => {
-      try {
-        // NOTA: Ajusta 'rutas_flota' al nombre real de tu tabla
-        const { error } = await supabase.from("rutas_flota").insert([
-          { vehiculo, chofer, ruta, turno },
-        ]);
-
-        if (error) throw error;
-
-        setMensaje({ texto: "✅ Asignación de ruta registrada con éxito.", tipo: "exito" });
-        setVehiculo(""); setChofer(""); setRuta(""); setTurno("Mañana");
-      } catch (err: any) {
-        setMensaje({ texto: "❌ Error al registrar: " + err.message, tipo: "error" });
-      }
-    });
-  };
-
-  return (
-    <div className="min-h-screen bg-zinc-100 p-6 font-sans">
-      <div className="mx-auto max-w-3xl">
-        <div className="mb-6 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-emerald-800">SERDEFALCA | Módulo de Flota</h1>
-          <button onClick={() => { supabase.auth.signOut(); router.push("/"); }} className="text-sm font-semibold text-red-600 hover:underline">
-            Cerrar Sesión
-          </button>
-        </div>
-
-        <div className="rounded-2xl bg-white p-8 shadow-xl">
-          <h2 className="text-xl font-bold text-zinc-800">Control y Asignación de Rutas</h2>
-          <p className="mt-1 text-xs text-zinc-500">Registra la salida de los vehículos y la ruta asignada.</p>
-
-          <form onSubmit={handleGuardarRuta} className="mt-6 space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label className="block text-xs font-semibold text-zinc-700">Placa o ID del Vehículo *</label>
-                <input type="text" required value={vehiculo} onChange={(e) => setVehiculo(e.target.value)} className="mt-1 w-full rounded-lg border border-zinc-300 p-3 text-sm outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600" />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-zinc-700">Nombre del Chofer *</label>
-                <input type="text" required value={chofer} onChange={(e) => setChofer(e.target.value)} className="mt-1 w-full rounded-lg border border-zinc-300 p-3 text-sm outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600" />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-zinc-700">Ruta / Sector Asignado *</label>
-                <input type="text" required value={ruta} onChange={(e) => setRuta(e.target.value)} placeholder="Ej: Sector Centro" className="mt-1 w-full rounded-lg border border-zinc-300 p-3 text-sm outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600" />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-zinc-700">Turno *</label>
-                <select value={turno} onChange={(e) => setTurno(e.target.value)} className="mt-1 w-full rounded-lg border border-zinc-300 p-3 text-sm outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600">
-                  <option value="Mañana">Mañana</option>
-                  <option value="Tarde">Tarde</option>
-                  <option value="Noche">Noche</option>
-                </select>
-              </div>
-            </div>
-
-            {mensaje.texto && (
-              <div className={`rounded-lg p-3 text-center text-xs font-medium ${mensaje.tipo === 'error' ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-700'}`}>
-                {mensaje.texto}
-              </div>
-            )}
-
-            <button type="submit" disabled={isPending} className="mt-4 w-full rounded-lg bg-emerald-600 py-3 text-sm font-semibold text-white hover:bg-emerald-700 disabled:bg-emerald-400">
-              {isPending ? 'Guardando...' : 'Registrar Salida de Flota'}
-            </button>
-          </form>
-        </div>
-      </div>
-    </div>
-  );
-}
-```
-
----
-
 ### <a id="📄-app-flota-page-tsx"></a>📄 `app/flota/page.tsx`
 
 **File Info:**
@@ -3166,7 +2798,7 @@ export default function RegistroFlota() {
 - **Location**: `app/flota/page.tsx`
 - **Relative Path**: `app/flota`
 - **Created**: 2026-07-24 01:45:52 (America/Caracas / GMT-04:00)
-- **Modified**: 2026-09-01 02:15:32 (America/Caracas / GMT-04:00)
+- **Modified**: 2026-09-02 13:37:53 (America/Caracas / GMT-04:00)
 - **MD5**: `86da513bcb64fe6b181880375adda51a`
 - **SHA256**: `2ef0d89c0852acb61c3bb7f00ac95e8d661aaa4bfdb2ad290eeb307180453a73`
 - **Encoding**: UTF-8
