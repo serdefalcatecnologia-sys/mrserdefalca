@@ -3,7 +3,7 @@
 ## 📊 Project Information
 
 - **Project Name**: `mrserdefalca`
-- **Generated On**: 2026-09-02 13:37:54 (America/Caracas / GMT-04:00)
+- **Generated On**: 2026-09-02 13:40:30 (America/Caracas / GMT-04:00)
 - **Total Files Processed**: 36
 - **Export Tool**: Easy Whole Project to Single Text File for LLMs v1.1.0
 - **Tool Author**: Jota / José Guilherme Pandolfi
@@ -37,10 +37,13 @@
 │   │   ├── 📄 layout.tsx (8.53 KB)
 │   │   └── 📄 page.tsx (5.11 KB)
 │   ├── 📁 comercial/
+│   │   ├── 📁 registro/
 │   │   └── 📄 page.tsx (10.43 KB)
 │   ├── 📁 desechos/
+│   │   ├── 📁 registro/
 │   │   └── 📄 page.tsx (10.79 KB)
 │   ├── 📁 flota/
+│   │   ├── 📁 registro/
 │   │   └── 📄 page.tsx (10.39 KB)
 │   ├── 📁 llave/
 │   │   └── 📄 page.tsx (4.98 KB)
@@ -113,7 +116,7 @@
 | Metric | Count |
 |--------|-------|
 | Total Files | 36 |
-| Total Directories | 17 |
+| Total Directories | 20 |
 | Text Files | 26 |
 | Binary Files | 10 |
 | Total Size | 1.48 MB |
@@ -2798,7 +2801,7 @@ export default function DesechosPage() {
 - **Location**: `app/flota/page.tsx`
 - **Relative Path**: `app/flota`
 - **Created**: 2026-07-24 01:45:52 (America/Caracas / GMT-04:00)
-- **Modified**: 2026-09-02 13:37:53 (America/Caracas / GMT-04:00)
+- **Modified**: 2026-09-02 13:40:29 (America/Caracas / GMT-04:00)
 - **MD5**: `86da513bcb64fe6b181880375adda51a`
 - **SHA256**: `2ef0d89c0852acb61c3bb7f00ac95e8d661aaa4bfdb2ad290eeb307180453a73`
 - **Encoding**: UTF-8
