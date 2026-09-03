@@ -3,7 +3,7 @@
 ## 📊 Project Information
 
 - **Project Name**: `mrserdefalca`
-- **Generated On**: 2026-09-03 13:46:43 (America/Caracas / GMT-04:00)
+- **Generated On**: 2026-09-03 13:57:20 (America/Caracas / GMT-04:00)
 - **Total Files Processed**: 36
 - **Export Tool**: Easy Whole Project to Single Text File for LLMs v1.1.0
 - **Tool Author**: Jota / José Guilherme Pandolfi
@@ -39,7 +39,7 @@
 │   ├── 📁 comercial/
 │   │   └── 📄 page.tsx (10.1 KB)
 │   ├── 📁 desechos/
-│   │   └── 📄 page.tsx (12.16 KB)
+│   │   └── 📄 page.tsx (11.68 KB)
 │   ├── 📁 flota/
 │   │   └── 📄 page.tsx (4.59 KB)
 │   ├── 📁 llave/
@@ -116,7 +116,7 @@
 | Total Directories | 17 |
 | Text Files | 26 |
 | Binary Files | 10 |
-| Total Size | 923.28 KB |
+| Total Size | 922.8 KB |
 
 ### 📄 File Types Distribution
 
@@ -2273,15 +2273,15 @@ export default function RegistroComercial() {
 ### <a id="📄-app-desechos-page-tsx"></a>📄 `app/desechos/page.tsx`
 
 **File Info:**
-- **Size**: 12.16 KB
+- **Size**: 11.68 KB
 - **Extension**: `.tsx`
 - **Language**: `typescript`
 - **Location**: `app/desechos/page.tsx`
 - **Relative Path**: `app/desechos`
 - **Created**: 2026-08-31 16:08:08 (America/Caracas / GMT-04:00)
-- **Modified**: 2026-09-03 13:43:02 (America/Caracas / GMT-04:00)
-- **MD5**: `7e9f37a9347b98b59b93dec0896e7769`
-- **SHA256**: `d04172821b1df8c5b3a91a2f85a6663f51c318dd050281e338c1632be4a04dd3`
+- **Modified**: 2026-09-03 13:57:19 (America/Caracas / GMT-04:00)
+- **MD5**: `cbec843a32147cd2e8f8a35cdf7bbc8c`
+- **SHA256**: `3644650bd42fa3b6eb8c1174d92bec5c6fab3ab38b1e071d15c93f1db5559b19`
 - **Encoding**: UTF-8
 
 **File code content:**
@@ -2304,16 +2304,16 @@ export default function DesechosPage() {
   const [usuarioNombre, setUsuarioNombre] = useState("Cargando...");
   const [usuarioIniciales, setUsuarioIniciales] = useState("--");
 
-  // Formulario de Desechos / Balanza
-  const [placaVehiculo, setPlacaVehiculo] = useState("");
+  // Estados exactos solicitados para el formulario
   const [tipoDesecho, setTipoDesecho] = useState("Sólidos Urbanos");
-  const [pesoBruto, setPesoBruto] = useState("");
-  const [tara, setTara] = useState("");
-  const [origenMunicipio, setOrigenMunicipio] = useState("Municipio Miranda");
+  const [tipoTransporte, setTipoTransporte] = useState("Camión Compactador");
+  const [placa, setPlaca] = useState("");
+  const [municipio, setMunicipio] = useState("Miranda");
   const [observaciones, setObservaciones] = useState("");
 
   const [mensaje, setMensaje] = useState({ texto: "", tipo: "" });
 
+  // Obtener el usuario logueado para guardarlo como "Responsable"
   const obtenerUsuario = useCallback(async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -2339,53 +2339,37 @@ export default function DesechosPage() {
     startTransition(() => router.push("/"));
   };
 
-  const pesoNetoCalculado = () => {
-    const bruto = parseFloat(pesoBruto);
-    const pesoTara = parseFloat(tara);
-    // Si no son números válidos aún, devuelve 0
-    const b = isNaN(bruto) ? 0 : bruto;
-    const t = isNaN(pesoTara) ? 0 : pesoTara;
-    return Math.max(0, b - t).toFixed(2);
-  };
-
-  const handleGuardarPesaje = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleGuardarIngreso = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setMensaje({ texto: "", tipo: "" });
 
     startTransition(async () => {
       try {
-        const bruto = parseFloat(pesoBruto) || 0;
-        const pesoTara = parseFloat(tara) || 0;
-        const neto = bruto - pesoTara;
-
-        if (neto < 0) {
-          throw new Error("El peso neto no puede ser negativo. Verifique la tara.");
-        }
-
         const { error } = await supabase.from("registro_desechos").insert([
           {
-            placa_vehiculo: placaVehiculo,
             tipo_desecho: tipoDesecho,
-            peso_bruto_kg: bruto,
-            tara_kg: pesoTara,
-            peso_neto_kg: neto,
-            origen_municipio: origenMunicipio,
-            observaciones,
+            tipo_transporte: tipoTransporte,
+            placa: placa,
+            municipio: municipio,
+            observaciones: observaciones,
+            responsable: usuarioNombre // Guarda quién registró el ingreso
           },
         ]);
 
         if (error) throw error;
 
-        setMensaje({ texto: "✅ Pesaje y recepción registrados exitosamente.", tipo: "exito" });
-        setPlacaVehiculo("");
-        setPesoBruto("");
-        setTara("");
+        setMensaje({ texto: "✅ Ingreso de desechos registrado exitosamente.", tipo: "exito" });
+        
+        // Limpiar el formulario para el siguiente camión
+        setPlaca("");
         setObservaciones("");
         setTipoDesecho("Sólidos Urbanos");
+        setTipoTransporte("Camión Compactador");
+        setMunicipio("Miranda");
         
         setTimeout(() => setMensaje({ texto: "", tipo: "" }), 4000);
       } catch (err: any) {
-        setMensaje({ texto: "❌ Error al registrar pesaje: " + (err.message || "Error inesperado"), tipo: "error" });
+        setMensaje({ texto: "❌ Error al registrar: " + (err.message || "Error inesperado"), tipo: "error" });
       }
     });
   };
@@ -2402,8 +2386,8 @@ export default function DesechosPage() {
 
           <nav className="space-y-1 text-sm font-medium">
             <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-emerald-800 text-white shadow-inner">
-              <span className="text-lg">⚖️</span>
-              <span>Recepción y Pesaje</span>
+              <span className="text-lg">🚛</span>
+              <span>Recepción de Unidades</span>
             </div>
           </nav>
         </div>
@@ -2417,14 +2401,14 @@ export default function DesechosPage() {
         </button>
       </aside>
 
-      {/* Main Content */}
+      {/* Contenido Principal */}
       <main className="flex-1 flex flex-col overflow-hidden">
         <header className="bg-emerald-900 text-white px-6 md:px-8 py-4 flex items-center justify-between shadow-md">
           <h2 className="text-base md:text-lg font-bold tracking-wide">Módulo Control de Desechos</h2>
           <div className="flex items-center gap-3">
             <div className="text-right text-xs hidden sm:block">
               <p className="font-bold text-white">{usuarioNombre}</p>
-              <p className="text-emerald-200">Operador de Planta</p>
+              <p className="text-emerald-200">Operador de Recepción</p>
             </div>
             <div className="w-9 h-9 rounded-full bg-emerald-500 text-emerald-950 font-bold flex items-center justify-center text-xs border-2 border-emerald-300 shrink-0">
               {usuarioIniciales}
@@ -2432,29 +2416,19 @@ export default function DesechosPage() {
           </div>
         </header>
 
-        <section className="p-4 md:p-8 w-full max-w-4xl mx-auto overflow-y-auto">
+        <section className="p-4 md:p-8 w-full max-w-3xl mx-auto overflow-y-auto">
           <div className="bg-white rounded-2xl p-6 md:p-8 shadow-xl border border-zinc-200/80">
             <div className="border-b border-zinc-100 pb-4 mb-6">
-              <h3 className="text-xl md:text-2xl font-extrabold text-emerald-900">Registro de Pesaje en Balanza</h3>
+              <h3 className="text-xl md:text-2xl font-extrabold text-emerald-900">Registro de Ingreso al Vertedero</h3>
               <p className="text-xs text-zinc-500 mt-1">
-                Ingresa el peso bruto y tara para la recepción de desechos en planta de disposición final.
+                Complete los datos de la unidad recolectora para registrar su ingreso.
               </p>
             </div>
 
-            <form onSubmit={handleGuardarPesaje} className="space-y-5">
+            <form onSubmit={handleGuardarIngreso} className="space-y-5">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5">
-                <div>
-                  <label className="block text-xs font-semibold text-zinc-700 mb-1">Placa del Vehículo Recolector *</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Ej: A82BK9"
-                    value={placaVehiculo}
-                    onChange={(e) => setPlacaVehiculo(e.target.value.toUpperCase())}
-                    className="w-full p-2.5 md:p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
-                  />
-                </div>
-
+                
+                {/* 1. Tipo de Desechos */}
                 <div>
                   <label className="block text-xs font-semibold text-zinc-700 mb-1">Clasificación de Desecho *</label>
                   <select
@@ -2466,59 +2440,65 @@ export default function DesechosPage() {
                     <option value="Comercial e Industrial">Comercial e Industrial</option>
                     <option value="Orgánicos">Orgánicos</option>
                     <option value="Plástico/Reciclable">Plástico / Reciclable</option>
+                    <option value="Escombros">Escombros / Construcción</option>
                     <option value="Hospitalarios/Peligrosos">Hospitalarios / Biológicos</option>
                   </select>
                 </div>
 
+                {/* 2. Tipo de Transporte */}
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-700 mb-1">Peso Bruto (Kg) *</label>
-                  <input
-                    type="number"
-                    step="0.1"
-                    min="0"
-                    required
-                    placeholder="Ej: 12500"
-                    value={pesoBruto}
-                    onChange={(e) => setPesoBruto(e.target.value)}
-                    className="w-full p-2.5 md:p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
-                  />
+                  <label className="block text-xs font-semibold text-zinc-700 mb-1">Tipo de Transporte *</label>
+                  <select
+                    value={tipoTransporte}
+                    onChange={(e) => setTipoTransporte(e.target.value)}
+                    className="w-full p-2.5 md:p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 bg-white"
+                  >
+                    <option value="Camión Compactador">Camión Compactador</option>
+                    <option value="Camión Volteo">Camión Volteo</option>
+                    <option value="Camión 350 / 750">Camión 350 / 750</option>
+                    <option value="Camioneta Pick-up">Camioneta Pick-up</option>
+                    <option value="Vehículo Particular">Vehículo Particular</option>
+                    <option value="Otro">Otro</option>
+                  </select>
                 </div>
 
+                {/* 3. Placa del Vehículo */}
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-700 mb-1">Tara del Vehículo (Kg)</label>
-                  <input
-                    type="number"
-                    step="0.1"
-                    min="0"
-                    placeholder="Ej: 4500"
-                    value={tara}
-                    onChange={(e) => setTara(e.target.value)}
-                    className="w-full p-2.5 md:p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
-                  />
-                </div>
-
-                <div className="sm:col-span-2 bg-emerald-50/70 p-4 rounded-xl border border-emerald-200 flex items-center justify-between shadow-sm">
-                  <span className="text-xs md:text-sm font-bold text-emerald-900">Peso Neto Calculado de Desechos:</span>
-                  <span className="text-xl md:text-2xl font-black text-emerald-800">{pesoNetoCalculado()} Kg</span>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-zinc-700 mb-1">Origen / Municipio *</label>
+                  <label className="block text-xs font-semibold text-zinc-700 mb-1">Placa del Vehículo *</label>
                   <input
                     type="text"
                     required
-                    placeholder="Ej: Municipio Miranda"
-                    value={origenMunicipio}
-                    onChange={(e) => setOrigenMunicipio(e.target.value)}
-                    className="w-full p-2.5 md:p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
+                    placeholder="Ej: A82BK9"
+                    value={placa}
+                    onChange={(e) => setPlaca(e.target.value.toUpperCase())}
+                    className="w-full p-2.5 md:p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 font-mono uppercase"
                   />
                 </div>
 
+                {/* 4. Municipio de Origen */}
                 <div>
+                  <label className="block text-xs font-semibold text-zinc-700 mb-1">Municipio de Origen *</label>
+                  <select
+                    value={municipio}
+                    onChange={(e) => setMunicipio(e.target.value)}
+                    className="w-full p-2.5 md:p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 bg-white"
+                  >
+                    <option value="Miranda">Miranda</option>
+                    <option value="Carirubana">Carirubana</option>
+                    <option value="Colina">Colina</option>
+                    <option value="Zamora">Zamora</option>
+                    <option value="Falcón">Falcón</option>
+                    <option value="Silva">Silva</option>
+                    <option value="Otro">Otro Municipio</option>
+                  </select>
+                </div>
+
+                {/* 5. Observaciones */}
+                <div className="sm:col-span-2">
                   <label className="block text-xs font-semibold text-zinc-700 mb-1">Observaciones</label>
                   <input
                     type="text"
-                    placeholder="Ej: Entrada por Balanza N° 1"
+                    placeholder="Ej: Chofer no portaba carnet, carga mixta..."
                     value={observaciones}
                     onChange={(e) => setObservaciones(e.target.value)}
                     className="w-full p-2.5 md:p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
@@ -2539,7 +2519,7 @@ export default function DesechosPage() {
               <button
                 type="submit"
                 disabled={isPending}
-                className="w-full py-3.5 bg-emerald-700 text-white font-bold text-sm rounded-xl hover:bg-emerald-800 transition-colors disabled:bg-emerald-400 disabled:cursor-not-allowed shadow-md mt-4 flex justify-center items-center gap-2"
+                className="w-full py-3.5 bg-emerald-700 text-white font-bold text-sm rounded-xl hover:bg-emerald-800 transition-colors disabled:bg-emerald-400 shadow-md mt-4 flex justify-center items-center gap-2"
               >
                 {isPending ? (
                   <>
@@ -2550,7 +2530,7 @@ export default function DesechosPage() {
                     Procesando...
                   </>
                 ) : (
-                  "Guardar Ingreso de Desechos"
+                  "Registrar Ingreso"
                 )}
               </button>
             </form>
