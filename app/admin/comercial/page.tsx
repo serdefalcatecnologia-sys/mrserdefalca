@@ -2,8 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable'; 
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
@@ -62,7 +60,6 @@ export default function VistaComercializacion() {
     return cumpleFechaInicio && cumpleFechaFin;
   });
 
-  // Calculamos el total recaudado basándonos en los Dólares (USD)
   const totalRecaudadoUSD = datosFiltrados
     .filter(item => item.estatus_pago === 'Pagado')
     .reduce((acc, curr) => acc + Number(curr.monto_usd || 0), 0);
@@ -76,6 +73,11 @@ export default function VistaComercializacion() {
       alert("No hay datos para exportar con estos filtros.");
       return;
     }
+
+    // --- LAZY LOADING DE LIBRERÍAS PDF ---
+    // Esto evita que jsPDF y autoTable bloqueen la carga inicial de la página
+    const jsPDF = (await import('jspdf')).default;
+    const autoTable = (await import('jspdf-autotable')).default;
 
     const doc = new jsPDF();
     const img = new Image();
@@ -118,6 +120,9 @@ export default function VistaComercializacion() {
   const reimprimirFactura = async (factura: any) => {
     setGenerandoPDF(true);
     try {
+      // --- LAZY LOADING DE LIBRERÍA PDF ---
+      const jsPDF = (await import('jspdf')).default;
+      
       const doc = new jsPDF();
       const numRef = factura.id.substring(0, 8).toUpperCase();
       

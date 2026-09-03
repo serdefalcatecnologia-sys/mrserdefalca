@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { supabase } from '@/lib/supabase' 
 
 export default function LoginPage() {
@@ -9,6 +10,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [isPending, startTransition] = useTransition()
   const router = useRouter()
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -41,22 +43,25 @@ export default function LoginPage() {
 
         const rol = usuario.rol.toLowerCase().trim()
 
-        // 3. Control de Acceso y Redirección
-        if (rol === 'administrador' || userEmail === 'serdefalcatecnologia@gmail.com') {
-          router.push('/admin') 
-        } 
-        else if (rol === 'comercial') {
-          router.push('/comercial')
-        } 
-        else if (rol === 'flota') {
-          router.push('/admin/flota')
-        } 
-        else if (rol === 'desechos') {
-          router.push('/admin/desechos')
-        } 
-        else {
-          throw new Error(`El rol "${rol}" no es válido.`)
-        }
+        // 3. Control de Acceso y Redirección (Envuelto en startTransition para evitar bloqueos de interfaz)
+        startTransition(() => {
+          if (rol === 'administrador' || userEmail === 'serdefalcatecnologia@gmail.com') {
+            router.push('/admin') 
+          } 
+          else if (rol === 'comercial') {
+            router.push('/comercial')
+          } 
+          else if (rol === 'flota') {
+            router.push('/admin/flota')
+          } 
+          else if (rol === 'desechos') {
+            router.push('/admin/desechos')
+          } 
+          else {
+            // Manejo de roles no válidos en caso de error interno
+            setError(`El rol "${rol}" no es válido.`)
+          }
+        })
       }
     } catch (err: any) {
       setError(err.message)
@@ -66,19 +71,33 @@ export default function LoginPage() {
   }
 
   return (
-    <div 
-      className="min-h-screen flex items-center justify-center bg-gray-100 bg-cover bg-center relative"
-      style={{ backgroundImage: "url('/imagen1.png')" }} 
-    >
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 relative overflow-hidden">
+      
+      {/* Imagen de fondo optimizada con Next.js */}
+      <Image
+        src="/imagen1.png"
+        alt="Fondo Serdefalca"
+        fill
+        priority
+        sizes="100vw"
+        className="object-cover object-center -z-10"
+      />
+
       {/* Capa ligera para proteger el contraste sin difuminar la imagen */}
       <div className="absolute inset-0 bg-black/10 z-0"></div>
 
       {/* Contenedor principal reducido a max-w-[340px] y padding p-6 */}
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[340px] p-6 relative z-10">
         
-        {/* Logo ampliado a h-20 */}
-        <div className="flex justify-center mb-3">
-          <img src="/logo1.png" alt="Logos Institucionales" className="h-20 object-contain" />
+        {/* Logo optimizado con Next.js */}
+        <div className="relative flex justify-center mb-3 h-20 w-full">
+          <Image 
+            src="/logo1.png" 
+            alt="Logos Institucionales" 
+            fill 
+            priority
+            className="object-contain" 
+          />
         </div>
 
         {/* Títulos con espaciado ajustado */}
@@ -137,10 +156,10 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || isPending}
             className="w-full bg-[#008f5d] hover:bg-green-700 text-white font-semibold py-2 rounded-lg transition-colors disabled:bg-gray-400 shadow-md text-xs mt-1"
           >
-            {loading ? 'Ingresando...' : 'Ingresar al Sistema'}
+            {(loading || isPending) ? 'Ingresando...' : 'Ingresar al Sistema'}
           </button>
         </form>
 

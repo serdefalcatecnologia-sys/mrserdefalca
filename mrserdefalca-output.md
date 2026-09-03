@@ -3,7 +3,7 @@
 ## 📊 Project Information
 
 - **Project Name**: `mrserdefalca`
-- **Generated On**: 2026-09-02 23:39:39 (America/Caracas / GMT-04:00)
+- **Generated On**: 2026-09-03 13:31:07 (America/Caracas / GMT-04:00)
 - **Total Files Processed**: 36
 - **Export Tool**: Easy Whole Project to Single Text File for LLMs v1.1.0
 - **Tool Author**: Jota / José Guilherme Pandolfi
@@ -23,7 +23,7 @@
 ├── 📁 app/
 │   ├── 📁 admin/
 │   │   ├── 📁 comercial/
-│   │   │   └── 📄 page.tsx (20.71 KB)
+│   │   │   └── 📄 page.tsx (20.92 KB)
 │   │   ├── 📁 configuracion/
 │   │   │   └── 📄 page.tsx (13.58 KB)
 │   │   ├── 📁 desechos/
@@ -37,7 +37,7 @@
 │   │   ├── 📄 layout.tsx (8.53 KB)
 │   │   └── 📄 page.tsx (5.11 KB)
 │   ├── 📁 comercial/
-│   │   └── 📄 page.tsx (9.97 KB)
+│   │   └── 📄 page.tsx (10.1 KB)
 │   ├── 📁 desechos/
 │   │   └── 📄 page.tsx (10.79 KB)
 │   ├── 📁 flota/
@@ -50,14 +50,14 @@
 │   ├── 📄 favicon.ico (264.06 KB)
 │   ├── 📄 globals.css (488 B)
 │   ├── 📄 layout.tsx (821 B)
-│   └── 📄 page.tsx (5.83 KB)
+│   └── 📄 page.tsx (6.43 KB)
 ├── 📁 lib/
 │   └── 📄 supabase.ts (265 B)
 ├── 📁 public/
 │   ├── 📄 file.svg (391 B)
 │   ├── 📄 globe.svg (1.01 KB)
-│   ├── 📄 imagen1.png (662.34 KB)
-│   ├── 📄 logo1.png (176.1 KB)
+│   ├── 📄 imagen1.png (211.63 KB)
+│   ├── 📄 logo1.png (54.46 KB)
 │   ├── 📄 next.svg (1.34 KB)
 │   ├── 📄 vercel.svg (128 B)
 │   └── 📄 window.svg (385 B)
@@ -116,7 +116,7 @@
 | Total Directories | 17 |
 | Text Files | 26 |
 | Binary Files | 10 |
-| Total Size | 1.46 MB |
+| Total Size | 921.34 KB |
 
 ### 📄 File Types Distribution
 
@@ -138,15 +138,15 @@
 ### <a id="📄-app-admin-comercial-page-tsx"></a>📄 `app/admin/comercial/page.tsx`
 
 **File Info:**
-- **Size**: 20.71 KB
+- **Size**: 20.92 KB
 - **Extension**: `.tsx`
 - **Language**: `typescript`
 - **Location**: `app/admin/comercial/page.tsx`
 - **Relative Path**: `app/admin/comercial`
 - **Created**: 2026-08-27 19:14:58 (America/Caracas / GMT-04:00)
-- **Modified**: 2026-09-02 14:22:27 (America/Caracas / GMT-04:00)
-- **MD5**: `f8de4085f77fea1bcff9ee59fd624349`
-- **SHA256**: `6f79adf983cc8cbd418a488b65396f71b54ea2d9486cf3e2e42bd626f6159d75`
+- **Modified**: 2026-09-03 13:31:06 (America/Caracas / GMT-04:00)
+- **MD5**: `51e97be8d6ce95bfa0eec63810dd7110`
+- **SHA256**: `850507bb8682b84694875bca514fea2fe7352848488cac22707f4eabf85beeec`
 - **Encoding**: ASCII
 
 **File code content:**
@@ -156,8 +156,6 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable'; 
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
@@ -216,7 +214,6 @@ export default function VistaComercializacion() {
     return cumpleFechaInicio && cumpleFechaFin;
   });
 
-  // Calculamos el total recaudado basándonos en los Dólares (USD)
   const totalRecaudadoUSD = datosFiltrados
     .filter(item => item.estatus_pago === 'Pagado')
     .reduce((acc, curr) => acc + Number(curr.monto_usd || 0), 0);
@@ -230,6 +227,11 @@ export default function VistaComercializacion() {
       alert("No hay datos para exportar con estos filtros.");
       return;
     }
+
+    // --- LAZY LOADING DE LIBRERÍAS PDF ---
+    // Esto evita que jsPDF y autoTable bloqueen la carga inicial de la página
+    const jsPDF = (await import('jspdf')).default;
+    const autoTable = (await import('jspdf-autotable')).default;
 
     const doc = new jsPDF();
     const img = new Image();
@@ -272,6 +274,9 @@ export default function VistaComercializacion() {
   const reimprimirFactura = async (factura: any) => {
     setGenerandoPDF(true);
     try {
+      // --- LAZY LOADING DE LIBRERÍA PDF ---
+      const jsPDF = (await import('jspdf')).default;
+      
       const doc = new jsPDF();
       const numRef = factura.id.substring(0, 8).toUpperCase();
       
@@ -2053,15 +2058,15 @@ export default function AdminDashboard() {
 ### <a id="📄-app-comercial-page-tsx"></a>📄 `app/comercial/page.tsx`
 
 **File Info:**
-- **Size**: 9.97 KB
+- **Size**: 10.1 KB
 - **Extension**: `.tsx`
 - **Language**: `typescript`
 - **Location**: `app/comercial/page.tsx`
 - **Relative Path**: `app/comercial`
 - **Created**: 2026-07-21 22:06:40 (America/Caracas / GMT-04:00)
-- **Modified**: 2026-09-02 14:37:45 (America/Caracas / GMT-04:00)
-- **MD5**: `68daa04dcabb422ecd84fe7245cfd18e`
-- **SHA256**: `149bb0fcd9de4eec1591b11507a23ce59522a52981f9e583fce0750cb806ab17`
+- **Modified**: 2026-09-02 23:55:44 (America/Caracas / GMT-04:00)
+- **MD5**: `82b159993d89e244cf6d45a1cd436f77`
+- **SHA256**: `6174238d62169834158b0e631547e19a628f855f8665ae065dd038051b7d4b5e`
 - **Encoding**: UTF-8
 
 **File code content:**
@@ -2122,8 +2127,9 @@ export default function RegistroComercial() {
     setCargando(false);
 
     if (error) {
-      console.error(error);
-      setMensaje("Error al guardar el registro comercial.");
+      console.error("Detalle del error de Supabase:", error);
+      // Ahora mostrará el error real de la base de datos en la pantalla
+      setMensaje(`Error: ${error.message || error.details || 'Desconocido'}`);
     } else {
       setMensaje("¡Factura / Registro creado exitosamente!");
       // Limpiar formulario tras el registro exitoso
@@ -2211,8 +2217,8 @@ export default function RegistroComercial() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Método de Pago</label>
-                <select value={metodoPago} onChange={(e) => setMetodoPago(e.target.value)} className="block w-full border border-gray-300 rounded-lg p-2.5 focus:ring-emerald-500 focus:border-emerald-500 text-sm outline-none bg-white">
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Método de Pago *</label>
+                <select required value={metodoPago} onChange={(e) => setMetodoPago(e.target.value)} className="block w-full border border-gray-300 rounded-lg p-2.5 focus:ring-emerald-500 focus:border-emerald-500 text-sm outline-none bg-white">
                   <option value="">Seleccione un método...</option>
                   <option value="Transferencia Bs">Transferencia Bs</option>
                   <option value="Pago Móvil">Pago Móvil</option>
@@ -2955,15 +2961,15 @@ export default function RootLayout({
 ### <a id="📄-app-page-tsx"></a>📄 `app/page.tsx`
 
 **File Info:**
-- **Size**: 5.83 KB
+- **Size**: 6.43 KB
 - **Extension**: `.tsx`
 - **Language**: `typescript`
 - **Location**: `app/page.tsx`
 - **Relative Path**: `app`
 - **Created**: 2026-07-21 20:24:25 (America/Caracas / GMT-04:00)
-- **Modified**: 2026-09-02 23:39:38 (America/Caracas / GMT-04:00)
-- **MD5**: `b621d7720af85721893c59ff5fcad280`
-- **SHA256**: `29eb82de51e9941616ced12a236123cbadcbf1adb6391bf759141a2065596302`
+- **Modified**: 2026-09-03 13:26:24 (America/Caracas / GMT-04:00)
+- **MD5**: `d6dc20980f9fc31e483b6415e3850eec`
+- **SHA256**: `3bb4aeb14b279846da753820bdc8298d9d0572985f1519c5cfe024bd77f74703`
 - **Encoding**: UTF-8
 
 **File code content:**
@@ -2971,8 +2977,9 @@ export default function RootLayout({
 ```typescript
 'use client'
 
-import { useState } from 'react'
+import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { supabase } from '@/lib/supabase' 
 
 export default function LoginPage() {
@@ -2980,6 +2987,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [isPending, startTransition] = useTransition()
   const router = useRouter()
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -3012,22 +3020,25 @@ export default function LoginPage() {
 
         const rol = usuario.rol.toLowerCase().trim()
 
-        // 3. Control de Acceso y Redirección
-        if (rol === 'administrador' || userEmail === 'serdefalcatecnologia@gmail.com') {
-          router.push('/admin') 
-        } 
-        else if (rol === 'comercial') {
-          router.push('/comercial')
-        } 
-        else if (rol === 'flota') {
-          router.push('/admin/flota')
-        } 
-        else if (rol === 'desechos') {
-          router.push('/admin/desechos')
-        } 
-        else {
-          throw new Error(`El rol "${rol}" no es válido.`)
-        }
+        // 3. Control de Acceso y Redirección (Envuelto en startTransition para evitar bloqueos de interfaz)
+        startTransition(() => {
+          if (rol === 'administrador' || userEmail === 'serdefalcatecnologia@gmail.com') {
+            router.push('/admin') 
+          } 
+          else if (rol === 'comercial') {
+            router.push('/comercial')
+          } 
+          else if (rol === 'flota') {
+            router.push('/admin/flota')
+          } 
+          else if (rol === 'desechos') {
+            router.push('/admin/desechos')
+          } 
+          else {
+            // Manejo de roles no válidos en caso de error interno
+            setError(`El rol "${rol}" no es válido.`)
+          }
+        })
       }
     } catch (err: any) {
       setError(err.message)
@@ -3037,19 +3048,33 @@ export default function LoginPage() {
   }
 
   return (
-    <div 
-      className="min-h-screen flex items-center justify-center bg-gray-100 bg-cover bg-center relative"
-      style={{ backgroundImage: "url('/imagen1.png')" }} 
-    >
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 relative overflow-hidden">
+      
+      {/* Imagen de fondo optimizada con Next.js */}
+      <Image
+        src="/imagen1.png"
+        alt="Fondo Serdefalca"
+        fill
+        priority
+        sizes="100vw"
+        className="object-cover object-center -z-10"
+      />
+
       {/* Capa ligera para proteger el contraste sin difuminar la imagen */}
       <div className="absolute inset-0 bg-black/10 z-0"></div>
 
       {/* Contenedor principal reducido a max-w-[340px] y padding p-6 */}
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[340px] p-6 relative z-10">
         
-        {/* Logo ampliado a h-20 */}
-        <div className="flex justify-center mb-3">
-          <img src="/logo1.png" alt="Logos Institucionales" className="h-20 object-contain" />
+        {/* Logo optimizado con Next.js */}
+        <div className="relative flex justify-center mb-3 h-20 w-full">
+          <Image 
+            src="/logo1.png" 
+            alt="Logos Institucionales" 
+            fill 
+            priority
+            className="object-contain" 
+          />
         </div>
 
         {/* Títulos con espaciado ajustado */}
@@ -3108,10 +3133,10 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || isPending}
             className="w-full bg-[#008f5d] hover:bg-green-700 text-white font-semibold py-2 rounded-lg transition-colors disabled:bg-gray-400 shadow-md text-xs mt-1"
           >
-            {loading ? 'Ingresando...' : 'Ingresar al Sistema'}
+            {(loading || isPending) ? 'Ingresando...' : 'Ingresar al Sistema'}
           </button>
         </form>
 

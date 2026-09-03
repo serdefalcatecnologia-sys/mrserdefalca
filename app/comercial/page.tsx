@@ -53,8 +53,9 @@ export default function RegistroComercial() {
     setCargando(false);
 
     if (error) {
-      console.error(error);
-      setMensaje("Error al guardar el registro comercial.");
+      console.error("Detalle del error de Supabase:", error);
+      // Ahora mostrará el error real de la base de datos en la pantalla
+      setMensaje(`Error: ${error.message || error.details || 'Desconocido'}`);
     } else {
       setMensaje("¡Factura / Registro creado exitosamente!");
       // Limpiar formulario tras el registro exitoso
@@ -142,8 +143,8 @@ export default function RegistroComercial() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Método de Pago</label>
-                <select value={metodoPago} onChange={(e) => setMetodoPago(e.target.value)} className="block w-full border border-gray-300 rounded-lg p-2.5 focus:ring-emerald-500 focus:border-emerald-500 text-sm outline-none bg-white">
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Método de Pago *</label>
+                <select required value={metodoPago} onChange={(e) => setMetodoPago(e.target.value)} className="block w-full border border-gray-300 rounded-lg p-2.5 focus:ring-emerald-500 focus:border-emerald-500 text-sm outline-none bg-white">
                   <option value="">Seleccione un método...</option>
                   <option value="Transferencia Bs">Transferencia Bs</option>
                   <option value="Pago Móvil">Pago Móvil</option>
