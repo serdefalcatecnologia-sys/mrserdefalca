@@ -3,7 +3,7 @@
 ## 📊 Project Information
 
 - **Project Name**: `mrserdefalca`
-- **Generated On**: 2026-09-03 13:31:07 (America/Caracas / GMT-04:00)
+- **Generated On**: 2026-09-03 13:43:03 (America/Caracas / GMT-04:00)
 - **Total Files Processed**: 36
 - **Export Tool**: Easy Whole Project to Single Text File for LLMs v1.1.0
 - **Tool Author**: Jota / José Guilherme Pandolfi
@@ -27,7 +27,7 @@
 │   │   ├── 📁 configuracion/
 │   │   │   └── 📄 page.tsx (13.58 KB)
 │   │   ├── 📁 desechos/
-│   │   │   └── 📄 page.tsx (4.17 KB)
+│   │   │   └── 📄 page.tsx (4.75 KB)
 │   │   ├── 📁 empleados/
 │   │   │   ├── 📁 registro/
 │   │   │   │   └── 📄 page.tsx (8.17 KB)
@@ -39,7 +39,7 @@
 │   ├── 📁 comercial/
 │   │   └── 📄 page.tsx (10.1 KB)
 │   ├── 📁 desechos/
-│   │   └── 📄 page.tsx (10.79 KB)
+│   │   └── 📄 page.tsx (12.16 KB)
 │   ├── 📁 flota/
 │   │   └── 📄 page.tsx (4.59 KB)
 │   ├── 📁 llave/
@@ -116,7 +116,7 @@
 | Total Directories | 17 |
 | Text Files | 26 |
 | Binary Files | 10 |
-| Total Size | 921.34 KB |
+| Total Size | 923.28 KB |
 
 ### 📄 File Types Distribution
 
@@ -817,15 +817,15 @@ export default function ConfiguracionSistema() {
 ### <a id="📄-app-admin-desechos-page-tsx"></a>📄 `app/admin/desechos/page.tsx`
 
 **File Info:**
-- **Size**: 4.17 KB
+- **Size**: 4.75 KB
 - **Extension**: `.tsx`
 - **Language**: `typescript`
 - **Location**: `app/admin/desechos/page.tsx`
 - **Relative Path**: `app/admin/desechos`
 - **Created**: 2026-08-31 16:40:55 (America/Caracas / GMT-04:00)
-- **Modified**: 2026-09-01 16:51:58 (America/Caracas / GMT-04:00)
-- **MD5**: `28fb8bab1cda39eec475ced169ed059b`
-- **SHA256**: `488173cd240e7ab91caf4216a4a1c61abef82542ba01d4aa97c09c6bccb2f298`
+- **Modified**: 2026-09-03 13:42:35 (America/Caracas / GMT-04:00)
+- **MD5**: `27ce8c1b8afc3f61af6e681989d2329f`
+- **SHA256**: `dd0b3396cdcbc9b0b43e6242f302593cee0ff079f4e5a359c69d387d16acda03`
 - **Encoding**: ASCII
 
 **File code content:**
@@ -833,7 +833,7 @@ export default function ConfiguracionSistema() {
 ```typescript
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
 
@@ -846,8 +846,9 @@ export default function VistaDesechosAdmin() {
   const [cargando, setCargando] = useState(true);
   const [esAdmin, setEsAdmin] = useState(true);
 
-  useEffect(() => {
-    async function cargarRegistros() {
+  const cargarRegistros = useCallback(async () => {
+    setCargando(true);
+    try {
       const { data: authData } = await supabase.auth.getSession();
       if (authData.session) {
         const { data: perfil } = await supabase
@@ -869,11 +870,19 @@ export default function VistaDesechosAdmin() {
 
       if (!error && data) {
         setRegistros(data);
+      } else if (error) {
+        console.error("Error cargando desechos:", error);
       }
+    } catch (error) {
+      console.error("Error de conexión:", error);
+    } finally {
       setCargando(false);
     }
-    cargarRegistros();
   }, []);
+
+  useEffect(() => {
+    cargarRegistros();
+  }, [cargarRegistros]);
 
   return (
     <div className="min-h-screen bg-zinc-100 p-6 font-sans">
@@ -886,7 +895,7 @@ export default function VistaDesechosAdmin() {
           </div>
         )}
 
-        <div className="mb-6 rounded-2xl bg-white p-6 shadow-md">
+        <div className="mb-6 rounded-2xl bg-white p-6 shadow-md border border-zinc-200">
           <h1 className="text-2xl font-bold text-emerald-800">Control de Desechos Sólidos</h1>
           <p className="mt-1 text-sm text-zinc-500">Historial general de recepciones e ingresos al botadero.</p>
         </div>
@@ -895,11 +904,11 @@ export default function VistaDesechosAdmin() {
           <table className="w-full text-left text-sm text-zinc-600">
             <thead className="border-b border-zinc-200 bg-emerald-50 text-emerald-800">
               <tr>
-                <th className="px-6 py-4 font-semibold">Fecha y Hora</th>
-                <th className="px-6 py-4 font-semibold">Clasificación</th>
-                <th className="px-6 py-4 font-semibold">Transporte</th>
-                <th className="px-6 py-4 font-semibold">Placa</th>
-                <th className="px-6 py-4 font-semibold">Responsable</th>
+                <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Fecha y Hora</th>
+                <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Clasificación</th>
+                <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Transporte</th>
+                <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Placa</th>
+                <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Responsable</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-100">
@@ -918,17 +927,17 @@ export default function VistaDesechosAdmin() {
               ) : (
                 registros.map((reg) => (
                   <tr key={reg.id} className="transition-colors hover:bg-zinc-50">
-                    <td className="whitespace-nowrap px-6 py-4">
-                      {new Date(reg.fecha_hora).toLocaleString("es-VE")}
+                    <td className="whitespace-nowrap px-6 py-4 font-medium text-zinc-800">
+                      {reg.fecha_hora ? new Date(reg.fecha_hora).toLocaleString("es-VE") : 'N/A'}
                     </td>
                     <td className="px-6 py-4">
-                      <span className="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-800">
+                      <span className="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-bold text-emerald-800">
                         {reg.tipo_desecho}
                       </span>
                     </td>
-                    <td className="px-6 py-4">{reg.tipo_transporte}</td>
-                    <td className="px-6 py-4 font-mono uppercase">{reg.placa}</td>
-                    <td className="px-6 py-4">{reg.responsable}</td>
+                    <td className="px-6 py-4 text-zinc-500">{reg.tipo_transporte || 'No especificado'}</td>
+                    <td className="px-6 py-4 font-mono font-bold uppercase text-zinc-700">{reg.placa}</td>
+                    <td className="px-6 py-4 text-zinc-600">{reg.responsable || 'N/A'}</td>
                   </tr>
                 ))
               )}
@@ -2264,15 +2273,15 @@ export default function RegistroComercial() {
 ### <a id="📄-app-desechos-page-tsx"></a>📄 `app/desechos/page.tsx`
 
 **File Info:**
-- **Size**: 10.79 KB
+- **Size**: 12.16 KB
 - **Extension**: `.tsx`
 - **Language**: `typescript`
 - **Location**: `app/desechos/page.tsx`
 - **Relative Path**: `app/desechos`
 - **Created**: 2026-08-31 16:08:08 (America/Caracas / GMT-04:00)
-- **Modified**: 2026-09-01 02:16:08 (America/Caracas / GMT-04:00)
-- **MD5**: `8ecaa142a5bd73c7d0c488fa24980e2e`
-- **SHA256**: `ed9b3dd46948f25505382c9ff229ccedc961ecbb131b056307fde5c46a58c9da`
+- **Modified**: 2026-09-03 13:43:02 (America/Caracas / GMT-04:00)
+- **MD5**: `7e9f37a9347b98b59b93dec0896e7769`
+- **SHA256**: `d04172821b1df8c5b3a91a2f85a6663f51c318dd050281e338c1632be4a04dd3`
 - **Encoding**: UTF-8
 
 **File code content:**
@@ -2280,7 +2289,7 @@ export default function RegistroComercial() {
 ```typescript
 "use client";
 
-import { useState, useEffect, useTransition } from "react";
+import { useState, useEffect, useTransition, useCallback } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 
@@ -2305,31 +2314,38 @@ export default function DesechosPage() {
 
   const [mensaje, setMensaje] = useState({ texto: "", tipo: "" });
 
+  const obtenerUsuario = useCallback(async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        startTransition(() => router.push("/"));
+        return;
+      }
+      const email = session.user.email || "";
+      const nombre = email.split("@")[0].toUpperCase();
+      setUsuarioNombre(nombre);
+      setUsuarioIniciales(nombre.substring(0, 2));
+    } catch (error) {
+      console.error("Error obteniendo usuario:", error);
+    }
+  }, [router]);
+
   useEffect(() => {
     obtenerUsuario();
-  }, []);
-
-  const obtenerUsuario = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      router.push("/");
-      return;
-    }
-    const email = session.user.email || "";
-    const nombre = email.split("@")[0].toUpperCase();
-    setUsuarioNombre(nombre);
-    setUsuarioIniciales(nombre.substring(0, 2));
-  };
+  }, [obtenerUsuario]);
 
   const handleCerrarSesion = async () => {
     await supabase.auth.signOut();
-    router.push("/");
+    startTransition(() => router.push("/"));
   };
 
   const pesoNetoCalculado = () => {
-    const bruto = parseFloat(pesoBruto) || 0;
-    const pesoTara = parseFloat(tara) || 0;
-    return Math.max(0, bruto - pesoTara).toFixed(2);
+    const bruto = parseFloat(pesoBruto);
+    const pesoTara = parseFloat(tara);
+    // Si no son números válidos aún, devuelve 0
+    const b = isNaN(bruto) ? 0 : bruto;
+    const t = isNaN(pesoTara) ? 0 : pesoTara;
+    return Math.max(0, b - t).toFixed(2);
   };
 
   const handleGuardarPesaje = (e: React.FormEvent<HTMLFormElement>) => {
@@ -2341,6 +2357,10 @@ export default function DesechosPage() {
         const bruto = parseFloat(pesoBruto) || 0;
         const pesoTara = parseFloat(tara) || 0;
         const neto = bruto - pesoTara;
+
+        if (neto < 0) {
+          throw new Error("El peso neto no puede ser negativo. Verifique la tara.");
+        }
 
         const { error } = await supabase.from("registro_desechos").insert([
           {
@@ -2362,6 +2382,8 @@ export default function DesechosPage() {
         setTara("");
         setObservaciones("");
         setTipoDesecho("Sólidos Urbanos");
+        
+        setTimeout(() => setMensaje({ texto: "", tipo: "" }), 4000);
       } catch (err: any) {
         setMensaje({ texto: "❌ Error al registrar pesaje: " + (err.message || "Error inesperado"), tipo: "error" });
       }
@@ -2371,7 +2393,7 @@ export default function DesechosPage() {
   return (
     <div className="flex min-h-screen bg-zinc-100 font-sans">
       {/* Sidebar Lateral */}
-      <aside className="w-64 bg-emerald-950 text-white flex flex-col justify-between p-4 shadow-xl">
+      <aside className="w-64 bg-emerald-950 text-white flex flex-col justify-between p-4 shadow-xl shrink-0 hidden md:flex">
         <div>
           <div className="py-4 px-2 border-b border-emerald-800/60 mb-6">
             <h1 className="text-xl font-black tracking-wider text-white">SERDEFALCA</h1>
@@ -2396,31 +2418,31 @@ export default function DesechosPage() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col">
-        <header className="bg-emerald-900 text-white px-8 py-4 flex items-center justify-between shadow-md">
-          <h2 className="text-lg font-bold tracking-wide">SERDEFALCA | Módulo Control de Desechos</h2>
+      <main className="flex-1 flex flex-col overflow-hidden">
+        <header className="bg-emerald-900 text-white px-6 md:px-8 py-4 flex items-center justify-between shadow-md">
+          <h2 className="text-base md:text-lg font-bold tracking-wide">Módulo Control de Desechos</h2>
           <div className="flex items-center gap-3">
-            <div className="text-right text-xs">
+            <div className="text-right text-xs hidden sm:block">
               <p className="font-bold text-white">{usuarioNombre}</p>
               <p className="text-emerald-200">Operador de Planta</p>
             </div>
-            <div className="w-9 h-9 rounded-full bg-emerald-500 text-emerald-950 font-bold flex items-center justify-center text-xs border-2 border-emerald-300">
+            <div className="w-9 h-9 rounded-full bg-emerald-500 text-emerald-950 font-bold flex items-center justify-center text-xs border-2 border-emerald-300 shrink-0">
               {usuarioIniciales}
             </div>
           </div>
         </header>
 
-        <section className="p-8 max-w-4xl w-full mx-auto">
-          <div className="bg-white rounded-2xl p-8 shadow-xl border border-zinc-200/80">
+        <section className="p-4 md:p-8 w-full max-w-4xl mx-auto overflow-y-auto">
+          <div className="bg-white rounded-2xl p-6 md:p-8 shadow-xl border border-zinc-200/80">
             <div className="border-b border-zinc-100 pb-4 mb-6">
-              <h3 className="text-2xl font-extrabold text-emerald-900">Registro de Pesaje en Balanza</h3>
+              <h3 className="text-xl md:text-2xl font-extrabold text-emerald-900">Registro de Pesaje en Balanza</h3>
               <p className="text-xs text-zinc-500 mt-1">
                 Ingresa el peso bruto y tara para la recepción de desechos en planta de disposición final.
               </p>
             </div>
 
             <form onSubmit={handleGuardarPesaje} className="space-y-5">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5">
                 <div>
                   <label className="block text-xs font-semibold text-zinc-700 mb-1">Placa del Vehículo Recolector *</label>
                   <input
@@ -2428,8 +2450,8 @@ export default function DesechosPage() {
                     required
                     placeholder="Ej: A82BK9"
                     value={placaVehiculo}
-                    onChange={(e) => setPlacaVehiculo(e.target.value)}
-                    className="w-full p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
+                    onChange={(e) => setPlacaVehiculo(e.target.value.toUpperCase())}
+                    className="w-full p-2.5 md:p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
                   />
                 </div>
 
@@ -2438,7 +2460,7 @@ export default function DesechosPage() {
                   <select
                     value={tipoDesecho}
                     onChange={(e) => setTipoDesecho(e.target.value)}
-                    className="w-full p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
+                    className="w-full p-2.5 md:p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 bg-white"
                   >
                     <option value="Sólidos Urbanos">Sólidos Urbanos (Domiciliario)</option>
                     <option value="Comercial e Industrial">Comercial e Industrial</option>
@@ -2453,11 +2475,12 @@ export default function DesechosPage() {
                   <input
                     type="number"
                     step="0.1"
+                    min="0"
                     required
                     placeholder="Ej: 12500"
                     value={pesoBruto}
                     onChange={(e) => setPesoBruto(e.target.value)}
-                    className="w-full p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
+                    className="w-full p-2.5 md:p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
                   />
                 </div>
 
@@ -2466,16 +2489,17 @@ export default function DesechosPage() {
                   <input
                     type="number"
                     step="0.1"
+                    min="0"
                     placeholder="Ej: 4500"
                     value={tara}
                     onChange={(e) => setTara(e.target.value)}
-                    className="w-full p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
+                    className="w-full p-2.5 md:p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
                   />
                 </div>
 
-                <div className="sm:col-span-2 bg-emerald-50/70 p-4 rounded-xl border border-emerald-200 flex items-center justify-between">
-                  <span className="text-xs font-bold text-emerald-900">Peso Neto Calculado de Desechos:</span>
-                  <span className="text-xl font-black text-emerald-800">{pesoNetoCalculado()} Kg</span>
+                <div className="sm:col-span-2 bg-emerald-50/70 p-4 rounded-xl border border-emerald-200 flex items-center justify-between shadow-sm">
+                  <span className="text-xs md:text-sm font-bold text-emerald-900">Peso Neto Calculado de Desechos:</span>
+                  <span className="text-xl md:text-2xl font-black text-emerald-800">{pesoNetoCalculado()} Kg</span>
                 </div>
 
                 <div>
@@ -2486,7 +2510,7 @@ export default function DesechosPage() {
                     placeholder="Ej: Municipio Miranda"
                     value={origenMunicipio}
                     onChange={(e) => setOrigenMunicipio(e.target.value)}
-                    className="w-full p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
+                    className="w-full p-2.5 md:p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
                   />
                 </div>
 
@@ -2497,14 +2521,14 @@ export default function DesechosPage() {
                     placeholder="Ej: Entrada por Balanza N° 1"
                     value={observaciones}
                     onChange={(e) => setObservaciones(e.target.value)}
-                    className="w-full p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
+                    className="w-full p-2.5 md:p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
                   />
                 </div>
               </div>
 
               {mensaje.texto && (
                 <div
-                  className={`p-3.5 rounded-lg text-xs font-semibold text-center ${
+                  className={`p-3.5 rounded-lg text-sm font-bold text-center shadow-sm ${
                     mensaje.tipo === "error" ? "bg-red-50 text-red-600 border border-red-200" : "bg-emerald-50 text-emerald-700 border border-emerald-200"
                   }`}
                 >
@@ -2515,9 +2539,19 @@ export default function DesechosPage() {
               <button
                 type="submit"
                 disabled={isPending}
-                className="w-full py-3.5 bg-emerald-600 text-white font-bold text-sm rounded-lg hover:bg-emerald-700 transition-colors disabled:bg-emerald-400 shadow-md"
+                className="w-full py-3.5 bg-emerald-700 text-white font-bold text-sm rounded-xl hover:bg-emerald-800 transition-colors disabled:bg-emerald-400 disabled:cursor-not-allowed shadow-md mt-4 flex justify-center items-center gap-2"
               >
-                {isPending ? "Registrando Pesaje..." : "Guardar Ingreso de Desechos"}
+                {isPending ? (
+                  <>
+                    <svg className="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    Procesando...
+                  </>
+                ) : (
+                  "Guardar Ingreso de Desechos"
+                )}
               </button>
             </form>
           </div>
