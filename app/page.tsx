@@ -43,7 +43,7 @@ export default function LoginPage() {
 
         const rol = usuario.rol.toLowerCase().trim()
 
-        // 3. Control de Acceso y Redirección (Envuelto en startTransition para evitar bloqueos de interfaz)
+        // 3. Control de Acceso y Redirección
         startTransition(() => {
           if (rol === 'administrador' || userEmail === 'serdefalcatecnologia@gmail.com') {
             router.push('/admin') 
@@ -58,7 +58,6 @@ export default function LoginPage() {
             router.push('/admin/desechos')
           } 
           else {
-            // Manejo de roles no válidos en caso de error interno
             setError(`El rol "${rol}" no es válido.`)
           }
         })
@@ -71,25 +70,25 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
       
-      {/* Imagen de fondo optimizada con Next.js */}
+      {/* Imagen de fondo optimizada (capa base) */}
       <Image
         src="/imagen1.png"
         alt="Fondo Serdefalca"
         fill
         priority
         sizes="100vw"
-        className="object-cover object-center -z-10"
+        className="object-cover object-center z-0"
       />
 
-      {/* Capa ligera para proteger el contraste sin difuminar la imagen */}
-      <div className="absolute inset-0 bg-black/10 z-0"></div>
+      {/* Capa ligera para proteger el contraste (capa intermedia) */}
+      <div className="absolute inset-0 bg-black/20 z-10"></div>
 
-      {/* Contenedor principal reducido a max-w-[340px] y padding p-6 */}
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[340px] p-6 relative z-10">
+      {/* Contenedor del formulario (capa superior) */}
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[340px] p-6 relative z-20">
         
-        {/* Logo optimizado con Next.js */}
+        {/* Logo optimizado */}
         <div className="relative flex justify-center mb-3 h-20 w-full">
           <Image 
             src="/logo1.png" 
@@ -100,7 +99,7 @@ export default function LoginPage() {
           />
         </div>
 
-        {/* Títulos con espaciado ajustado */}
+        {/* Títulos */}
         <div className="text-center mb-5">
           <h1 className="text-xl font-bold text-green-800 tracking-wide mb-0.5">SERDEFAL, C.A</h1>
           <p className="text-[11px] text-gray-500 px-1 leading-tight">

@@ -3,7 +3,7 @@
 ## 📊 Project Information
 
 - **Project Name**: `mrserdefalca`
-- **Generated On**: 2026-09-03 13:57:20 (America/Caracas / GMT-04:00)
+- **Generated On**: 2026-09-03 14:25:11 (America/Caracas / GMT-04:00)
 - **Total Files Processed**: 36
 - **Export Tool**: Easy Whole Project to Single Text File for LLMs v1.1.0
 - **Tool Author**: Jota / José Guilherme Pandolfi
@@ -50,7 +50,7 @@
 │   ├── 📄 favicon.ico (264.06 KB)
 │   ├── 📄 globals.css (488 B)
 │   ├── 📄 layout.tsx (821 B)
-│   └── 📄 page.tsx (6.43 KB)
+│   └── 📄 page.tsx (6.24 KB)
 ├── 📁 lib/
 │   └── 📄 supabase.ts (265 B)
 ├── 📁 public/
@@ -116,7 +116,7 @@
 | Total Directories | 17 |
 | Text Files | 26 |
 | Binary Files | 10 |
-| Total Size | 922.8 KB |
+| Total Size | 922.61 KB |
 
 ### 📄 File Types Distribution
 
@@ -2975,15 +2975,15 @@ export default function RootLayout({
 ### <a id="📄-app-page-tsx"></a>📄 `app/page.tsx`
 
 **File Info:**
-- **Size**: 6.43 KB
+- **Size**: 6.24 KB
 - **Extension**: `.tsx`
 - **Language**: `typescript`
 - **Location**: `app/page.tsx`
 - **Relative Path**: `app`
 - **Created**: 2026-07-21 20:24:25 (America/Caracas / GMT-04:00)
-- **Modified**: 2026-09-03 13:26:24 (America/Caracas / GMT-04:00)
-- **MD5**: `d6dc20980f9fc31e483b6415e3850eec`
-- **SHA256**: `3bb4aeb14b279846da753820bdc8298d9d0572985f1519c5cfe024bd77f74703`
+- **Modified**: 2026-09-03 14:25:11 (America/Caracas / GMT-04:00)
+- **MD5**: `702af4daf5235377cf74f6f06f924b25`
+- **SHA256**: `69ceab2bfd72f0d51d874f87a6854fef2b83698c227a7f2bb38a8892653414d4`
 - **Encoding**: UTF-8
 
 **File code content:**
@@ -3034,7 +3034,7 @@ export default function LoginPage() {
 
         const rol = usuario.rol.toLowerCase().trim()
 
-        // 3. Control de Acceso y Redirección (Envuelto en startTransition para evitar bloqueos de interfaz)
+        // 3. Control de Acceso y Redirección
         startTransition(() => {
           if (rol === 'administrador' || userEmail === 'serdefalcatecnologia@gmail.com') {
             router.push('/admin') 
@@ -3049,7 +3049,6 @@ export default function LoginPage() {
             router.push('/admin/desechos')
           } 
           else {
-            // Manejo de roles no válidos en caso de error interno
             setError(`El rol "${rol}" no es válido.`)
           }
         })
@@ -3062,25 +3061,25 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
       
-      {/* Imagen de fondo optimizada con Next.js */}
+      {/* Imagen de fondo optimizada (capa base) */}
       <Image
         src="/imagen1.png"
         alt="Fondo Serdefalca"
         fill
         priority
         sizes="100vw"
-        className="object-cover object-center -z-10"
+        className="object-cover object-center z-0"
       />
 
-      {/* Capa ligera para proteger el contraste sin difuminar la imagen */}
-      <div className="absolute inset-0 bg-black/10 z-0"></div>
+      {/* Capa ligera para proteger el contraste (capa intermedia) */}
+      <div className="absolute inset-0 bg-black/20 z-10"></div>
 
-      {/* Contenedor principal reducido a max-w-[340px] y padding p-6 */}
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[340px] p-6 relative z-10">
+      {/* Contenedor del formulario (capa superior) */}
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[340px] p-6 relative z-20">
         
-        {/* Logo optimizado con Next.js */}
+        {/* Logo optimizado */}
         <div className="relative flex justify-center mb-3 h-20 w-full">
           <Image 
             src="/logo1.png" 
@@ -3091,7 +3090,7 @@ export default function LoginPage() {
           />
         </div>
 
-        {/* Títulos con espaciado ajustado */}
+        {/* Títulos */}
         <div className="text-center mb-5">
           <h1 className="text-xl font-bold text-green-800 tracking-wide mb-0.5">SERDEFAL, C.A</h1>
           <p className="text-[11px] text-gray-500 px-1 leading-tight">
