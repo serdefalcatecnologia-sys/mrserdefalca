@@ -5,7 +5,7 @@ PROJECT EXPORT FOR LLMs
 PROJECT INFORMATION:
 --------------------------------------------------
 Project Name: mrserdefalca
-Generated On: 2026-09-03 18:18:49 (America/Caracas / GMT-04:00)
+Generated On: 2026-09-03 18:25:51 (America/Caracas / GMT-04:00)
 Total Files Processed: 36
 Export Tool: Easy Whole Project to Single Text File for LLMs v1.1.0
 Tool Author: Jota / José Guilherme Pandolfi
@@ -3143,9 +3143,9 @@ Language: typescript
 Location: app/page.tsx
 Relative Path: app
 Created: 2026-07-21 20:24:25 (America/Caracas / GMT-04:00)
-Modified: 2026-09-03 17:22:20 (America/Caracas / GMT-04:00)
-MD5: 0baaa91bd93d1516ac2facf1783c61a6
-SHA256: 486e8f8bfa84feb09922177223483f309a225eecc06193142fb75350f3176a59
+Modified: 2026-09-03 18:25:51 (America/Caracas / GMT-04:00)
+MD5: 4f3f87c700af0d43ac79e752da73c080
+SHA256: 5d864f02e38e1af1c2705ca6add34d632503f4e5c3b06d743de25bcb05a1c047
 Encoding: UTF-8
 
 FILE CONTENT:
@@ -3201,7 +3201,7 @@ export default function LoginPage() {
             router.push('/comercial')
           } 
           else if (rol === 'flota') {
-            router.push('/admin/flota')
+            router.push('/flota')
           } 
           else if (rol === 'desechos') {
             router.push('/desechos') 
