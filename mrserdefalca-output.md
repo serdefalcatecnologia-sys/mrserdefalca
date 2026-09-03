@@ -3,7 +3,7 @@
 ## 📊 Project Information
 
 - **Project Name**: `mrserdefalca`
-- **Generated On**: 2026-09-03 14:25:11 (America/Caracas / GMT-04:00)
+- **Generated On**: 2026-09-03 17:09:16 (America/Caracas / GMT-04:00)
 - **Total Files Processed**: 36
 - **Export Tool**: Easy Whole Project to Single Text File for LLMs v1.1.0
 - **Tool Author**: Jota / José Guilherme Pandolfi
@@ -39,7 +39,7 @@
 │   ├── 📁 comercial/
 │   │   └── 📄 page.tsx (10.1 KB)
 │   ├── 📁 desechos/
-│   │   └── 📄 page.tsx (11.68 KB)
+│   │   └── 📄 page.tsx (10.75 KB)
 │   ├── 📁 flota/
 │   │   └── 📄 page.tsx (4.59 KB)
 │   ├── 📁 llave/
@@ -50,7 +50,7 @@
 │   ├── 📄 favicon.ico (264.06 KB)
 │   ├── 📄 globals.css (488 B)
 │   ├── 📄 layout.tsx (821 B)
-│   └── 📄 page.tsx (6.24 KB)
+│   └── 📄 page.tsx (5.06 KB)
 ├── 📁 lib/
 │   └── 📄 supabase.ts (265 B)
 ├── 📁 public/
@@ -116,7 +116,7 @@
 | Total Directories | 17 |
 | Text Files | 26 |
 | Binary Files | 10 |
-| Total Size | 922.61 KB |
+| Total Size | 920.5 KB |
 
 ### 📄 File Types Distribution
 
@@ -823,7 +823,7 @@ export default function ConfiguracionSistema() {
 - **Location**: `app/admin/desechos/page.tsx`
 - **Relative Path**: `app/admin/desechos`
 - **Created**: 2026-08-31 16:40:55 (America/Caracas / GMT-04:00)
-- **Modified**: 2026-09-03 13:46:43 (America/Caracas / GMT-04:00)
+- **Modified**: 2026-09-03 17:09:15 (America/Caracas / GMT-04:00)
 - **MD5**: `27ce8c1b8afc3f61af6e681989d2329f`
 - **SHA256**: `dd0b3396cdcbc9b0b43e6242f302593cee0ff079f4e5a359c69d387d16acda03`
 - **Encoding**: ASCII
@@ -2273,15 +2273,15 @@ export default function RegistroComercial() {
 ### <a id="📄-app-desechos-page-tsx"></a>📄 `app/desechos/page.tsx`
 
 **File Info:**
-- **Size**: 11.68 KB
+- **Size**: 10.75 KB
 - **Extension**: `.tsx`
 - **Language**: `typescript`
 - **Location**: `app/desechos/page.tsx`
 - **Relative Path**: `app/desechos`
 - **Created**: 2026-08-31 16:08:08 (America/Caracas / GMT-04:00)
-- **Modified**: 2026-09-03 13:57:19 (America/Caracas / GMT-04:00)
-- **MD5**: `cbec843a32147cd2e8f8a35cdf7bbc8c`
-- **SHA256**: `3644650bd42fa3b6eb8c1174d92bec5c6fab3ab38b1e071d15c93f1db5559b19`
+- **Modified**: 2026-09-03 17:08:31 (America/Caracas / GMT-04:00)
+- **MD5**: `d53ef2b3f05a735dbee1cc9154cc5f44`
+- **SHA256**: `67a4db2578279da306e1cd4da572c94f29c9db38306f20135486bff1155c62fb`
 - **Encoding**: UTF-8
 
 **File code content:**
@@ -2304,7 +2304,7 @@ export default function DesechosPage() {
   const [usuarioNombre, setUsuarioNombre] = useState("Cargando...");
   const [usuarioIniciales, setUsuarioIniciales] = useState("--");
 
-  // Estados exactos solicitados para el formulario
+  // Estados exactos solicitados
   const [tipoDesecho, setTipoDesecho] = useState("Sólidos Urbanos");
   const [tipoTransporte, setTipoTransporte] = useState("Camión Compactador");
   const [placa, setPlaca] = useState("");
@@ -2313,7 +2313,6 @@ export default function DesechosPage() {
 
   const [mensaje, setMensaje] = useState({ texto: "", tipo: "" });
 
-  // Obtener el usuario logueado para guardarlo como "Responsable"
   const obtenerUsuario = useCallback(async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -2352,7 +2351,7 @@ export default function DesechosPage() {
             placa: placa,
             municipio: municipio,
             observaciones: observaciones,
-            responsable: usuarioNombre // Guarda quién registró el ingreso
+            responsable: usuarioNombre 
           },
         ]);
 
@@ -2360,7 +2359,7 @@ export default function DesechosPage() {
 
         setMensaje({ texto: "✅ Ingreso de desechos registrado exitosamente.", tipo: "exito" });
         
-        // Limpiar el formulario para el siguiente camión
+        // Limpiar para el siguiente registro
         setPlaca("");
         setObservaciones("");
         setTipoDesecho("Sólidos Urbanos");
@@ -2376,14 +2375,12 @@ export default function DesechosPage() {
 
   return (
     <div className="flex min-h-screen bg-zinc-100 font-sans">
-      {/* Sidebar Lateral */}
       <aside className="w-64 bg-emerald-950 text-white flex flex-col justify-between p-4 shadow-xl shrink-0 hidden md:flex">
         <div>
           <div className="py-4 px-2 border-b border-emerald-800/60 mb-6">
             <h1 className="text-xl font-black tracking-wider text-white">SERDEFALCA</h1>
             <p className="text-[10px] text-emerald-300 font-medium">Gestión Integral de Desechos</p>
           </div>
-
           <nav className="space-y-1 text-sm font-medium">
             <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-emerald-800 text-white shadow-inner">
               <span className="text-lg">🚛</span>
@@ -2391,7 +2388,6 @@ export default function DesechosPage() {
             </div>
           </nav>
         </div>
-
         <button
           onClick={handleCerrarSesion}
           className="flex items-center gap-2 text-xs font-semibold text-red-300 hover:text-red-100 px-3 py-2 rounded-lg hover:bg-emerald-900 transition-colors"
@@ -2401,7 +2397,6 @@ export default function DesechosPage() {
         </button>
       </aside>
 
-      {/* Contenido Principal */}
       <main className="flex-1 flex flex-col overflow-hidden">
         <header className="bg-emerald-900 text-white px-6 md:px-8 py-4 flex items-center justify-between shadow-md">
           <h2 className="text-base md:text-lg font-bold tracking-wide">Módulo Control de Desechos</h2>
@@ -2427,8 +2422,6 @@ export default function DesechosPage() {
 
             <form onSubmit={handleGuardarIngreso} className="space-y-5">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5">
-                
-                {/* 1. Tipo de Desechos */}
                 <div>
                   <label className="block text-xs font-semibold text-zinc-700 mb-1">Clasificación de Desecho *</label>
                   <select
@@ -2445,7 +2438,6 @@ export default function DesechosPage() {
                   </select>
                 </div>
 
-                {/* 2. Tipo de Transporte */}
                 <div>
                   <label className="block text-xs font-semibold text-zinc-700 mb-1">Tipo de Transporte *</label>
                   <select
@@ -2462,7 +2454,6 @@ export default function DesechosPage() {
                   </select>
                 </div>
 
-                {/* 3. Placa del Vehículo */}
                 <div>
                   <label className="block text-xs font-semibold text-zinc-700 mb-1">Placa del Vehículo *</label>
                   <input
@@ -2475,7 +2466,6 @@ export default function DesechosPage() {
                   />
                 </div>
 
-                {/* 4. Municipio de Origen */}
                 <div>
                   <label className="block text-xs font-semibold text-zinc-700 mb-1">Municipio de Origen *</label>
                   <select
@@ -2493,7 +2483,6 @@ export default function DesechosPage() {
                   </select>
                 </div>
 
-                {/* 5. Observaciones */}
                 <div className="sm:col-span-2">
                   <label className="block text-xs font-semibold text-zinc-700 mb-1">Observaciones</label>
                   <input
@@ -2521,17 +2510,7 @@ export default function DesechosPage() {
                 disabled={isPending}
                 className="w-full py-3.5 bg-emerald-700 text-white font-bold text-sm rounded-xl hover:bg-emerald-800 transition-colors disabled:bg-emerald-400 shadow-md mt-4 flex justify-center items-center gap-2"
               >
-                {isPending ? (
-                  <>
-                    <svg className="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                    </svg>
-                    Procesando...
-                  </>
-                ) : (
-                  "Registrar Ingreso"
-                )}
+                {isPending ? "Procesando..." : "Registrar Ingreso"}
               </button>
             </form>
           </div>
@@ -2975,15 +2954,15 @@ export default function RootLayout({
 ### <a id="📄-app-page-tsx"></a>📄 `app/page.tsx`
 
 **File Info:**
-- **Size**: 6.24 KB
+- **Size**: 5.06 KB
 - **Extension**: `.tsx`
 - **Language**: `typescript`
 - **Location**: `app/page.tsx`
 - **Relative Path**: `app`
 - **Created**: 2026-07-21 20:24:25 (America/Caracas / GMT-04:00)
-- **Modified**: 2026-09-03 14:25:11 (America/Caracas / GMT-04:00)
-- **MD5**: `702af4daf5235377cf74f6f06f924b25`
-- **SHA256**: `69ceab2bfd72f0d51d874f87a6854fef2b83698c227a7f2bb38a8892653414d4`
+- **Modified**: 2026-09-03 17:07:42 (America/Caracas / GMT-04:00)
+- **MD5**: `b01fa7038a19dd0710de4f86de3ed4bb`
+- **SHA256**: `08c2da8b695876d72efe0983e17adcdac3e4bfa189cb1d49e11a67cb73bc37c8`
 - **Encoding**: UTF-8
 
 **File code content:**
@@ -3046,7 +3025,8 @@ export default function LoginPage() {
             router.push('/admin/flota')
           } 
           else if (rol === 'desechos') {
-            router.push('/admin/desechos')
+            // AQUÍ ESTABA EL ERROR: Ahora apunta al formulario correcto
+            router.push('/desechos') 
           } 
           else {
             setError(`El rol "${rol}" no es válido.`)
@@ -3061,25 +3041,21 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 relative overflow-hidden">
       
-      {/* Imagen de fondo optimizada (capa base) */}
       <Image
         src="/imagen1.png"
         alt="Fondo Serdefalca"
         fill
         priority
         sizes="100vw"
-        className="object-cover object-center z-0"
+        className="object-cover object-center -z-10"
       />
 
-      {/* Capa ligera para proteger el contraste (capa intermedia) */}
-      <div className="absolute inset-0 bg-black/20 z-10"></div>
+      <div className="absolute inset-0 bg-black/10 z-0"></div>
 
-      {/* Contenedor del formulario (capa superior) */}
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[340px] p-6 relative z-20">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[340px] p-6 relative z-10">
         
-        {/* Logo optimizado */}
         <div className="relative flex justify-center mb-3 h-20 w-full">
           <Image 
             src="/logo1.png" 
@@ -3090,7 +3066,6 @@ export default function LoginPage() {
           />
         </div>
 
-        {/* Títulos */}
         <div className="text-center mb-5">
           <h1 className="text-xl font-bold text-green-800 tracking-wide mb-0.5">SERDEFAL, C.A</h1>
           <p className="text-[11px] text-gray-500 px-1 leading-tight">
@@ -3098,7 +3073,6 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* Formulario */}
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
             <label className="block text-xs text-gray-600 mb-1 font-medium">Correo Electrónico</label>
@@ -3123,23 +3097,11 @@ export default function LoginPage() {
                 placeholder="••••••••"
                 required
               />
-              <button 
-                type="button" 
-                className="absolute right-2.5 top-1.5 text-gray-400 hover:text-gray-600"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                  <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
-                </svg>
-              </button>
             </div>
           </div>
 
           {error && (
             <div className="bg-red-50 text-red-600 text-[11px] p-2.5 rounded-lg flex items-center gap-2 border border-red-100">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 shrink-0" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-              </svg>
               {error}
             </div>
           )}
