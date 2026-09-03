@@ -15,7 +15,7 @@ export default function DesechosPage() {
   const [usuarioNombre, setUsuarioNombre] = useState("Cargando...");
   const [usuarioIniciales, setUsuarioIniciales] = useState("--");
 
-  // Estados exactos solicitados
+  // Estados del formulario
   const [tipoDesecho, setTipoDesecho] = useState("Sólidos Urbanos");
   const [tipoTransporte, setTipoTransporte] = useState("Camión Compactador");
   const [placa, setPlaca] = useState("");
@@ -60,7 +60,7 @@ export default function DesechosPage() {
             tipo_desecho: tipoDesecho,
             tipo_transporte: tipoTransporte,
             placa: placa,
-            municipio: municipio,
+            origen_municipio: municipio, // <- AQUÍ CORREGIMOS EL NOMBRE PARA SUPABASE
             observaciones: observaciones,
             responsable: usuarioNombre 
           },

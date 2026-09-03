@@ -3,7 +3,7 @@
 ## 📊 Project Information
 
 - **Project Name**: `mrserdefalca`
-- **Generated On**: 2026-09-03 17:09:16 (America/Caracas / GMT-04:00)
+- **Generated On**: 2026-09-03 17:22:20 (America/Caracas / GMT-04:00)
 - **Total Files Processed**: 36
 - **Export Tool**: Easy Whole Project to Single Text File for LLMs v1.1.0
 - **Tool Author**: Jota / José Guilherme Pandolfi
@@ -27,7 +27,7 @@
 │   │   ├── 📁 configuracion/
 │   │   │   └── 📄 page.tsx (13.58 KB)
 │   │   ├── 📁 desechos/
-│   │   │   └── 📄 page.tsx (4.75 KB)
+│   │   │   └── 📄 page.tsx (4.93 KB)
 │   │   ├── 📁 empleados/
 │   │   │   ├── 📁 registro/
 │   │   │   │   └── 📄 page.tsx (8.17 KB)
@@ -39,7 +39,7 @@
 │   ├── 📁 comercial/
 │   │   └── 📄 page.tsx (10.1 KB)
 │   ├── 📁 desechos/
-│   │   └── 📄 page.tsx (10.75 KB)
+│   │   └── 📄 page.tsx (10.8 KB)
 │   ├── 📁 flota/
 │   │   └── 📄 page.tsx (4.59 KB)
 │   ├── 📁 llave/
@@ -50,7 +50,7 @@
 │   ├── 📄 favicon.ico (264.06 KB)
 │   ├── 📄 globals.css (488 B)
 │   ├── 📄 layout.tsx (821 B)
-│   └── 📄 page.tsx (5.06 KB)
+│   └── 📄 page.tsx (4.85 KB)
 ├── 📁 lib/
 │   └── 📄 supabase.ts (265 B)
 ├── 📁 public/
@@ -116,7 +116,7 @@
 | Total Directories | 17 |
 | Text Files | 26 |
 | Binary Files | 10 |
-| Total Size | 920.5 KB |
+| Total Size | 920.53 KB |
 
 ### 📄 File Types Distribution
 
@@ -817,15 +817,15 @@ export default function ConfiguracionSistema() {
 ### <a id="📄-app-admin-desechos-page-tsx"></a>📄 `app/admin/desechos/page.tsx`
 
 **File Info:**
-- **Size**: 4.75 KB
+- **Size**: 4.93 KB
 - **Extension**: `.tsx`
 - **Language**: `typescript`
 - **Location**: `app/admin/desechos/page.tsx`
 - **Relative Path**: `app/admin/desechos`
 - **Created**: 2026-08-31 16:40:55 (America/Caracas / GMT-04:00)
-- **Modified**: 2026-09-03 17:09:15 (America/Caracas / GMT-04:00)
-- **MD5**: `27ce8c1b8afc3f61af6e681989d2329f`
-- **SHA256**: `dd0b3396cdcbc9b0b43e6242f302593cee0ff079f4e5a359c69d387d16acda03`
+- **Modified**: 2026-09-03 17:21:55 (America/Caracas / GMT-04:00)
+- **MD5**: `0d533a421737466b74ab0f584ba0ab9b`
+- **SHA256**: `6fc961b405a3ae455a2eeeb497c9f40fc6e1048755b5cab13f5db239cb142d74`
 - **Encoding**: ASCII
 
 **File code content:**
@@ -908,19 +908,20 @@ export default function VistaDesechosAdmin() {
                 <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Clasificación</th>
                 <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Transporte</th>
                 <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Placa</th>
+                <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Municipio</th>
                 <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Responsable</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-100">
               {cargando ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-zinc-500">
+                  <td colSpan={6} className="px-6 py-8 text-center text-zinc-500">
                     Cargando registros...
                   </td>
                 </tr>
               ) : registros.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-zinc-500">
+                  <td colSpan={6} className="px-6 py-8 text-center text-zinc-500">
                     No hay registros de desechos aún.
                   </td>
                 </tr>
@@ -935,8 +936,9 @@ export default function VistaDesechosAdmin() {
                         {reg.tipo_desecho}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-zinc-500">{reg.tipo_transporte || 'No especificado'}</td>
+                    <td className="px-6 py-4 text-zinc-500">{reg.tipo_transporte || 'N/A'}</td>
                     <td className="px-6 py-4 font-mono font-bold uppercase text-zinc-700">{reg.placa}</td>
+                    <td className="px-6 py-4 text-zinc-600">{reg.origen_municipio || 'N/A'}</td>
                     <td className="px-6 py-4 text-zinc-600">{reg.responsable || 'N/A'}</td>
                   </tr>
                 ))
@@ -2273,15 +2275,15 @@ export default function RegistroComercial() {
 ### <a id="📄-app-desechos-page-tsx"></a>📄 `app/desechos/page.tsx`
 
 **File Info:**
-- **Size**: 10.75 KB
+- **Size**: 10.8 KB
 - **Extension**: `.tsx`
 - **Language**: `typescript`
 - **Location**: `app/desechos/page.tsx`
 - **Relative Path**: `app/desechos`
 - **Created**: 2026-08-31 16:08:08 (America/Caracas / GMT-04:00)
-- **Modified**: 2026-09-03 17:08:31 (America/Caracas / GMT-04:00)
-- **MD5**: `d53ef2b3f05a735dbee1cc9154cc5f44`
-- **SHA256**: `67a4db2578279da306e1cd4da572c94f29c9db38306f20135486bff1155c62fb`
+- **Modified**: 2026-09-03 17:21:31 (America/Caracas / GMT-04:00)
+- **MD5**: `8d86a9b16df7802dfe3e75d9667ea24f`
+- **SHA256**: `366349aef7ae1023c9077cafa3586281fd39f20d256ee8b8d599da1a76020c17`
 - **Encoding**: UTF-8
 
 **File code content:**
@@ -2304,7 +2306,7 @@ export default function DesechosPage() {
   const [usuarioNombre, setUsuarioNombre] = useState("Cargando...");
   const [usuarioIniciales, setUsuarioIniciales] = useState("--");
 
-  // Estados exactos solicitados
+  // Estados del formulario
   const [tipoDesecho, setTipoDesecho] = useState("Sólidos Urbanos");
   const [tipoTransporte, setTipoTransporte] = useState("Camión Compactador");
   const [placa, setPlaca] = useState("");
@@ -2349,7 +2351,7 @@ export default function DesechosPage() {
             tipo_desecho: tipoDesecho,
             tipo_transporte: tipoTransporte,
             placa: placa,
-            municipio: municipio,
+            origen_municipio: municipio, // <- AQUÍ CORREGIMOS EL NOMBRE PARA SUPABASE
             observaciones: observaciones,
             responsable: usuarioNombre 
           },
@@ -2954,15 +2956,15 @@ export default function RootLayout({
 ### <a id="📄-app-page-tsx"></a>📄 `app/page.tsx`
 
 **File Info:**
-- **Size**: 5.06 KB
+- **Size**: 4.85 KB
 - **Extension**: `.tsx`
 - **Language**: `typescript`
 - **Location**: `app/page.tsx`
 - **Relative Path**: `app`
 - **Created**: 2026-07-21 20:24:25 (America/Caracas / GMT-04:00)
-- **Modified**: 2026-09-03 17:07:42 (America/Caracas / GMT-04:00)
-- **MD5**: `b01fa7038a19dd0710de4f86de3ed4bb`
-- **SHA256**: `08c2da8b695876d72efe0983e17adcdac3e4bfa189cb1d49e11a67cb73bc37c8`
+- **Modified**: 2026-09-03 17:22:20 (America/Caracas / GMT-04:00)
+- **MD5**: `0baaa91bd93d1516ac2facf1783c61a6`
+- **SHA256**: `486e8f8bfa84feb09922177223483f309a225eecc06193142fb75350f3176a59`
 - **Encoding**: UTF-8
 
 **File code content:**
@@ -2989,7 +2991,6 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      // 1. Autenticar al usuario
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -3000,7 +3001,6 @@ export default function LoginPage() {
       if (authData.session) {
         const userEmail = authData.session.user.email
 
-        // 2. Buscar el rol del usuario en la base de datos
         const { data: usuario, error: userError } = await supabase
           .from('usuarios')
           .select('rol')
@@ -3013,7 +3013,6 @@ export default function LoginPage() {
 
         const rol = usuario.rol.toLowerCase().trim()
 
-        // 3. Control de Acceso y Redirección
         startTransition(() => {
           if (rol === 'administrador' || userEmail === 'serdefalcatecnologia@gmail.com') {
             router.push('/admin') 
@@ -3025,7 +3024,6 @@ export default function LoginPage() {
             router.push('/admin/flota')
           } 
           else if (rol === 'desechos') {
-            // AQUÍ ESTABA EL ERROR: Ahora apunta al formulario correcto
             router.push('/desechos') 
           } 
           else {

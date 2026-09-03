@@ -19,7 +19,6 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      // 1. Autenticar al usuario
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -30,7 +29,6 @@ export default function LoginPage() {
       if (authData.session) {
         const userEmail = authData.session.user.email
 
-        // 2. Buscar el rol del usuario en la base de datos
         const { data: usuario, error: userError } = await supabase
           .from('usuarios')
           .select('rol')
@@ -43,7 +41,6 @@ export default function LoginPage() {
 
         const rol = usuario.rol.toLowerCase().trim()
 
-        // 3. Control de Acceso y Redirección
         startTransition(() => {
           if (rol === 'administrador' || userEmail === 'serdefalcatecnologia@gmail.com') {
             router.push('/admin') 
@@ -55,7 +52,6 @@ export default function LoginPage() {
             router.push('/admin/flota')
           } 
           else if (rol === 'desechos') {
-            // AQUÍ ESTABA EL ERROR: Ahora apunta al formulario correcto
             router.push('/desechos') 
           } 
           else {

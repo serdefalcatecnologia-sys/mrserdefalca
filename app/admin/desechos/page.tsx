@@ -75,19 +75,20 @@ export default function VistaDesechosAdmin() {
                 <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Clasificación</th>
                 <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Transporte</th>
                 <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Placa</th>
+                <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Municipio</th>
                 <th className="px-6 py-4 font-semibold uppercase tracking-wider text-xs">Responsable</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-100">
               {cargando ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-zinc-500">
+                  <td colSpan={6} className="px-6 py-8 text-center text-zinc-500">
                     Cargando registros...
                   </td>
                 </tr>
               ) : registros.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-zinc-500">
+                  <td colSpan={6} className="px-6 py-8 text-center text-zinc-500">
                     No hay registros de desechos aún.
                   </td>
                 </tr>
@@ -102,8 +103,9 @@ export default function VistaDesechosAdmin() {
                         {reg.tipo_desecho}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-zinc-500">{reg.tipo_transporte || 'No especificado'}</td>
+                    <td className="px-6 py-4 text-zinc-500">{reg.tipo_transporte || 'N/A'}</td>
                     <td className="px-6 py-4 font-mono font-bold uppercase text-zinc-700">{reg.placa}</td>
+                    <td className="px-6 py-4 text-zinc-600">{reg.origen_municipio || 'N/A'}</td>
                     <td className="px-6 py-4 text-zinc-600">{reg.responsable || 'N/A'}</td>
                   </tr>
                 ))
