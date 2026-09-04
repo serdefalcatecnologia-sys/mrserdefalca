@@ -3,11 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { createClient } from '@supabase/supabase-js';
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
-const supabase = createClient(supabaseUrl, supabaseKey);
+// IMPORTANTE: Usamos la instancia centralizada en lugar de crear una nueva
+import { supabase } from '@/lib/supabase'; 
 
 export default function ConfiguracionSistema() {
   const router = useRouter();
@@ -40,15 +37,19 @@ export default function ConfiguracionSistema() {
   };
 
   useEffect(() => {
+    let montado = true; // Para evitar actualizar estado si el componente se desmonta
+
     const inicializar = async () => {
       const { data: authData } = await supabase.auth.getSession();
+      
       if (!authData.session) {
         router.push('/');
         return;
       }
       
       const { data: config } = await supabase.from('empresa_config').select('*').eq('id', 1).single();
-      if (config) {
+      
+      if (config && montado) {
         setDatosEmpresa({
           razon_social: config.razon_social || '',
           rif: config.rif || '',
@@ -57,12 +58,23 @@ export default function ConfiguracionSistema() {
           direccion: config.direccion || ''
         });
       }
-      setCargando(false);
-      medirPing();
+      
+      if (montado) {
+        setCargando(false);
+        medirPing();
+      }
     };
+    
     inicializar();
-    const intervaloPing = setInterval(medirPing, 10000);
-    return () => clearInterval(intervaloPing);
+    
+    const intervaloPing = setInterval(() => {
+      if (montado) medirPing();
+    }, 10000);
+    
+    return () => {
+      montado = false;
+      clearInterval(intervaloPing);
+    };
   }, [router]);
 
   const medirPing = async () => {
@@ -71,6 +83,7 @@ export default function ConfiguracionSistema() {
       await fetch('https://ve.dolarapi.com/v1/dolares/oficial', { method: 'HEAD', cache: 'no-store' });
       const fin = performance.now();
       const tiempo = Math.round(fin - inicio);
+      
       setPingMs(tiempo);
 
       if (tiempo < 150) { setEstadoInternet('Óptima (Vuela 🚀)'); setColorInternet('text-emerald-500'); }
@@ -91,8 +104,8 @@ export default function ConfiguracionSistema() {
       const { error } = await supabase.from('empresa_config').upsert({ id: 1, ...datosEmpresa });
       if (error) throw error;
       mostrarMensaje('exito', 'Configuración de la empresa actualizada.');
-    } catch (err: any) {
-      mostrarMensaje('error', err.message);
+    } catch (err: unknown) {
+      mostrarMensaje('error', (err as Error).message);
     } finally {
       setGuardandoEmpresa(false);
     }
@@ -113,8 +126,8 @@ export default function ConfiguracionSistema() {
       URL.revokeObjectURL(url);
       
       mostrarMensaje('exito', `Respaldo descargado correctamente.`);
-    } catch (err: any) {
-      mostrarMensaje('error', 'Error al respaldar: ' + err.message);
+    } catch (err: unknown) {
+      mostrarMensaje('error', 'Error al respaldar: ' + (err as Error).message);
     } finally {
       setProcesandoDB(false);
     }
@@ -126,6 +139,7 @@ export default function ConfiguracionSistema() {
       return;
     }
     const confirmar = confirm(`🚨 PELIGRO: Vas a borrar registros anteriores al ${fechaLimpieza}. ¿Seguro?`);
+    
     if (confirmar) {
       setProcesandoDB(true);
       try {
@@ -134,10 +148,11 @@ export default function ConfiguracionSistema() {
                              
         const { error } = await supabase.from(tablaSeleccionada).delete().lt(columnaFecha, fechaLimpieza);
         if (error) throw error;
+        
         mostrarMensaje('exito', `Datos antiguos eliminados.`);
         setFechaLimpieza('');
-      } catch (err: any) {
-        mostrarMensaje('error', 'Error: ' + err.message);
+      } catch (err: unknown) {
+        mostrarMensaje('error', 'Error: ' + (err as Error).message);
       } finally {
         setProcesandoDB(false);
       }
@@ -167,9 +182,9 @@ export default function ConfiguracionSistema() {
         </div>
 
         <div className="flex border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 overflow-x-auto">
-          <button onClick={() => setTabActiva('empresa')} className={`px-6 py-4 text-sm font-bold border-b-2 ${tabActiva === 'empresa' ? 'border-emerald-500 text-emerald-600 bg-white' : 'border-transparent text-zinc-500'}`}>1. Perfil de Empresa</button>
-          <button onClick={() => setTabActiva('salud')} className={`px-6 py-4 text-sm font-bold border-b-2 ${tabActiva === 'salud' ? 'border-blue-500 text-blue-600 bg-white' : 'border-transparent text-zinc-500'}`}>2. Salud del Sistema</button>
-          <button onClick={() => setTabActiva('db')} className={`px-6 py-4 text-sm font-bold border-b-2 ${tabActiva === 'db' ? 'border-amber-500 text-amber-600 bg-white' : 'border-transparent text-zinc-500'}`}>3. Base de Datos</button>
+          <button type="button" onClick={() => setTabActiva('empresa')} className={`px-6 py-4 text-sm font-bold border-b-2 ${tabActiva === 'empresa' ? 'border-emerald-500 text-emerald-600 bg-white' : 'border-transparent text-zinc-500'}`}>1. Perfil de Empresa</button>
+          <button type="button" onClick={() => setTabActiva('salud')} className={`px-6 py-4 text-sm font-bold border-b-2 ${tabActiva === 'salud' ? 'border-blue-500 text-blue-600 bg-white' : 'border-transparent text-zinc-500'}`}>2. Salud del Sistema</button>
+          <button type="button" onClick={() => setTabActiva('db')} className={`px-6 py-4 text-sm font-bold border-b-2 ${tabActiva === 'db' ? 'border-amber-500 text-amber-600 bg-white' : 'border-transparent text-zinc-500'}`}>3. Base de Datos</button>
         </div>
 
         <div className="p-8">
@@ -183,23 +198,23 @@ export default function ConfiguracionSistema() {
             <form onSubmit={guardarEmpresa} className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in">
               <div>
                 <label className="block text-xs font-bold text-zinc-500 mb-1">Razón Social</label>
-                <input required type="text" value={datosEmpresa.razon_social} onChange={(e) => setDatosEmpresa({...datosEmpresa, razon_social: e.target.value})} className="w-full rounded-lg border border-zinc-300 p-3 text-sm focus:border-emerald-500 outline-none" />
+                <input required type="text" value={datosEmpresa.razon_social} onChange={(e) => setDatosEmpresa({...datosEmpresa, razon_social: e.target.value})} className="w-full rounded-lg border border-zinc-300 p-3 text-sm focus:border-emerald-500 outline-none dark:bg-zinc-800 dark:border-zinc-700 dark:text-white" />
               </div>
               <div>
                 <label className="block text-xs font-bold text-zinc-500 mb-1">RIF</label>
-                <input required type="text" value={datosEmpresa.rif} onChange={(e) => setDatosEmpresa({...datosEmpresa, rif: e.target.value})} className="w-full rounded-lg border border-zinc-300 p-3 text-sm focus:border-emerald-500 outline-none" />
+                <input required type="text" value={datosEmpresa.rif} onChange={(e) => setDatosEmpresa({...datosEmpresa, rif: e.target.value})} className="w-full rounded-lg border border-zinc-300 p-3 text-sm focus:border-emerald-500 outline-none dark:bg-zinc-800 dark:border-zinc-700 dark:text-white" />
               </div>
               <div>
                 <label className="block text-xs font-bold text-zinc-500 mb-1">Director Actual</label>
-                <input required type="text" value={datosEmpresa.director} onChange={(e) => setDatosEmpresa({...datosEmpresa, director: e.target.value})} className="w-full rounded-lg border border-zinc-300 p-3 text-sm focus:border-emerald-500 outline-none" />
+                <input required type="text" value={datosEmpresa.director} onChange={(e) => setDatosEmpresa({...datosEmpresa, director: e.target.value})} className="w-full rounded-lg border border-zinc-300 p-3 text-sm focus:border-emerald-500 outline-none dark:bg-zinc-800 dark:border-zinc-700 dark:text-white" />
               </div>
               <div>
                 <label className="block text-xs font-bold text-zinc-500 mb-1">Teléfono Institucional</label>
-                <input required type="text" value={datosEmpresa.telefono} onChange={(e) => setDatosEmpresa({...datosEmpresa, telefono: e.target.value})} className="w-full rounded-lg border border-zinc-300 p-3 text-sm focus:border-emerald-500 outline-none" />
+                <input required type="text" value={datosEmpresa.telefono} onChange={(e) => setDatosEmpresa({...datosEmpresa, telefono: e.target.value})} className="w-full rounded-lg border border-zinc-300 p-3 text-sm focus:border-emerald-500 outline-none dark:bg-zinc-800 dark:border-zinc-700 dark:text-white" />
               </div>
               <div className="md:col-span-2">
                 <label className="block text-xs font-bold text-zinc-500 mb-1">Dirección Principal</label>
-                <input required type="text" value={datosEmpresa.direccion} onChange={(e) => setDatosEmpresa({...datosEmpresa, direccion: e.target.value})} className="w-full rounded-lg border border-zinc-300 p-3 text-sm focus:border-emerald-500 outline-none" />
+                <input required type="text" value={datosEmpresa.direccion} onChange={(e) => setDatosEmpresa({...datosEmpresa, direccion: e.target.value})} className="w-full rounded-lg border border-zinc-300 p-3 text-sm focus:border-emerald-500 outline-none dark:bg-zinc-800 dark:border-zinc-700 dark:text-white" />
               </div>
               <div className="md:col-span-2 flex justify-end">
                 <button type="submit" disabled={guardandoEmpresa} className="bg-emerald-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-emerald-500 disabled:opacity-50">
@@ -211,10 +226,10 @@ export default function ConfiguracionSistema() {
 
           {tabActiva === 'salud' && (
             <div className="animate-in fade-in space-y-6">
-              <div className="p-6 bg-blue-50 border border-blue-100 rounded-xl flex items-center justify-between">
+              <div className="p-6 bg-blue-50 border border-blue-100 rounded-xl flex items-center justify-between dark:bg-blue-900/20 dark:border-blue-800">
                 <div>
-                  <h3 className="font-bold text-blue-900">Estado de Conexión a Internet</h3>
-                  <p className="text-sm text-blue-700">Latencia actual (Ping): {pingMs !== null ? `${pingMs} ms` : 'Midiendo...'}</p>
+                  <h3 className="font-bold text-blue-900 dark:text-blue-400">Estado de Conexión a Internet</h3>
+                  <p className="text-sm text-blue-700 dark:text-blue-300">Latencia actual (Ping): {pingMs !== null ? `${pingMs} ms` : 'Midiendo...'}</p>
                 </div>
                 <div className={`text-lg font-black ${colorInternet}`}>{estadoInternet}</div>
               </div>
@@ -223,27 +238,27 @@ export default function ConfiguracionSistema() {
 
           {tabActiva === 'db' && (
             <div className="animate-in fade-in grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="p-6 border border-zinc-200 rounded-xl bg-zinc-50">
-                <h3 className="font-bold text-zinc-800 mb-4">1. Seleccionar Tabla</h3>
-                <select value={tablaSeleccionada} onChange={(e) => setTablaSeleccionada(e.target.value)} className="w-full rounded-lg border border-zinc-300 p-3 text-sm font-bold bg-white mb-4 outline-none focus:border-amber-500">
+              <div className="p-6 border border-zinc-200 rounded-xl bg-zinc-50 dark:bg-zinc-800 dark:border-zinc-700">
+                <h3 className="font-bold text-zinc-800 dark:text-white mb-4">1. Seleccionar Tabla</h3>
+                <select value={tablaSeleccionada} onChange={(e) => setTablaSeleccionada(e.target.value)} className="w-full rounded-lg border border-zinc-300 p-3 text-sm font-bold bg-white mb-4 outline-none focus:border-amber-500 dark:bg-zinc-900 dark:border-zinc-600 dark:text-white">
                   {Object.keys(infoTablas).map(t => <option key={t} value={t}>{t.toUpperCase()}</option>)}
                 </select>
-                <p className="text-xs text-zinc-600 mb-1"><strong>Descripción:</strong> {infoTablas[tablaSeleccionada].descripcion}</p>
-                <p className="text-xs text-zinc-600"><strong>Uso:</strong> {infoTablas[tablaSeleccionada].uso}</p>
+                <p className="text-xs text-zinc-600 dark:text-zinc-400 mb-1"><strong>Descripción:</strong> {infoTablas[tablaSeleccionada].descripcion}</p>
+                <p className="text-xs text-zinc-600 dark:text-zinc-400"><strong>Uso:</strong> {infoTablas[tablaSeleccionada].uso}</p>
                 
-                <button onClick={descargarRespaldo} disabled={procesandoDB} className="mt-6 w-full bg-slate-800 text-white py-3 rounded-lg font-bold hover:bg-slate-700 disabled:opacity-50">
+                <button type="button" onClick={descargarRespaldo} disabled={procesandoDB} className="mt-6 w-full bg-slate-800 text-white py-3 rounded-lg font-bold hover:bg-slate-700 disabled:opacity-50">
                   ⬇️ Descargar Respaldo JSON
                 </button>
               </div>
 
-              <div className="p-6 border border-red-200 rounded-xl bg-red-50">
-                <h3 className="font-bold text-red-800 mb-4">2. Zona de Peligro (Limpieza)</h3>
-                <p className="text-sm text-red-600 mb-4">Elimina registros antiguos para liberar espacio. <strong>¡Descarga un respaldo antes!</strong></p>
+              <div className="p-6 border border-red-200 rounded-xl bg-red-50 dark:bg-red-900/20 dark:border-red-900">
+                <h3 className="font-bold text-red-800 dark:text-red-400 mb-4">2. Zona de Peligro (Limpieza)</h3>
+                <p className="text-sm text-red-600 dark:text-red-300 mb-4">Elimina registros antiguos para liberar espacio. <strong>¡Descarga un respaldo antes!</strong></p>
                 
-                <label className="block text-xs font-bold text-red-700 mb-1">Eliminar todo lo anterior a:</label>
-                <input type="date" value={fechaLimpieza} onChange={(e) => setFechaLimpieza(e.target.value)} className="w-full rounded-lg border border-red-300 p-3 text-sm mb-4 outline-none focus:border-red-500 bg-white" />
+                <label className="block text-xs font-bold text-red-700 dark:text-red-400 mb-1">Eliminar todo lo anterior a:</label>
+                <input type="date" value={fechaLimpieza} onChange={(e) => setFechaLimpieza(e.target.value)} className="w-full rounded-lg border border-red-300 p-3 text-sm mb-4 outline-none focus:border-red-500 bg-white dark:bg-zinc-900 dark:border-red-800 dark:text-white" />
                 
-                <button onClick={limpiarTabla} disabled={procesandoDB || !fechaLimpieza} className="w-full bg-red-600 text-white py-3 rounded-lg font-bold hover:bg-red-700 disabled:opacity-50">
+                <button type="button" onClick={limpiarTabla} disabled={procesandoDB || !fechaLimpieza} className="w-full bg-red-600 text-white py-3 rounded-lg font-bold hover:bg-red-700 disabled:opacity-50">
                   🗑️ Ejecutar Limpieza
                 </button>
               </div>
