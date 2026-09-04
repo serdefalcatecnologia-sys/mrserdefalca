@@ -65,6 +65,13 @@ export default function ComercialPage() {
         const bcv = parseFloat(tasaBcv) || 0;
         const bs = usd * bcv;
 
+        // CORRECCIÓN: Generamos la fecha exacta del día actual en formato local (YYYY-MM-DD)
+        const hoy = new Date();
+        const año = hoy.getFullYear();
+        const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+        const dia = String(hoy.getDate()).padStart(2, '0');
+        const fechaActual = `${año}-${mes}-${dia}`;
+
         const { error } = await supabase.from("registro_comercial").insert([
           {
             cliente: cliente,
@@ -76,7 +83,8 @@ export default function ComercialPage() {
             monto_bs: bs,
             metodo_pago: metodoPago,
             estatus_pago: estatusPago,
-            responsable: usuarioNombre
+            responsable: usuarioNombre,
+            fecha: fechaActual // <-- AQUÍ ENVIAMOS LA FECHA A SUPABASE
           },
         ]);
 
@@ -227,7 +235,6 @@ export default function ComercialPage() {
                   />
                 </div>
 
-                {/* Este campo es visual y de solo lectura */}
                 <div className="bg-emerald-50 rounded-lg border border-emerald-200 p-2.5 md:p-3 flex flex-col justify-center">
                   <span className="text-[10px] font-bold text-emerald-700 uppercase">Monto Total Calculado</span>
                   <span className="text-lg font-black text-emerald-900">Bs. {montoBsCalculado}</span>

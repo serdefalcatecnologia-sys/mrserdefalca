@@ -3,7 +3,7 @@
 ## 📊 Project Information
 
 - **Project Name**: `mrserdefalca`
-- **Generated On**: 2026-09-04 09:32:43 (America/Caracas / GMT-04:00)
+- **Generated On**: 2026-09-04 09:54:54 (America/Caracas / GMT-04:00)
 - **Total Files Processed**: 36
 - **Export Tool**: Easy Whole Project to Single Text File for LLMs v1.1.0
 - **Tool Author**: Jota / José Guilherme Pandolfi
@@ -37,7 +37,7 @@
 │   │   ├── 📄 layout.tsx (8.53 KB)
 │   │   └── 📄 page.tsx (5.11 KB)
 │   ├── 📁 comercial/
-│   │   └── 📄 page.tsx (13.21 KB)
+│   │   └── 📄 page.tsx (13.57 KB)
 │   ├── 📁 desechos/
 │   │   └── 📄 page.tsx (10.8 KB)
 │   ├── 📁 flota/
@@ -116,7 +116,7 @@
 | Total Directories | 17 |
 | Text Files | 26 |
 | Binary Files | 10 |
-| Total Size | 937.96 KB |
+| Total Size | 938.31 KB |
 
 ### 📄 File Types Distribution
 
@@ -144,7 +144,7 @@
 - **Location**: `app/admin/comercial/page.tsx`
 - **Relative Path**: `app/admin/comercial`
 - **Created**: 2026-08-27 19:14:58 (America/Caracas / GMT-04:00)
-- **Modified**: 2026-09-04 09:08:29 (America/Caracas / GMT-04:00)
+- **Modified**: 2026-09-04 09:54:14 (America/Caracas / GMT-04:00)
 - **MD5**: `504c03b0078889ed768a0955e0eaa67b`
 - **SHA256**: `e8d1c2946fa52ea96523d957b2ece14eca6b996a4e7dc4bb1511ef26bfd63c6e`
 - **Encoding**: ASCII
@@ -2166,15 +2166,15 @@ export default function AdminDashboard() {
 ### <a id="📄-app-comercial-page-tsx"></a>📄 `app/comercial/page.tsx`
 
 **File Info:**
-- **Size**: 13.21 KB
+- **Size**: 13.57 KB
 - **Extension**: `.tsx`
 - **Language**: `typescript`
 - **Location**: `app/comercial/page.tsx`
 - **Relative Path**: `app/comercial`
 - **Created**: 2026-07-21 22:06:40 (America/Caracas / GMT-04:00)
-- **Modified**: 2026-09-04 09:07:38 (America/Caracas / GMT-04:00)
-- **MD5**: `394e6a29c24f389b0afd7658717d2c28`
-- **SHA256**: `6d790e4e30396ffb5598cd2c246526741dc1674aac0ef67518c769d5eb045448`
+- **Modified**: 2026-09-04 09:54:54 (America/Caracas / GMT-04:00)
+- **MD5**: `81b7e1dae605ad47002d0e1b01a39d69`
+- **SHA256**: `13a646b870b3d398683f6be61ed3746307e3d28bac4a19466e1c831a174872c9`
 - **Encoding**: UTF-8
 
 **File code content:**
@@ -2247,6 +2247,13 @@ export default function ComercialPage() {
         const bcv = parseFloat(tasaBcv) || 0;
         const bs = usd * bcv;
 
+        // CORRECCIÓN: Generamos la fecha exacta del día actual en formato local (YYYY-MM-DD)
+        const hoy = new Date();
+        const año = hoy.getFullYear();
+        const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+        const dia = String(hoy.getDate()).padStart(2, '0');
+        const fechaActual = `${año}-${mes}-${dia}`;
+
         const { error } = await supabase.from("registro_comercial").insert([
           {
             cliente: cliente,
@@ -2258,7 +2265,8 @@ export default function ComercialPage() {
             monto_bs: bs,
             metodo_pago: metodoPago,
             estatus_pago: estatusPago,
-            responsable: usuarioNombre
+            responsable: usuarioNombre,
+            fecha: fechaActual // <-- AQUÍ ENVIAMOS LA FECHA A SUPABASE
           },
         ]);
 
@@ -2409,7 +2417,6 @@ export default function ComercialPage() {
                   />
                 </div>
 
-                {/* Este campo es visual y de solo lectura */}
                 <div className="bg-emerald-50 rounded-lg border border-emerald-200 p-2.5 md:p-3 flex flex-col justify-center">
                   <span className="text-[10px] font-bold text-emerald-700 uppercase">Monto Total Calculado</span>
                   <span className="text-lg font-black text-emerald-900">Bs. {montoBsCalculado}</span>
