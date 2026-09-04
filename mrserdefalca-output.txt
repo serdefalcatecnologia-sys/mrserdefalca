@@ -5,7 +5,7 @@ PROJECT EXPORT FOR LLMs
 PROJECT INFORMATION:
 --------------------------------------------------
 Project Name: mrserdefalca
-Generated On: 2026-09-04 09:26:50 (America/Caracas / GMT-04:00)
+Generated On: 2026-09-04 09:32:43 (America/Caracas / GMT-04:00)
 Total Files Processed: 36
 Export Tool: Easy Whole Project to Single Text File for LLMs v1.1.0
 Tool Author: Jota / José Guilherme Pandolfi
@@ -27,7 +27,7 @@ PROJECT STRUCTURE
 │   │   ├── 📁 comercial/
 │   │   │   └── 📄 page.tsx (20.99 KB)
 │   │   ├── 📁 configuracion/
-│   │   │   └── 📄 page.tsx (14.46 KB)
+│   │   │   └── 📄 page.tsx (17.1 KB)
 │   │   ├── 📁 desechos/
 │   │   │   └── 📄 page.tsx (4.93 KB)
 │   │   ├── 📁 empleados/
@@ -83,7 +83,7 @@ Total Files: 36
 Total Directories: 17
 Text Files: 26
 Binary Files: 10
-Total Size: 935.31 KB
+Total Size: 937.96 KB
 
 FILE TYPES DISTRIBUTION:
 ------------------------------
@@ -510,16 +510,16 @@ FILE: app/admin/configuracion/page.tsx
 
 FILE INFORMATION:
 ----------------------------------------
-Size: 14.46 KB
+Size: 17.1 KB
 Extension: .tsx
 Language: typescript
 Location: app/admin/configuracion/page.tsx
 Relative Path: app/admin/configuracion
 Created: 2026-07-24 02:24:19 (America/Caracas / GMT-04:00)
-Modified: 2026-09-04 09:26:49 (America/Caracas / GMT-04:00)
-MD5: 4e48d4065a32bbe84e42bf4ca4ed226e
-SHA256: d2ce1eecc03e6e6cd6ebfe07f116f72d66fbdfdf841193b1f644efcdefee670c
-Encoding: ASCII
+Modified: 2026-09-04 09:32:42 (America/Caracas / GMT-04:00)
+MD5: 986190f6cc503a9411c1d1790d2258a4
+SHA256: 2ea28cfd0f89f12c9cb0a52c0bd0379114049c18bcc6f052e006c7263bd0262f
+Encoding: UTF-8
 
 FILE CONTENT:
 ----------------------------------------
@@ -528,7 +528,6 @@ FILE CONTENT:
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-// IMPORTANTE: Usamos la instancia centralizada en lugar de crear una nueva
 import { supabase } from '@/lib/supabase'; 
 
 export default function ConfiguracionSistema() {
@@ -536,6 +535,9 @@ export default function ConfiguracionSistema() {
   const [cargando, setCargando] = useState(true);
   const [tabActiva, setTabActiva] = useState<'empresa' | 'salud' | 'db'>('empresa');
   const [mensaje, setMensaje] = useState({ tipo: '', texto: '' });
+  
+  // NUEVO ESTADO: Controla la visibilidad del modal de confirmación
+  const [mostrarModalConfirmacion, setMostrarModalConfirmacion] = useState(false);
 
   // ESTADOS: EMPRESA
   const [datosEmpresa, setDatosEmpresa] = useState({
@@ -562,7 +564,7 @@ export default function ConfiguracionSistema() {
   };
 
   useEffect(() => {
-    let montado = true; // Para evitar actualizar estado si el componente se desmonta
+    let montado = true; 
 
     const inicializar = async () => {
       const { data: authData } = await supabase.auth.getSession();
@@ -658,29 +660,32 @@ export default function ConfiguracionSistema() {
     }
   };
 
-  const limpiarTabla = async () => {
+  // PASO 1: Verifica y abre el modal en lugar de usar confirm() o alert()
+  const intentarLimpiarTabla = () => {
     if (!fechaLimpieza) {
-      alert("Selecciona una fecha tope.");
+      mostrarMensaje('error', 'Por favor, selecciona una fecha tope.');
       return;
     }
-    const confirmar = confirm(`🚨 PELIGRO: Vas a borrar registros anteriores al ${fechaLimpieza}. ¿Seguro?`);
-    
-    if (confirmar) {
-      setProcesandoDB(true);
-      try {
-        const columnaFecha = tablaSeleccionada === 'facturas' ? 'fecha_operacion' : 
-                             tablaSeleccionada === 'flota_rutas' ? 'fecha' : 'created_at';
-                             
-        const { error } = await supabase.from(tablaSeleccionada).delete().lt(columnaFecha, fechaLimpieza);
-        if (error) throw error;
-        
-        mostrarMensaje('exito', `Datos antiguos eliminados.`);
-        setFechaLimpieza('');
-      } catch (err: unknown) {
-        mostrarMensaje('error', 'Error: ' + (err as Error).message);
-      } finally {
-        setProcesandoDB(false);
-      }
+    setMostrarModalConfirmacion(true);
+  };
+
+  // PASO 2: Ejecuta la acción real (se llama desde el modal)
+  const ejecutarLimpiezaConfirmada = async () => {
+    setMostrarModalConfirmacion(false); // Cerramos el modal
+    setProcesandoDB(true);
+    try {
+      const columnaFecha = tablaSeleccionada === 'facturas' ? 'fecha_operacion' : 
+                           tablaSeleccionada === 'flota_rutas' ? 'fecha' : 'created_at';
+                           
+      const { error } = await supabase.from(tablaSeleccionada).delete().lt(columnaFecha, fechaLimpieza);
+      if (error) throw error;
+      
+      mostrarMensaje('exito', `Datos antiguos eliminados.`);
+      setFechaLimpieza('');
+    } catch (err: unknown) {
+      mostrarMensaje('error', 'Error: ' + (err as Error).message);
+    } finally {
+      setProcesandoDB(false);
     }
   };
 
@@ -692,7 +697,7 @@ export default function ConfiguracionSistema() {
   if (cargando) return <div className="flex h-screen items-center justify-center font-bold text-emerald-600 bg-zinc-50">Cargando Módulo...</div>;
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 p-6 flex flex-col items-center font-sans">
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 p-6 flex flex-col items-center font-sans relative">
       <div className="w-full max-w-5xl mb-6">
         <Link href="/admin" className="inline-flex items-center gap-2 text-sm font-medium text-zinc-500 hover:text-emerald-600 transition-colors">
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
@@ -712,9 +717,9 @@ export default function ConfiguracionSistema() {
           <button type="button" onClick={() => setTabActiva('db')} className={`px-6 py-4 text-sm font-bold border-b-2 ${tabActiva === 'db' ? 'border-amber-500 text-amber-600 bg-white' : 'border-transparent text-zinc-500'}`}>3. Base de Datos</button>
         </div>
 
-        <div className="p-8">
+        <div className="p-8 relative">
           {mensaje.texto && (
-            <div className={`mb-6 p-4 rounded-lg text-sm font-bold ${mensaje.tipo === 'error' ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'}`}>
+            <div className={`mb-6 p-4 rounded-lg text-sm font-bold ${mensaje.tipo === 'error' ? 'bg-red-100 text-red-700 border border-red-200' : 'bg-emerald-100 text-emerald-700 border border-emerald-200'}`}>
               {mensaje.texto}
             </div>
           )}
@@ -776,22 +781,59 @@ export default function ConfiguracionSistema() {
                 </button>
               </div>
 
-              <div className="p-6 border border-red-200 rounded-xl bg-red-50 dark:bg-red-900/20 dark:border-red-900">
+              <div className="p-6 border border-red-200 rounded-xl bg-red-50 dark:bg-red-900/20 dark:border-red-900 relative">
                 <h3 className="font-bold text-red-800 dark:text-red-400 mb-4">2. Zona de Peligro (Limpieza)</h3>
                 <p className="text-sm text-red-600 dark:text-red-300 mb-4">Elimina registros antiguos para liberar espacio. <strong>¡Descarga un respaldo antes!</strong></p>
                 
                 <label className="block text-xs font-bold text-red-700 dark:text-red-400 mb-1">Eliminar todo lo anterior a:</label>
                 <input type="date" value={fechaLimpieza} onChange={(e) => setFechaLimpieza(e.target.value)} className="w-full rounded-lg border border-red-300 p-3 text-sm mb-4 outline-none focus:border-red-500 bg-white dark:bg-zinc-900 dark:border-red-800 dark:text-white" />
                 
-                <button type="button" onClick={limpiarTabla} disabled={procesandoDB || !fechaLimpieza} className="w-full bg-red-600 text-white py-3 rounded-lg font-bold hover:bg-red-700 disabled:opacity-50">
+                {/* Cambiamos el onClick a la nueva función que no bloquea */}
+                <button type="button" onClick={intentarLimpiarTabla} disabled={procesandoDB || !fechaLimpieza} className="w-full bg-red-600 text-white py-3 rounded-lg font-bold hover:bg-red-700 disabled:opacity-50 transition-colors">
                   🗑️ Ejecutar Limpieza
                 </button>
               </div>
             </div>
           )}
-
         </div>
       </div>
+
+      {/* MODAL DE CONFIRMACIÓN (No bloqueante) */}
+      {mostrarModalConfirmacion && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95">
+            <div className="p-6 bg-red-50 dark:bg-red-900/20 border-b border-red-100 dark:border-red-900/30">
+              <h2 className="text-xl font-black text-red-700 dark:text-red-500 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                Acción Destructiva
+              </h2>
+            </div>
+            <div className="p-6">
+              <p className="text-zinc-700 dark:text-zinc-300 mb-6">
+                Vas a eliminar de forma permanente todos los registros de la tabla <strong className="text-red-600 uppercase">{tablaSeleccionada}</strong> que sean anteriores a la fecha <strong>{fechaLimpieza}</strong>. Esta acción no se puede deshacer.
+                <br /><br />
+                ¿Estás completamente seguro de continuar?
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button 
+                  type="button" 
+                  onClick={() => setMostrarModalConfirmacion(false)}
+                  className="flex-1 px-4 py-3 border border-zinc-300 text-zinc-700 dark:border-zinc-700 dark:text-zinc-300 font-bold rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button 
+                  type="button" 
+                  onClick={ejecutarLimpiezaConfirmada}
+                  className="flex-1 px-4 py-3 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition-colors"
+                >
+                  Sí, Eliminar Datos
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
