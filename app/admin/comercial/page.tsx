@@ -74,8 +74,6 @@ export default function VistaComercializacion() {
       return;
     }
 
-    // --- LAZY LOADING DE LIBRERÍAS PDF ---
-    // Esto evita que jsPDF y autoTable bloqueen la carga inicial de la página
     const jsPDF = (await import('jspdf')).default;
     const autoTable = (await import('jspdf-autotable')).default;
 
@@ -120,7 +118,6 @@ export default function VistaComercializacion() {
   const reimprimirFactura = async (factura: any) => {
     setGenerandoPDF(true);
     try {
-      // --- LAZY LOADING DE LIBRERÍA PDF ---
       const jsPDF = (await import('jspdf')).default;
       
       const doc = new jsPDF();
@@ -258,15 +255,16 @@ export default function VistaComercializacion() {
                     <td className="px-6 py-4 font-bold text-zinc-900 dark:text-zinc-100 uppercase">{item.id.substring(0, 8)}</td>
                     <td className="px-6 py-4">{item.fecha}</td>
                     <td className="px-6 py-4">
-                      <div>{item.cliente}</div>
-                      <div className="text-xs text-zinc-400">{item.rif_cedula}</div>
+                      <div className="font-semibold text-zinc-800">{item.cliente}</div>
+                      <div className="text-xs text-zinc-400 mt-0.5">{item.rif_cedula}</div>
                     </td>
-                    <td className="px-6 py-4 font-semibold text-emerald-700">$ {Number(item.monto_usd || 0).toFixed(2)}</td>
+                    <td className="px-6 py-4 font-black text-emerald-700">$ {Number(item.monto_usd || 0).toFixed(2)}</td>
                     <td className="px-6 py-4 font-medium text-zinc-500">Bs. {Number(item.monto_bs || 0).toFixed(2)}</td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold
                         ${item.estatus_pago === 'Pagado' ? 'bg-emerald-100 text-emerald-800' : ''}
                         ${item.estatus_pago === 'Pendiente' ? 'bg-amber-100 text-amber-800' : ''}
+                        ${item.estatus_pago === 'Abono' ? 'bg-blue-100 text-blue-800' : ''}
                       `}>
                         {item.estatus_pago}
                       </span>
@@ -339,6 +337,7 @@ export default function VistaComercializacion() {
                   <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-bold
                     ${facturaSeleccionada.estatus_pago === 'Pagado' ? 'bg-emerald-100 text-emerald-800' : ''}
                     ${facturaSeleccionada.estatus_pago === 'Pendiente' ? 'bg-amber-100 text-amber-800' : ''}
+                    ${facturaSeleccionada.estatus_pago === 'Abono' ? 'bg-blue-100 text-blue-800' : ''}
                   `}>
                     {facturaSeleccionada.estatus_pago}
                   </span>

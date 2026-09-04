@@ -3,7 +3,7 @@
 ## 📊 Project Information
 
 - **Project Name**: `mrserdefalca`
-- **Generated On**: 2026-09-04 08:55:36 (America/Caracas / GMT-04:00)
+- **Generated On**: 2026-09-04 09:08:30 (America/Caracas / GMT-04:00)
 - **Total Files Processed**: 36
 - **Export Tool**: Easy Whole Project to Single Text File for LLMs v1.1.0
 - **Tool Author**: Jota / José Guilherme Pandolfi
@@ -23,7 +23,7 @@
 ├── 📁 app/
 │   ├── 📁 admin/
 │   │   ├── 📁 comercial/
-│   │   │   └── 📄 page.tsx (20.92 KB)
+│   │   │   └── 📄 page.tsx (20.99 KB)
 │   │   ├── 📁 configuracion/
 │   │   │   └── 📄 page.tsx (13.58 KB)
 │   │   ├── 📁 desechos/
@@ -37,7 +37,7 @@
 │   │   ├── 📄 layout.tsx (8.53 KB)
 │   │   └── 📄 page.tsx (5.11 KB)
 │   ├── 📁 comercial/
-│   │   └── 📄 page.tsx (10.1 KB)
+│   │   └── 📄 page.tsx (13.21 KB)
 │   ├── 📁 desechos/
 │   │   └── 📄 page.tsx (10.8 KB)
 │   ├── 📁 flota/
@@ -116,7 +116,7 @@
 | Total Directories | 17 |
 | Text Files | 26 |
 | Binary Files | 10 |
-| Total Size | 931.06 KB |
+| Total Size | 934.23 KB |
 
 ### 📄 File Types Distribution
 
@@ -138,15 +138,15 @@
 ### <a id="📄-app-admin-comercial-page-tsx"></a>📄 `app/admin/comercial/page.tsx`
 
 **File Info:**
-- **Size**: 20.92 KB
+- **Size**: 20.99 KB
 - **Extension**: `.tsx`
 - **Language**: `typescript`
 - **Location**: `app/admin/comercial/page.tsx`
 - **Relative Path**: `app/admin/comercial`
 - **Created**: 2026-08-27 19:14:58 (America/Caracas / GMT-04:00)
-- **Modified**: 2026-09-03 13:31:06 (America/Caracas / GMT-04:00)
-- **MD5**: `51e97be8d6ce95bfa0eec63810dd7110`
-- **SHA256**: `850507bb8682b84694875bca514fea2fe7352848488cac22707f4eabf85beeec`
+- **Modified**: 2026-09-04 09:08:29 (America/Caracas / GMT-04:00)
+- **MD5**: `504c03b0078889ed768a0955e0eaa67b`
+- **SHA256**: `e8d1c2946fa52ea96523d957b2ece14eca6b996a4e7dc4bb1511ef26bfd63c6e`
 - **Encoding**: ASCII
 
 **File code content:**
@@ -228,8 +228,6 @@ export default function VistaComercializacion() {
       return;
     }
 
-    // --- LAZY LOADING DE LIBRERÍAS PDF ---
-    // Esto evita que jsPDF y autoTable bloqueen la carga inicial de la página
     const jsPDF = (await import('jspdf')).default;
     const autoTable = (await import('jspdf-autotable')).default;
 
@@ -274,7 +272,6 @@ export default function VistaComercializacion() {
   const reimprimirFactura = async (factura: any) => {
     setGenerandoPDF(true);
     try {
-      // --- LAZY LOADING DE LIBRERÍA PDF ---
       const jsPDF = (await import('jspdf')).default;
       
       const doc = new jsPDF();
@@ -412,15 +409,16 @@ export default function VistaComercializacion() {
                     <td className="px-6 py-4 font-bold text-zinc-900 dark:text-zinc-100 uppercase">{item.id.substring(0, 8)}</td>
                     <td className="px-6 py-4">{item.fecha}</td>
                     <td className="px-6 py-4">
-                      <div>{item.cliente}</div>
-                      <div className="text-xs text-zinc-400">{item.rif_cedula}</div>
+                      <div className="font-semibold text-zinc-800">{item.cliente}</div>
+                      <div className="text-xs text-zinc-400 mt-0.5">{item.rif_cedula}</div>
                     </td>
-                    <td className="px-6 py-4 font-semibold text-emerald-700">$ {Number(item.monto_usd || 0).toFixed(2)}</td>
+                    <td className="px-6 py-4 font-black text-emerald-700">$ {Number(item.monto_usd || 0).toFixed(2)}</td>
                     <td className="px-6 py-4 font-medium text-zinc-500">Bs. {Number(item.monto_bs || 0).toFixed(2)}</td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold
                         ${item.estatus_pago === 'Pagado' ? 'bg-emerald-100 text-emerald-800' : ''}
                         ${item.estatus_pago === 'Pendiente' ? 'bg-amber-100 text-amber-800' : ''}
+                        ${item.estatus_pago === 'Abono' ? 'bg-blue-100 text-blue-800' : ''}
                       `}>
                         {item.estatus_pago}
                       </span>
@@ -493,6 +491,7 @@ export default function VistaComercializacion() {
                   <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-bold
                     ${facturaSeleccionada.estatus_pago === 'Pagado' ? 'bg-emerald-100 text-emerald-800' : ''}
                     ${facturaSeleccionada.estatus_pago === 'Pendiente' ? 'bg-amber-100 text-amber-800' : ''}
+                    ${facturaSeleccionada.estatus_pago === 'Abono' ? 'bg-blue-100 text-blue-800' : ''}
                   `}>
                     {facturaSeleccionada.estatus_pago}
                   </span>
@@ -2110,15 +2109,15 @@ export default function AdminDashboard() {
 ### <a id="📄-app-comercial-page-tsx"></a>📄 `app/comercial/page.tsx`
 
 **File Info:**
-- **Size**: 10.1 KB
+- **Size**: 13.21 KB
 - **Extension**: `.tsx`
 - **Language**: `typescript`
 - **Location**: `app/comercial/page.tsx`
 - **Relative Path**: `app/comercial`
 - **Created**: 2026-07-21 22:06:40 (America/Caracas / GMT-04:00)
-- **Modified**: 2026-09-02 23:55:44 (America/Caracas / GMT-04:00)
-- **MD5**: `82b159993d89e244cf6d45a1cd436f77`
-- **SHA256**: `6174238d62169834158b0e631547e19a628f855f8665ae065dd038051b7d4b5e`
+- **Modified**: 2026-09-04 09:07:38 (America/Caracas / GMT-04:00)
+- **MD5**: `394e6a29c24f389b0afd7658717d2c28`
+- **SHA256**: `6d790e4e30396ffb5598cd2c246526741dc1674aac0ef67518c769d5eb045448`
 - **Encoding**: UTF-8
 
 **File code content:**
@@ -2126,185 +2125,287 @@ export default function AdminDashboard() {
 ```typescript
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useTransition, useCallback } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-export default function RegistroComercial() {
+export default function ComercialPage() {
   const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
+  const [usuarioNombre, setUsuarioNombre] = useState("Cargando...");
+  const [usuarioIniciales, setUsuarioIniciales] = useState("--");
+
+  // Estados del formulario
   const [cliente, setCliente] = useState("");
   const [rif, setRif] = useState("");
   const [municipio, setMunicipio] = useState("Miranda");
-  const [servicio, setServicio] = useState("Recolección Especial");
+  const [tipoServicio, setTipoServicio] = useState("Recolección Comercial");
   const [montoUsd, setMontoUsd] = useState("");
   const [tasaBcv, setTasaBcv] = useState("");
-  const [metodoPago, setMetodoPago] = useState("");
-  const [estatusPago, setEstatusPago] = useState("Pendiente");
-  
-  const [mensaje, setMensaje] = useState("");
-  const [cargando, setCargando] = useState(false);
+  const [metodoPago, setMetodoPago] = useState("Transferencia");
+  const [estatusPago, setEstatusPago] = useState("Pagado");
 
-  // Conversión automática a Bolívares
-  const montoBsCalculado = (parseFloat(montoUsd || "0") * parseFloat(tasaBcv || "0")).toFixed(2);
+  const [mensaje, setMensaje] = useState({ texto: "", tipo: "" });
 
-  const handleLogout = async () => {
+  const obtenerUsuario = useCallback(async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        startTransition(() => router.push("/"));
+        return;
+      }
+      const email = session.user.email || "";
+      const nombre = email.split("@")[0].toUpperCase();
+      setUsuarioNombre(nombre);
+      setUsuarioIniciales(nombre.substring(0, 2));
+    } catch (error) {
+      console.error("Error obteniendo usuario:", error);
+    }
+  }, [router]);
+
+  useEffect(() => {
+    obtenerUsuario();
+  }, [obtenerUsuario]);
+
+  const handleCerrarSesion = async () => {
     await supabase.auth.signOut();
-    router.push("/");
+    startTransition(() => router.push("/"));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Cálculo automático
+  const montoBsCalculado = (parseFloat(montoUsd || "0") * parseFloat(tasaBcv || "0")).toFixed(2);
+
+  const handleGuardarFactura = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setCargando(true);
-    setMensaje("Procesando registro...");
+    setMensaje({ texto: "", tipo: "" });
 
-    const { error } = await supabase.from("registro_comercial").insert([
-      {
-        cliente: cliente,
-        rif_cedula: rif,
-        municipio: municipio,
-        tipo_servicio: servicio,
-        monto_usd: parseFloat(montoUsd),
-        tasa_bcv: parseFloat(tasaBcv),
-        monto_bs: parseFloat(montoBsCalculado),
-        metodo_pago: metodoPago,
-        estatus_pago: estatusPago,
-      },
-    ]);
+    startTransition(async () => {
+      try {
+        const usd = parseFloat(montoUsd) || 0;
+        const bcv = parseFloat(tasaBcv) || 0;
+        const bs = usd * bcv;
 
-    setCargando(false);
+        const { error } = await supabase.from("registro_comercial").insert([
+          {
+            cliente: cliente,
+            rif_cedula: rif,
+            municipio: municipio,
+            tipo_servicio: tipoServicio,
+            monto_usd: usd,
+            tasa_bcv: bcv,
+            monto_bs: bs,
+            metodo_pago: metodoPago,
+            estatus_pago: estatusPago,
+            responsable: usuarioNombre
+          },
+        ]);
 
-    if (error) {
-      console.error("Detalle del error de Supabase:", error);
-      // Ahora mostrará el error real de la base de datos en la pantalla
-      setMensaje(`Error: ${error.message || error.details || 'Desconocido'}`);
-    } else {
-      setMensaje("¡Factura / Registro creado exitosamente!");
-      // Limpiar formulario tras el registro exitoso
-      setCliente(""); setRif(""); setMontoUsd(""); setMetodoPago("");
-      
-      setTimeout(() => setMensaje(""), 4000);
-    }
+        if (error) throw error;
+
+        setMensaje({ texto: "✅ Registro comercial guardado exitosamente.", tipo: "exito" });
+        
+        // Limpiar campos, pero mantener la tasa BCV por comodidad
+        setCliente("");
+        setRif("");
+        setMontoUsd("");
+        setEstatusPago("Pagado");
+        
+        setTimeout(() => setMensaje({ texto: "", tipo: "" }), 4000);
+      } catch (err: any) {
+        setMensaje({ texto: "❌ Error al registrar: " + (err.message || "Error inesperado"), tipo: "error" });
+      }
+    });
   };
 
   return (
-    <div className="min-h-screen bg-zinc-50 font-sans">
-      
-      {/* Cabecera del Operador */}
-      <header className="bg-white border-b border-zinc-200 px-6 py-4 flex justify-between items-center shadow-sm">
+    <div className="flex min-h-screen bg-zinc-100 font-sans">
+      <aside className="w-64 bg-emerald-950 text-white flex flex-col justify-between p-4 shadow-xl shrink-0 hidden md:flex">
         <div>
-          <h1 className="text-lg font-bold text-emerald-700 tracking-wide">SERDEFALCA</h1>
-          <p className="text-xs text-zinc-500 font-medium">Módulo Operativo - Comercialización</p>
+          <div className="py-4 px-2 border-b border-emerald-800/60 mb-6">
+            <h1 className="text-xl font-black tracking-wider text-white">SERDEFALCA</h1>
+            <p className="text-[10px] text-emerald-300 font-medium">Gestión Comercial</p>
+          </div>
+          <nav className="space-y-1 text-sm font-medium">
+            <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-emerald-800 text-white shadow-inner">
+              <span className="text-lg">💼</span>
+              <span>Facturación y Cobranza</span>
+            </div>
+          </nav>
         </div>
-        <button 
-          onClick={handleLogout} 
-          className="text-xs font-semibold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-4 py-2 rounded-lg transition-colors border border-red-100"
+        <button
+          onClick={handleCerrarSesion}
+          className="flex items-center gap-2 text-xs font-semibold text-red-300 hover:text-red-100 px-3 py-2 rounded-lg hover:bg-emerald-900 transition-colors"
         >
-          Cerrar Sesión
+          <span>🚪</span>
+          <span>Cerrar Sesión</span>
         </button>
-      </header>
+      </aside>
 
-      {/* Contenedor del Formulario */}
-      <main className="p-6">
-        <div className="max-w-3xl mx-auto p-8 bg-white shadow-xl rounded-2xl border border-zinc-100">
-          <h2 className="text-2xl font-bold mb-2 text-emerald-800">Generar Factura / Servicio Comercial</h2>
-          <p className="text-sm text-gray-500 mb-6">Complete los datos para emitir la orden de recolección y cobro.</p>
-          
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Cliente / Razón Social *</label>
-                <input type="text" required value={cliente} onChange={(e) => setCliente(e.target.value)} placeholder="Nombre de la empresa o persona" className="block w-full border border-gray-300 rounded-lg p-2.5 focus:ring-emerald-500 focus:border-emerald-500 text-sm outline-none" />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Cédula / RIF *</label>
-                <input type="text" required value={rif} onChange={(e) => setRif(e.target.value)} placeholder="Ej: J-12345678-9" className="block w-full border border-gray-300 rounded-lg p-2.5 focus:ring-emerald-500 focus:border-emerald-500 text-sm uppercase outline-none" />
-              </div>
+      <main className="flex-1 flex flex-col overflow-hidden">
+        <header className="bg-emerald-900 text-white px-6 md:px-8 py-4 flex items-center justify-between shadow-md">
+          <h2 className="text-base md:text-lg font-bold tracking-wide">Módulo Comercial</h2>
+          <div className="flex items-center gap-3">
+            <div className="text-right text-xs hidden sm:block">
+              <p className="font-bold text-white">{usuarioNombre}</p>
+              <p className="text-emerald-200">Analista Comercial</p>
+            </div>
+            <div className="w-9 h-9 rounded-full bg-emerald-500 text-emerald-950 font-bold flex items-center justify-center text-xs border-2 border-emerald-300 shrink-0">
+              {usuarioIniciales}
+            </div>
+          </div>
+        </header>
+
+        <section className="p-4 md:p-8 w-full max-w-4xl mx-auto overflow-y-auto">
+          <div className="bg-white rounded-2xl p-6 md:p-8 shadow-xl border border-zinc-200/80">
+            <div className="border-b border-zinc-100 pb-4 mb-6">
+              <h3 className="text-xl md:text-2xl font-extrabold text-emerald-900">Registro de Cobranza</h3>
+              <p className="text-xs text-zinc-500 mt-1">
+                Ingrese los datos del cliente y los montos de la factura o pago.
+              </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Municipio *</label>
-                <select value={municipio} onChange={(e) => setMunicipio(e.target.value)} className="block w-full border border-gray-300 rounded-lg p-2.5 focus:ring-emerald-500 focus:border-emerald-500 text-sm outline-none bg-white">
-                  <option value="Miranda">Miranda</option>
-                  <option value="Carirubana">Carirubana</option>
-                  <option value="Colina">Colina</option>
-                  <option value="Zamora">Zamora</option>
-                  <option value="Falcón">Falcón</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Tipo de Servicio *</label>
-                <select value={servicio} onChange={(e) => setServicio(e.target.value)} className="block w-full border border-gray-300 rounded-lg p-2.5 focus:ring-emerald-500 focus:border-emerald-500 text-sm outline-none bg-white">
-                  <option value="Recolección Comercial">Recolección Comercial</option>
-                  <option value="Recolección Especial">Recolección Especial</option>
-                  <option value="Alquiler de Maquinaria">Alquiler de Maquinaria</option>
-                  <option value="Disposición Final">Disposición Final</option>
-                </select>
-              </div>
-            </div>
+            <form onSubmit={handleGuardarFactura} className="space-y-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5">
+                
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-semibold text-zinc-700 mb-1">Razón Social / Cliente *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Ej: Inversiones Los Médanos C.A."
+                    value={cliente}
+                    onChange={(e) => setCliente(e.target.value)}
+                    className="w-full p-2.5 md:p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
+                  />
+                </div>
 
-            <div className="bg-emerald-50/50 p-5 rounded-xl border border-emerald-100">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 <div>
-                  <label className="block text-sm font-semibold text-emerald-900 mb-1">Monto en Dólares ($) *</label>
-                  <input type="number" step="0.01" required value={montoUsd} onChange={(e) => setMontoUsd(e.target.value)} placeholder="0.00" className="block w-full border border-emerald-200 rounded-lg p-2.5 focus:ring-emerald-500 focus:border-emerald-500 text-sm outline-none bg-white" />
+                  <label className="block text-xs font-semibold text-zinc-700 mb-1">RIF / Cédula *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Ej: J-12345678-9"
+                    value={rif}
+                    onChange={(e) => setRif(e.target.value.toUpperCase())}
+                    className="w-full p-2.5 md:p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 font-mono uppercase"
+                  />
                 </div>
+
                 <div>
-                  <label className="block text-sm font-semibold text-emerald-900 mb-1">Tasa BCV Actual *</label>
-                  <input type="number" step="0.0001" required value={tasaBcv} onChange={(e) => setTasaBcv(e.target.value)} placeholder="Ej: 36.50" className="block w-full border border-emerald-200 rounded-lg p-2.5 focus:ring-emerald-500 focus:border-emerald-500 text-sm outline-none bg-white" />
+                  <label className="block text-xs font-semibold text-zinc-700 mb-1">Municipio *</label>
+                  <select
+                    value={municipio}
+                    onChange={(e) => setMunicipio(e.target.value)}
+                    className="w-full p-2.5 md:p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 bg-white"
+                  >
+                    <option value="Miranda">Miranda</option>
+                    <option value="Carirubana">Carirubana</option>
+                    <option value="Colina">Colina</option>
+                    <option value="Zamora">Zamora</option>
+                    <option value="Falcón">Falcón</option>
+                    <option value="Silva">Silva</option>
+                  </select>
                 </div>
+
                 <div>
-                  <label className="block text-sm font-semibold text-gray-500 mb-1">Total a Pagar (Bs)</label>
-                  <div className="block w-full border border-gray-200 bg-gray-100 rounded-lg p-2.5 text-sm font-bold text-gray-700 h-[42px] flex items-center">
-                    Bs. {montoBsCalculado}
-                  </div>
+                  <label className="block text-xs font-semibold text-zinc-700 mb-1">Tipo de Servicio *</label>
+                  <select
+                    value={tipoServicio}
+                    onChange={(e) => setTipoServicio(e.target.value)}
+                    className="w-full p-2.5 md:p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 bg-white"
+                  >
+                    <option value="Recolección Comercial">Recolección Comercial</option>
+                    <option value="Recolección Industrial">Recolección Industrial</option>
+                    <option value="Servicio Especial">Servicio Especial (Escombros)</option>
+                    <option value="Deuda Atrasada">Deuda Atrasada</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-700 mb-1">Tasa BCV (Día del pago) *</label>
+                  <input
+                    type="number"
+                    step="0.0001"
+                    required
+                    placeholder="Ej: 36.50"
+                    value={tasaBcv}
+                    onChange={(e) => setTasaBcv(e.target.value)}
+                    className="w-full p-2.5 md:p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-700 mb-1">Monto en Dólares (USD) *</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    required
+                    placeholder="Ej: 150.00"
+                    value={montoUsd}
+                    onChange={(e) => setMontoUsd(e.target.value)}
+                    className="w-full p-2.5 md:p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 font-bold text-emerald-800"
+                  />
+                </div>
+
+                {/* Este campo es visual y de solo lectura */}
+                <div className="bg-emerald-50 rounded-lg border border-emerald-200 p-2.5 md:p-3 flex flex-col justify-center">
+                  <span className="text-[10px] font-bold text-emerald-700 uppercase">Monto Total Calculado</span>
+                  <span className="text-lg font-black text-emerald-900">Bs. {montoBsCalculado}</span>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-700 mb-1">Método de Pago *</label>
+                  <select
+                    value={metodoPago}
+                    onChange={(e) => setMetodoPago(e.target.value)}
+                    className="w-full p-2.5 md:p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 bg-white"
+                  >
+                    <option value="Transferencia">Transferencia Bancaria</option>
+                    <option value="Pago Móvil">Pago Móvil</option>
+                    <option value="Divisas Efectivo">Divisas en Efectivo</option>
+                    <option value="Punto de Venta">Punto de Venta</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-700 mb-1">Estatus del Pago *</label>
+                  <select
+                    value={estatusPago}
+                    onChange={(e) => setEstatusPago(e.target.value)}
+                    className="w-full p-2.5 md:p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 bg-white"
+                  >
+                    <option value="Pagado">Pagado</option>
+                    <option value="Pendiente">Pendiente (Facturado)</option>
+                    <option value="Abono">Abono Parcial</option>
+                  </select>
                 </div>
               </div>
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Método de Pago *</label>
-                <select required value={metodoPago} onChange={(e) => setMetodoPago(e.target.value)} className="block w-full border border-gray-300 rounded-lg p-2.5 focus:ring-emerald-500 focus:border-emerald-500 text-sm outline-none bg-white">
-                  <option value="">Seleccione un método...</option>
-                  <option value="Transferencia Bs">Transferencia Bs</option>
-                  <option value="Pago Móvil">Pago Móvil</option>
-                  <option value="Divisas Efectivo">Divisas Efectivo</option>
-                  <option value="Zelle / Binance">Zelle / Binance</option>
-                </select>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Estatus del Registro *</label>
-                <div className="flex flex-wrap gap-3">
-                  <label className="inline-flex items-center bg-zinc-50 px-3 py-2 rounded-lg border border-zinc-200 cursor-pointer hover:bg-zinc-100 transition-colors">
-                    <input type="radio" value="Pendiente" checked={estatusPago === "Pendiente"} onChange={(e) => setEstatusPago(e.target.value)} className="text-amber-500 form-radio focus:ring-amber-500" />
-                    <span className="ml-2 text-sm font-medium text-zinc-700">Pendiente</span>
-                  </label>
-                  <label className="inline-flex items-center bg-zinc-50 px-3 py-2 rounded-lg border border-zinc-200 cursor-pointer hover:bg-zinc-100 transition-colors">
-                    <input type="radio" value="Pagado" checked={estatusPago === "Pagado"} onChange={(e) => setEstatusPago(e.target.value)} className="text-emerald-600 form-radio focus:ring-emerald-500" />
-                    <span className="ml-2 text-sm font-medium text-zinc-700">Pagado</span>
-                  </label>
+              {mensaje.texto && (
+                <div
+                  className={`p-3.5 rounded-lg text-sm font-bold text-center shadow-sm ${
+                    mensaje.tipo === "error" ? "bg-red-50 text-red-600 border border-red-200" : "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                  }`}
+                >
+                  {mensaje.texto}
                 </div>
-              </div>
-            </div>
+              )}
 
-            <button type="submit" disabled={cargando} className="w-full bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl hover:bg-emerald-800 disabled:opacity-50 transition-colors mt-6 shadow-md">
-              {cargando ? "Registrando Factura..." : "Generar Factura Comercial"}
-            </button>
-
-            {mensaje && (
-              <div className={`p-4 rounded-lg mt-4 text-center font-bold text-sm border ${mensaje.includes("Error") ? "bg-red-50 text-red-600 border-red-200" : "bg-emerald-50 text-emerald-700 border-emerald-200"}`}>
-                {mensaje}
-              </div>
-            )}
-          </form>
-        </div>
+              <button
+                type="submit"
+                disabled={isPending}
+                className="w-full py-3.5 bg-emerald-700 text-white font-bold text-sm rounded-xl hover:bg-emerald-800 transition-colors disabled:bg-emerald-400 shadow-md mt-4 flex justify-center items-center gap-2"
+              >
+                {isPending ? "Procesando..." : "Guardar Registro Comercial"}
+              </button>
+            </form>
+          </div>
+        </section>
       </main>
     </div>
   );
