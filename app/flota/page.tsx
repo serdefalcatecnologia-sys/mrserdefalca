@@ -68,7 +68,7 @@ export default function FlotaPage() {
             tonelaje: peso,
             estado_ruta: estadoRuta,
             observaciones: observaciones,
-            responsable: usuarioNombre // Se registra automáticamente quién hizo el ingreso
+            responsable: usuarioNombre 
           },
         ]);
 
@@ -76,7 +76,7 @@ export default function FlotaPage() {
 
         setMensaje({ texto: "✅ Ruta y recolección registrada exitosamente.", tipo: "exito" });
         
-        // Limpiar formulario
+        // Limpiar formulario para el siguiente vehículo
         setPlaca("");
         setConductor("");
         setRutaSector("");
@@ -93,7 +93,6 @@ export default function FlotaPage() {
 
   return (
     <div className="flex min-h-screen bg-zinc-100 font-sans">
-      {/* Sidebar Lateral */}
       <aside className="w-64 bg-blue-950 text-white flex flex-col justify-between p-4 shadow-xl shrink-0 hidden md:flex">
         <div>
           <div className="py-4 px-2 border-b border-blue-800/60 mb-6">
@@ -116,7 +115,6 @@ export default function FlotaPage() {
         </button>
       </aside>
 
-      {/* Contenido Principal */}
       <main className="flex-1 flex flex-col overflow-hidden">
         <header className="bg-blue-900 text-white px-6 md:px-8 py-4 flex items-center justify-between shadow-md">
           <h2 className="text-base md:text-lg font-bold tracking-wide">Módulo Control de Flota</h2>

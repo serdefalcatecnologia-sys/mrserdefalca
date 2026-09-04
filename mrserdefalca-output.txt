@@ -5,7 +5,7 @@ PROJECT EXPORT FOR LLMs
 PROJECT INFORMATION:
 --------------------------------------------------
 Project Name: mrserdefalca
-Generated On: 2026-09-03 18:25:51 (America/Caracas / GMT-04:00)
+Generated On: 2026-09-04 08:55:36 (America/Caracas / GMT-04:00)
 Total Files Processed: 36
 Export Tool: Easy Whole Project to Single Text File for LLMs v1.1.0
 Tool Author: Jota / José Guilherme Pandolfi
@@ -43,7 +43,7 @@ PROJECT STRUCTURE
 │   ├── 📁 desechos/
 │   │   └── 📄 page.tsx (10.8 KB)
 │   ├── 📁 flota/
-│   │   └── 📄 page.tsx (11.56 KB)
+│   │   └── 📄 page.tsx (11.47 KB)
 │   ├── 📁 llave/
 │   │   └── 📄 page.tsx (4.98 KB)
 │   ├── 📁 mantenimiento/
@@ -52,7 +52,7 @@ PROJECT STRUCTURE
 │   ├── 📄 favicon.ico (264.06 KB)
 │   ├── 📄 globals.css (488 B)
 │   ├── 📄 layout.tsx (821 B)
-│   └── 📄 page.tsx (4.85 KB)
+│   └── 📄 page.tsx (6.82 KB)
 ├── 📁 lib/
 │   └── 📄 supabase.ts (265 B)
 ├── 📁 public/
@@ -83,7 +83,7 @@ Total Files: 36
 Total Directories: 17
 Text Files: 26
 Binary Files: 10
-Total Size: 929.18 KB
+Total Size: 931.06 KB
 
 FILE TYPES DISTRIBUTION:
 ------------------------------
@@ -1618,7 +1618,7 @@ Language: typescript
 Location: app/admin/flota/page.tsx
 Relative Path: app/admin/flota
 Created: 2026-07-23 14:18:32 (America/Caracas / GMT-04:00)
-Modified: 2026-09-03 18:18:48 (America/Caracas / GMT-04:00)
+Modified: 2026-09-04 08:55:36 (America/Caracas / GMT-04:00)
 MD5: 508b6ce819d1dc72b6f7fcc71c264e41
 SHA256: 9eccc0fa08d1135055afd0476acf8c1c27375e618987028fe803a9674a0841cc
 Encoding: ASCII
@@ -2550,15 +2550,15 @@ FILE: app/flota/page.tsx
 
 FILE INFORMATION:
 ----------------------------------------
-Size: 11.56 KB
+Size: 11.47 KB
 Extension: .tsx
 Language: typescript
 Location: app/flota/page.tsx
 Relative Path: app/flota
 Created: 2026-07-24 01:45:52 (America/Caracas / GMT-04:00)
-Modified: 2026-09-03 18:17:40 (America/Caracas / GMT-04:00)
-MD5: dabac607b31ac53f13730aade12514c6
-SHA256: ec58ea87fe3de05a68aed972a3d14344655bb8dc0f714885e13841fe8aae3f54
+Modified: 2026-09-04 08:55:13 (America/Caracas / GMT-04:00)
+MD5: a4abf9c917e7b5809318058355780971
+SHA256: 10e7ed489180654156d028ad31925b81d18719ce62f0c375ccb3d7e9c74f4249
 Encoding: ASCII
 
 FILE CONTENT:
@@ -2633,7 +2633,7 @@ export default function FlotaPage() {
             tonelaje: peso,
             estado_ruta: estadoRuta,
             observaciones: observaciones,
-            responsable: usuarioNombre // Se registra automáticamente quién hizo el ingreso
+            responsable: usuarioNombre 
           },
         ]);
 
@@ -2641,7 +2641,7 @@ export default function FlotaPage() {
 
         setMensaje({ texto: "✅ Ruta y recolección registrada exitosamente.", tipo: "exito" });
         
-        // Limpiar formulario
+        // Limpiar formulario para el siguiente vehículo
         setPlaca("");
         setConductor("");
         setRutaSector("");
@@ -2658,7 +2658,6 @@ export default function FlotaPage() {
 
   return (
     <div className="flex min-h-screen bg-zinc-100 font-sans">
-      {/* Sidebar Lateral */}
       <aside className="w-64 bg-blue-950 text-white flex flex-col justify-between p-4 shadow-xl shrink-0 hidden md:flex">
         <div>
           <div className="py-4 px-2 border-b border-blue-800/60 mb-6">
@@ -2681,7 +2680,6 @@ export default function FlotaPage() {
         </button>
       </aside>
 
-      {/* Contenido Principal */}
       <main className="flex-1 flex flex-col overflow-hidden">
         <header className="bg-blue-900 text-white px-6 md:px-8 py-4 flex items-center justify-between shadow-md">
           <h2 className="text-base md:text-lg font-bold tracking-wide">Módulo Control de Flota</h2>
@@ -3137,15 +3135,15 @@ FILE: app/page.tsx
 
 FILE INFORMATION:
 ----------------------------------------
-Size: 4.85 KB
+Size: 6.82 KB
 Extension: .tsx
 Language: typescript
 Location: app/page.tsx
 Relative Path: app
 Created: 2026-07-21 20:24:25 (America/Caracas / GMT-04:00)
-Modified: 2026-09-03 18:25:51 (America/Caracas / GMT-04:00)
-MD5: 4f3f87c700af0d43ac79e752da73c080
-SHA256: 5d864f02e38e1af1c2705ca6add34d632503f4e5c3b06d743de25bcb05a1c047
+Modified: 2026-09-04 08:43:15 (America/Caracas / GMT-04:00)
+MD5: c3eb6a7e2accabfb7d9a2a238ce5ca3c
+SHA256: 13e4878fdc12f6fca2ed227f5ad8248be37ecdfe1995ec7f468c7275fe25e663
 Encoding: UTF-8
 
 FILE CONTENT:
@@ -3160,6 +3158,7 @@ import { supabase } from '@/lib/supabase'
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false) // Nuevo estado para ver/ocultar contraseña
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [isPending, startTransition] = useTransition()
@@ -3268,18 +3267,38 @@ export default function LoginPage() {
             <label className="block text-xs text-gray-600 mb-1 font-medium">Contraseña</label>
             <div className="relative">
               <input
-                type="password"
+                type={showPassword ? "text" : "password"} // Cambia dinámicamente entre texto y contraseña
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500 transition-colors text-xs"
+                className="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500 transition-colors text-xs pr-10"
                 placeholder="••••••••"
                 required
               />
+              <button 
+                type="button"
+                onClick={() => setShowPassword(!showPassword)} // Acción para alternar la vista
+                className="absolute right-2.5 top-1.5 text-gray-400 hover:text-green-600 transition-colors"
+                title={showPassword ? "Ocultar contraseña" : "Ver contraseña"}
+              >
+                {showPassword ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
+                  </svg>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                )}
+              </button>
             </div>
           </div>
 
           {error && (
             <div className="bg-red-50 text-red-600 text-[11px] p-2.5 rounded-lg flex items-center gap-2 border border-red-100">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
               {error}
             </div>
           )}
