@@ -3,7 +3,7 @@
 ## 📊 Project Information
 
 - **Project Name**: `mrserdefalca`
-- **Generated On**: 2026-09-04 09:08:30 (America/Caracas / GMT-04:00)
+- **Generated On**: 2026-09-04 09:19:26 (America/Caracas / GMT-04:00)
 - **Total Files Processed**: 36
 - **Export Tool**: Easy Whole Project to Single Text File for LLMs v1.1.0
 - **Tool Author**: Jota / José Guilherme Pandolfi
@@ -50,7 +50,7 @@
 │   ├── 📄 favicon.ico (264.06 KB)
 │   ├── 📄 globals.css (488 B)
 │   ├── 📄 layout.tsx (821 B)
-│   └── 📄 page.tsx (6.82 KB)
+│   └── 📄 page.tsx (7.02 KB)
 ├── 📁 lib/
 │   └── 📄 supabase.ts (265 B)
 ├── 📁 public/
@@ -116,7 +116,7 @@
 | Total Directories | 17 |
 | Text Files | 26 |
 | Binary Files | 10 |
-| Total Size | 934.23 KB |
+| Total Size | 934.43 KB |
 
 ### 📄 File Types Distribution
 
@@ -3250,15 +3250,15 @@ export default function RootLayout({
 ### <a id="📄-app-page-tsx"></a>📄 `app/page.tsx`
 
 **File Info:**
-- **Size**: 6.82 KB
+- **Size**: 7.02 KB
 - **Extension**: `.tsx`
 - **Language**: `typescript`
 - **Location**: `app/page.tsx`
 - **Relative Path**: `app`
 - **Created**: 2026-07-21 20:24:25 (America/Caracas / GMT-04:00)
-- **Modified**: 2026-09-04 08:43:15 (America/Caracas / GMT-04:00)
-- **MD5**: `c3eb6a7e2accabfb7d9a2a238ce5ca3c`
-- **SHA256**: `13e4878fdc12f6fca2ed227f5ad8248be37ecdfe1995ec7f468c7275fe25e663`
+- **Modified**: 2026-09-04 09:19:25 (America/Caracas / GMT-04:00)
+- **MD5**: `68cee42aa6062493ba0d0a00719e908c`
+- **SHA256**: `b1e09cf6d5507460ca1a8632fa144a5e7874cbd309af4d10a06c3e5779b5dd7d`
 - **Encoding**: UTF-8
 
 **File code content:**
@@ -3274,7 +3274,7 @@ import { supabase } from '@/lib/supabase'
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false) // Nuevo estado para ver/ocultar contraseña
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [isPending, startTransition] = useTransition()
@@ -3334,19 +3334,24 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 relative overflow-hidden">
+    // Quitamos bg-gray-100 para que no tape la imagen
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
       
-      <Image
-        src="/imagen1.png"
-        alt="Fondo Serdefalca"
-        fill
-        priority
-        sizes="100vw"
-        className="object-cover object-center -z-10"
-      />
+      {/* Contenedor del fondo: Agrupa la imagen y la capa oscura */}
+      <div className="absolute inset-0 z-0">
+        <Image
+          src="/imagen1.png"
+          alt="Fondo Serdefalca"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-center"
+        />
+        {/* Capa oscura (30% de opacidad) para que el formulario blanco resalte */}
+        <div className="absolute inset-0 bg-black/30"></div>
+      </div>
 
-      <div className="absolute inset-0 bg-black/10 z-0"></div>
-
+      {/* Formulario (z-10 asegura que esté por encima del fondo) */}
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[340px] p-6 relative z-10">
         
         <div className="relative flex justify-center mb-3 h-20 w-full">
@@ -3383,7 +3388,7 @@ export default function LoginPage() {
             <label className="block text-xs text-gray-600 mb-1 font-medium">Contraseña</label>
             <div className="relative">
               <input
-                type={showPassword ? "text" : "password"} // Cambia dinámicamente entre texto y contraseña
+                type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500 transition-colors text-xs pr-10"
@@ -3392,7 +3397,7 @@ export default function LoginPage() {
               />
               <button 
                 type="button"
-                onClick={() => setShowPassword(!showPassword)} // Acción para alternar la vista
+                onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-2.5 top-1.5 text-gray-400 hover:text-green-600 transition-colors"
                 title={showPassword ? "Ocultar contraseña" : "Ver contraseña"}
               >

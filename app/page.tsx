@@ -8,7 +8,7 @@ import { supabase } from '@/lib/supabase'
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false) // Nuevo estado para ver/ocultar contraseña
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [isPending, startTransition] = useTransition()
@@ -68,19 +68,24 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 relative overflow-hidden">
+    // Quitamos bg-gray-100 para que no tape la imagen
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
       
-      <Image
-        src="/imagen1.png"
-        alt="Fondo Serdefalca"
-        fill
-        priority
-        sizes="100vw"
-        className="object-cover object-center -z-10"
-      />
+      {/* Contenedor del fondo: Agrupa la imagen y la capa oscura */}
+      <div className="absolute inset-0 z-0">
+        <Image
+          src="/imagen1.png"
+          alt="Fondo Serdefalca"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-center"
+        />
+        {/* Capa oscura (30% de opacidad) para que el formulario blanco resalte */}
+        <div className="absolute inset-0 bg-black/30"></div>
+      </div>
 
-      <div className="absolute inset-0 bg-black/10 z-0"></div>
-
+      {/* Formulario (z-10 asegura que esté por encima del fondo) */}
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[340px] p-6 relative z-10">
         
         <div className="relative flex justify-center mb-3 h-20 w-full">
@@ -117,7 +122,7 @@ export default function LoginPage() {
             <label className="block text-xs text-gray-600 mb-1 font-medium">Contraseña</label>
             <div className="relative">
               <input
-                type={showPassword ? "text" : "password"} // Cambia dinámicamente entre texto y contraseña
+                type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500 transition-colors text-xs pr-10"
@@ -126,7 +131,7 @@ export default function LoginPage() {
               />
               <button 
                 type="button"
-                onClick={() => setShowPassword(!showPassword)} // Acción para alternar la vista
+                onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-2.5 top-1.5 text-gray-400 hover:text-green-600 transition-colors"
                 title={showPassword ? "Ocultar contraseña" : "Ver contraseña"}
               >
