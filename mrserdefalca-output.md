@@ -3,7 +3,7 @@
 ## 📊 Project Information
 
 - **Project Name**: `mrserdefalca`
-- **Generated On**: 2026-09-04 09:54:54 (America/Caracas / GMT-04:00)
+- **Generated On**: 2026-09-04 14:13:54 (America/Caracas / GMT-04:00)
 - **Total Files Processed**: 36
 - **Export Tool**: Easy Whole Project to Single Text File for LLMs v1.1.0
 - **Tool Author**: Jota / José Guilherme Pandolfi
@@ -37,7 +37,7 @@
 │   │   ├── 📄 layout.tsx (8.53 KB)
 │   │   └── 📄 page.tsx (5.11 KB)
 │   ├── 📁 comercial/
-│   │   └── 📄 page.tsx (13.57 KB)
+│   │   └── 📄 page.tsx (18.26 KB)
 │   ├── 📁 desechos/
 │   │   └── 📄 page.tsx (10.8 KB)
 │   ├── 📁 flota/
@@ -116,7 +116,7 @@
 | Total Directories | 17 |
 | Text Files | 26 |
 | Binary Files | 10 |
-| Total Size | 938.31 KB |
+| Total Size | 943 KB |
 
 ### 📄 File Types Distribution
 
@@ -2166,15 +2166,15 @@ export default function AdminDashboard() {
 ### <a id="📄-app-comercial-page-tsx"></a>📄 `app/comercial/page.tsx`
 
 **File Info:**
-- **Size**: 13.57 KB
+- **Size**: 18.26 KB
 - **Extension**: `.tsx`
 - **Language**: `typescript`
 - **Location**: `app/comercial/page.tsx`
 - **Relative Path**: `app/comercial`
 - **Created**: 2026-07-21 22:06:40 (America/Caracas / GMT-04:00)
-- **Modified**: 2026-09-04 09:54:54 (America/Caracas / GMT-04:00)
-- **MD5**: `81b7e1dae605ad47002d0e1b01a39d69`
-- **SHA256**: `13a646b870b3d398683f6be61ed3746307e3d28bac4a19466e1c831a174872c9`
+- **Modified**: 2026-09-04 14:13:54 (America/Caracas / GMT-04:00)
+- **MD5**: `1db5d13fab15ec8fbee8c8424072021e`
+- **SHA256**: `145a78da73c58e047c499661ceb849cc8ad9075a0e8c66c525b94cdbffeaf884`
 - **Encoding**: UTF-8
 
 **File code content:**
@@ -2193,6 +2193,7 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 export default function ComercialPage() {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [generandoPDF, setGenerandoPDF] = useState(false);
 
   const [usuarioNombre, setUsuarioNombre] = useState("Cargando...");
   const [usuarioIniciales, setUsuarioIniciales] = useState("--");
@@ -2207,6 +2208,8 @@ export default function ComercialPage() {
   const [metodoPago, setMetodoPago] = useState("Transferencia");
   const [estatusPago, setEstatusPago] = useState("Pagado");
 
+  // Estado para guardar la factura recién creada y poder imprimirla
+  const [ultimaFactura, setUltimaFactura] = useState<any>(null);
   const [mensaje, setMensaje] = useState({ texto: "", tipo: "" });
 
   const obtenerUsuario = useCallback(async () => {
@@ -2234,12 +2237,12 @@ export default function ComercialPage() {
     startTransition(() => router.push("/"));
   };
 
-  // Cálculo automático
   const montoBsCalculado = (parseFloat(montoUsd || "0") * parseFloat(tasaBcv || "0")).toFixed(2);
 
   const handleGuardarFactura = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setMensaje({ texto: "", tipo: "" });
+    setUltimaFactura(null);
 
     startTransition(async () => {
       try {
@@ -2247,14 +2250,14 @@ export default function ComercialPage() {
         const bcv = parseFloat(tasaBcv) || 0;
         const bs = usd * bcv;
 
-        // CORRECCIÓN: Generamos la fecha exacta del día actual en formato local (YYYY-MM-DD)
         const hoy = new Date();
         const año = hoy.getFullYear();
         const mes = String(hoy.getMonth() + 1).padStart(2, '0');
         const dia = String(hoy.getDate()).padStart(2, '0');
         const fechaActual = `${año}-${mes}-${dia}`;
 
-        const { error } = await supabase.from("registro_comercial").insert([
+        // Hacemos el INSERT y pedimos que nos devuelva los datos guardados (.select().single())
+        const { data, error } = await supabase.from("registro_comercial").insert([
           {
             cliente: cliente,
             rif_cedula: rif,
@@ -2266,25 +2269,94 @@ export default function ComercialPage() {
             metodo_pago: metodoPago,
             estatus_pago: estatusPago,
             responsable: usuarioNombre,
-            fecha: fechaActual // <-- AQUÍ ENVIAMOS LA FECHA A SUPABASE
+            fecha: fechaActual
           },
-        ]);
+        ]).select().single();
 
         if (error) throw error;
 
-        setMensaje({ texto: "✅ Registro comercial guardado exitosamente.", tipo: "exito" });
+        // Guardamos los datos de la factura recién creada para habilitar el botón de impresión
+        setUltimaFactura(data);
+        setMensaje({ texto: "✅ Registro guardado exitosamente. Puede imprimir el comprobante.", tipo: "exito" });
         
-        // Limpiar campos, pero mantener la tasa BCV por comodidad
+        // Limpiamos los campos visuales para el siguiente cliente (pero mantenemos tasaBcv por comodidad)
         setCliente("");
         setRif("");
         setMontoUsd("");
         setEstatusPago("Pagado");
         
-        setTimeout(() => setMensaje({ texto: "", tipo: "" }), 4000);
+        setTimeout(() => setMensaje({ texto: "", tipo: "" }), 8000);
       } catch (err: any) {
         setMensaje({ texto: "❌ Error al registrar: " + (err.message || "Error inesperado"), tipo: "error" });
       }
     });
+  };
+
+  // Función idéntica a la del Administrador para generar el PDF de la factura
+  const imprimirComprobante = async () => {
+    if (!ultimaFactura) return;
+    setGenerandoPDF(true);
+    
+    try {
+      const jsPDF = (await import('jspdf')).default;
+      const doc = new jsPDF();
+      const numRef = ultimaFactura.id.substring(0, 8).toUpperCase();
+      
+      const img = new Image();
+      img.src = '/logo1.png';
+      await new Promise((resolve) => { img.onload = resolve; img.onerror = resolve; });
+
+      if (img.complete && img.naturalWidth > 0) {
+        doc.addImage(img, 'PNG', 15, 10, 180, 25);
+      } else {
+        doc.setFont("helvetica", "bold"); doc.setFontSize(24); doc.setTextColor(4, 120, 87); doc.text("SERDEFALCA", 105, 20, { align: "center" });
+      }
+
+      doc.setFillColor(245, 245, 245); 
+      doc.rect(15, 40, 180, 35, 'F');
+      
+      doc.setFont("helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(0, 0, 0); doc.text("DATOS DE LA EMPRESA", 20, 47);
+      doc.setFont("helvetica", "normal"); doc.setFontSize(9);
+      doc.text("Razón Social: SERDEFAL C.A", 20, 53);
+      doc.text("Dirección: Estado Falcón", 20, 59);
+      
+      doc.setFont("helvetica", "bold"); doc.setFontSize(12); doc.setTextColor(4, 120, 87);
+      doc.text(`Factura N°: ${numRef}`, 115, 53);
+      doc.setFont("helvetica", "normal"); doc.setTextColor(0, 0, 0); doc.setFontSize(10);
+      doc.text(`Fecha: ${ultimaFactura.fecha}`, 115, 60);
+
+      doc.setFont("helvetica", "bold"); doc.setFontSize(11); doc.text("DATOS DEL CLIENTE", 20, 90);
+      doc.setFont("helvetica", "normal"); doc.setFontSize(10);
+      doc.text(`Razón Social / Nombre: ${ultimaFactura.cliente}`, 20, 98);
+      doc.text(`Cédula / RIF: ${ultimaFactura.rif_cedula}`, 20, 104);
+      doc.text(`Municipio: ${ultimaFactura.municipio}`, 20, 110);
+
+      doc.setDrawColor(220, 220, 220); doc.line(15, 116, 195, 116);
+
+      doc.setFont("helvetica", "bold"); doc.setFontSize(11); doc.text("DETALLES DEL SERVICIO", 20, 128);
+      doc.setFont("helvetica", "normal");
+      doc.text(`Descripción: ${ultimaFactura.tipo_servicio}`, 20, 136);
+      doc.text(`Método de Pago: ${ultimaFactura.metodo_pago || 'No especificado'}`, 20, 142);
+      doc.text(`Estatus: ${ultimaFactura.estatus_pago}`, 20, 148);
+      
+      doc.setFillColor(236, 253, 245); doc.rect(15, 155, 180, 30, 'F');
+      
+      doc.setFont("helvetica", "bold"); doc.setFontSize(14); doc.setTextColor(4, 120, 87);
+      doc.text(`Total en Divisas: $ ${Number(ultimaFactura.monto_usd || 0).toFixed(2)}`, 20, 167);
+      doc.text(`Total en Bolívares: Bs. ${Number(ultimaFactura.monto_bs || 0).toFixed(2)}`, 20, 178);
+      
+      doc.setFontSize(9); doc.setFont("helvetica", "normal"); doc.setTextColor(100, 100, 100);
+      doc.text(`Tasa BCV Aplicada: 1 USD = Bs. ${Number(ultimaFactura.tasa_bcv || 0).toFixed(4)}`, 115, 178);
+
+      doc.setFontSize(10); doc.text("¡Gracias por su contribución para un estado más limpio!", 105, 210, { align: "center" });
+
+      doc.save(`Comprobante_${numRef}.pdf`);
+    } catch (error) {
+      console.error("Error al imprimir comprobante:", error);
+      alert("Hubo un error al generar la factura PDF.");
+    } finally {
+      setGenerandoPDF(false);
+    }
   };
 
   return (
@@ -2452,11 +2524,24 @@ export default function ComercialPage() {
 
               {mensaje.texto && (
                 <div
-                  className={`p-3.5 rounded-lg text-sm font-bold text-center shadow-sm ${
+                  className={`p-3.5 rounded-lg text-sm font-bold text-center shadow-sm flex flex-col gap-3 items-center justify-center ${
                     mensaje.tipo === "error" ? "bg-red-50 text-red-600 border border-red-200" : "bg-emerald-50 text-emerald-700 border border-emerald-200"
                   }`}
                 >
-                  {mensaje.texto}
+                  <p>{mensaje.texto}</p>
+                  
+                  {/* BOTÓN PARA IMPRIMIR COMPROBANTE - Solo se muestra cuando es exitoso */}
+                  {mensaje.tipo === "exito" && ultimaFactura && (
+                    <button
+                      type="button"
+                      onClick={imprimirComprobante}
+                      disabled={generandoPDF}
+                      className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors flex items-center gap-2 text-xs disabled:opacity-50"
+                    >
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+                      {generandoPDF ? 'Generando PDF...' : 'Imprimir Comprobante Ahora'}
+                    </button>
+                  )}
                 </div>
               )}
 
