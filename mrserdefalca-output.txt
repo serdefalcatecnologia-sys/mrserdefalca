@@ -5,7 +5,7 @@ PROJECT EXPORT FOR LLMs
 PROJECT INFORMATION:
 --------------------------------------------------
 Project Name: mrserdefalca
-Generated On: 2026-09-11 12:46:21 (America/Caracas / GMT-04:00)
+Generated On: 2026-09-11 13:03:09 (America/Caracas / GMT-04:00)
 Total Files Processed: 36
 Export Tool: Easy Whole Project to Single Text File for LLMs v1.1.0
 Tool Author: Jota / José Guilherme Pandolfi
@@ -27,7 +27,7 @@ PROJECT STRUCTURE
 │   │   ├── 📁 comercial/
 │   │   │   └── 📄 page.tsx (20.83 KB)
 │   │   ├── 📁 configuracion/
-│   │   │   └── 📄 page.tsx (17.1 KB)
+│   │   │   └── 📄 page.tsx (16.68 KB)
 │   │   ├── 📁 desechos/
 │   │   │   └── 📄 page.tsx (4.93 KB)
 │   │   ├── 📁 empleados/
@@ -83,7 +83,7 @@ Total Files: 36
 Total Directories: 17
 Text Files: 26
 Binary Files: 10
-Total Size: 942.84 KB
+Total Size: 942.43 KB
 
 FILE TYPES DISTRIBUTION:
 ------------------------------
@@ -507,16 +507,16 @@ FILE: app/admin/configuracion/page.tsx
 
 FILE INFORMATION:
 ----------------------------------------
-Size: 17.1 KB
+Size: 16.68 KB
 Extension: .tsx
 Language: typescript
 Location: app/admin/configuracion/page.tsx
 Relative Path: app/admin/configuracion
 Created: 2026-07-24 02:24:19 (America/Caracas / GMT-04:00)
-Modified: 2026-09-04 09:32:42 (America/Caracas / GMT-04:00)
-MD5: 986190f6cc503a9411c1d1790d2258a4
-SHA256: 2ea28cfd0f89f12c9cb0a52c0bd0379114049c18bcc6f052e006c7263bd0262f
-Encoding: UTF-8
+Modified: 2026-09-11 13:03:09 (America/Caracas / GMT-04:00)
+MD5: c4ed64d50108bf8b2036b3304d251e2c
+SHA256: caf433ae6229c34b3b47aa3dffe675503c19924c416e8f3c4093ee26f6b5bed5
+Encoding: ASCII
 
 FILE CONTENT:
 ----------------------------------------
@@ -533,21 +533,17 @@ export default function ConfiguracionSistema() {
   const [tabActiva, setTabActiva] = useState<'empresa' | 'salud' | 'db'>('empresa');
   const [mensaje, setMensaje] = useState({ tipo: '', texto: '' });
   
-  // NUEVO ESTADO: Controla la visibilidad del modal de confirmación
   const [mostrarModalConfirmacion, setMostrarModalConfirmacion] = useState(false);
 
-  // ESTADOS: EMPRESA
   const [datosEmpresa, setDatosEmpresa] = useState({
     razon_social: '', rif: '', telefono: '', director: '', direccion: ''
   });
   const [guardandoEmpresa, setGuardandoEmpresa] = useState(false);
 
-  // ESTADOS: SALUD
   const [pingMs, setPingMs] = useState<number | null>(null);
   const [estadoInternet, setEstadoInternet] = useState('Calculando...');
   const [colorInternet, setColorInternet] = useState('text-zinc-500');
 
-  // ESTADOS: DB
   const [tablaSeleccionada, setTablaSeleccionada] = useState('facturas');
   const [fechaLimpieza, setFechaLimpieza] = useState('');
   const [procesandoDB, setProcesandoDB] = useState(false);
@@ -657,7 +653,6 @@ export default function ConfiguracionSistema() {
     }
   };
 
-  // PASO 1: Verifica y abre el modal en lugar de usar confirm() o alert()
   const intentarLimpiarTabla = () => {
     if (!fechaLimpieza) {
       mostrarMensaje('error', 'Por favor, selecciona una fecha tope.');
@@ -666,9 +661,8 @@ export default function ConfiguracionSistema() {
     setMostrarModalConfirmacion(true);
   };
 
-  // PASO 2: Ejecuta la acción real (se llama desde el modal)
   const ejecutarLimpiezaConfirmada = async () => {
-    setMostrarModalConfirmacion(false); // Cerramos el modal
+    setMostrarModalConfirmacion(false); 
     setProcesandoDB(true);
     try {
       const columnaFecha = tablaSeleccionada === 'facturas' ? 'fecha_operacion' : 
@@ -785,7 +779,6 @@ export default function ConfiguracionSistema() {
                 <label className="block text-xs font-bold text-red-700 dark:text-red-400 mb-1">Eliminar todo lo anterior a:</label>
                 <input type="date" value={fechaLimpieza} onChange={(e) => setFechaLimpieza(e.target.value)} className="w-full rounded-lg border border-red-300 p-3 text-sm mb-4 outline-none focus:border-red-500 bg-white dark:bg-zinc-900 dark:border-red-800 dark:text-white" />
                 
-                {/* Cambiamos el onClick a la nueva función que no bloquea */}
                 <button type="button" onClick={intentarLimpiarTabla} disabled={procesandoDB || !fechaLimpieza} className="w-full bg-red-600 text-white py-3 rounded-lg font-bold hover:bg-red-700 disabled:opacity-50 transition-colors">
                   🗑️ Ejecutar Limpieza
                 </button>
@@ -795,7 +788,6 @@ export default function ConfiguracionSistema() {
         </div>
       </div>
 
-      {/* MODAL DE CONFIRMACIÓN (No bloqueante) */}
       {mostrarModalConfirmacion && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
           <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95">

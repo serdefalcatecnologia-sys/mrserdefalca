@@ -11,21 +11,17 @@ export default function ConfiguracionSistema() {
   const [tabActiva, setTabActiva] = useState<'empresa' | 'salud' | 'db'>('empresa');
   const [mensaje, setMensaje] = useState({ tipo: '', texto: '' });
   
-  // NUEVO ESTADO: Controla la visibilidad del modal de confirmación
   const [mostrarModalConfirmacion, setMostrarModalConfirmacion] = useState(false);
 
-  // ESTADOS: EMPRESA
   const [datosEmpresa, setDatosEmpresa] = useState({
     razon_social: '', rif: '', telefono: '', director: '', direccion: ''
   });
   const [guardandoEmpresa, setGuardandoEmpresa] = useState(false);
 
-  // ESTADOS: SALUD
   const [pingMs, setPingMs] = useState<number | null>(null);
   const [estadoInternet, setEstadoInternet] = useState('Calculando...');
   const [colorInternet, setColorInternet] = useState('text-zinc-500');
 
-  // ESTADOS: DB
   const [tablaSeleccionada, setTablaSeleccionada] = useState('facturas');
   const [fechaLimpieza, setFechaLimpieza] = useState('');
   const [procesandoDB, setProcesandoDB] = useState(false);
@@ -135,7 +131,6 @@ export default function ConfiguracionSistema() {
     }
   };
 
-  // PASO 1: Verifica y abre el modal en lugar de usar confirm() o alert()
   const intentarLimpiarTabla = () => {
     if (!fechaLimpieza) {
       mostrarMensaje('error', 'Por favor, selecciona una fecha tope.');
@@ -144,9 +139,8 @@ export default function ConfiguracionSistema() {
     setMostrarModalConfirmacion(true);
   };
 
-  // PASO 2: Ejecuta la acción real (se llama desde el modal)
   const ejecutarLimpiezaConfirmada = async () => {
-    setMostrarModalConfirmacion(false); // Cerramos el modal
+    setMostrarModalConfirmacion(false); 
     setProcesandoDB(true);
     try {
       const columnaFecha = tablaSeleccionada === 'facturas' ? 'fecha_operacion' : 
@@ -263,7 +257,6 @@ export default function ConfiguracionSistema() {
                 <label className="block text-xs font-bold text-red-700 dark:text-red-400 mb-1">Eliminar todo lo anterior a:</label>
                 <input type="date" value={fechaLimpieza} onChange={(e) => setFechaLimpieza(e.target.value)} className="w-full rounded-lg border border-red-300 p-3 text-sm mb-4 outline-none focus:border-red-500 bg-white dark:bg-zinc-900 dark:border-red-800 dark:text-white" />
                 
-                {/* Cambiamos el onClick a la nueva función que no bloquea */}
                 <button type="button" onClick={intentarLimpiarTabla} disabled={procesandoDB || !fechaLimpieza} className="w-full bg-red-600 text-white py-3 rounded-lg font-bold hover:bg-red-700 disabled:opacity-50 transition-colors">
                   🗑️ Ejecutar Limpieza
                 </button>
@@ -273,7 +266,6 @@ export default function ConfiguracionSistema() {
         </div>
       </div>
 
-      {/* MODAL DE CONFIRMACIÓN (No bloqueante) */}
       {mostrarModalConfirmacion && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
           <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95">
