@@ -3,7 +3,7 @@
 ## 📊 Project Information
 
 - **Project Name**: `mrserdefalca`
-- **Generated On**: 2026-09-11 13:03:09 (America/Caracas / GMT-04:00)
+- **Generated On**: 2026-09-11 13:10:57 (America/Caracas / GMT-04:00)
 - **Total Files Processed**: 36
 - **Export Tool**: Easy Whole Project to Single Text File for LLMs v1.1.0
 - **Tool Author**: Jota / José Guilherme Pandolfi
@@ -27,7 +27,7 @@
 │   │   ├── 📁 configuracion/
 │   │   │   └── 📄 page.tsx (16.68 KB)
 │   │   ├── 📁 desechos/
-│   │   │   └── 📄 page.tsx (4.93 KB)
+│   │   │   └── 📄 page.tsx (4.74 KB)
 │   │   ├── 📁 empleados/
 │   │   │   ├── 📁 registro/
 │   │   │   │   └── 📄 page.tsx (8.17 KB)
@@ -116,7 +116,7 @@
 | Total Directories | 17 |
 | Text Files | 26 |
 | Binary Files | 10 |
-| Total Size | 942.43 KB |
+| Total Size | 942.24 KB |
 
 ### 📄 File Types Distribution
 
@@ -862,16 +862,16 @@ export default function ConfiguracionSistema() {
 ### <a id="📄-app-admin-desechos-page-tsx"></a>📄 `app/admin/desechos/page.tsx`
 
 **File Info:**
-- **Size**: 4.93 KB
+- **Size**: 4.74 KB
 - **Extension**: `.tsx`
 - **Language**: `typescript`
 - **Location**: `app/admin/desechos/page.tsx`
 - **Relative Path**: `app/admin/desechos`
 - **Created**: 2026-08-31 16:40:55 (America/Caracas / GMT-04:00)
-- **Modified**: 2026-09-03 17:21:55 (America/Caracas / GMT-04:00)
-- **MD5**: `0d533a421737466b74ab0f584ba0ab9b`
-- **SHA256**: `6fc961b405a3ae455a2eeeb497c9f40fc6e1048755b5cab13f5db239cb142d74`
-- **Encoding**: ASCII
+- **Modified**: 2026-09-11 13:10:56 (America/Caracas / GMT-04:00)
+- **MD5**: `5c20e25d74238f0fd50bd97629b1918e`
+- **SHA256**: `edc8848d911c36375a18482e5e8d917a1be3f46c770010a8904ee2d761c60ffd`
+- **Encoding**: UTF-8
 
 **File code content:**
 
@@ -879,12 +879,9 @@ export default function ConfiguracionSistema() {
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { createClient } from "@supabase/supabase-js";
+// IMPORTACIÓN CORREGIDA
+import { supabase } from '@/lib/supabase';
 import Link from "next/link";
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export default function VistaDesechosAdmin() {
   const [registros, setRegistros] = useState<any[]>([]);
