@@ -1,12 +1,9 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { createClient } from "@supabase/supabase-js";
+// IMPORTACIÓN CORREGIDA
+import { supabase } from '@/lib/supabase';
 import Link from "next/link";
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export default function VistaFlotaAdmin() {
   const [registros, setRegistros] = useState<any[]>([]);

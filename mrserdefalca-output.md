@@ -3,7 +3,7 @@
 ## 📊 Project Information
 
 - **Project Name**: `mrserdefalca`
-- **Generated On**: 2026-09-11 13:48:11 (America/Caracas / GMT-04:00)
+- **Generated On**: 2026-09-11 13:49:13 (America/Caracas / GMT-04:00)
 - **Total Files Processed**: 36
 - **Export Tool**: Easy Whole Project to Single Text File for LLMs v1.1.0
 - **Tool Author**: Jota / José Guilherme Pandolfi
@@ -33,7 +33,7 @@
 │   │   │   │   └── 📄 page.tsx (7.36 KB)
 │   │   │   └── 📄 page.tsx (20.39 KB)
 │   │   ├── 📁 flota/
-│   │   │   └── 📄 page.tsx (5.63 KB)
+│   │   │   └── 📄 page.tsx (5.44 KB)
 │   │   ├── 📄 layout.tsx (8.53 KB)
 │   │   └── 📄 page.tsx (5.11 KB)
 │   ├── 📁 comercial/
@@ -116,7 +116,7 @@
 | Total Directories | 17 |
 | Text Files | 26 |
 | Binary Files | 10 |
-| Total Size | 939.55 KB |
+| Total Size | 939.36 KB |
 
 ### 📄 File Types Distribution
 
@@ -1540,16 +1540,16 @@ export default function VisualizacionEmpleados() {
 ### <a id="📄-app-admin-flota-page-tsx"></a>📄 `app/admin/flota/page.tsx`
 
 **File Info:**
-- **Size**: 5.63 KB
+- **Size**: 5.44 KB
 - **Extension**: `.tsx`
 - **Language**: `typescript`
 - **Location**: `app/admin/flota/page.tsx`
 - **Relative Path**: `app/admin/flota`
 - **Created**: 2026-07-23 14:18:32 (America/Caracas / GMT-04:00)
-- **Modified**: 2026-09-04 08:55:36 (America/Caracas / GMT-04:00)
-- **MD5**: `508b6ce819d1dc72b6f7fcc71c264e41`
-- **SHA256**: `9eccc0fa08d1135055afd0476acf8c1c27375e618987028fe803a9674a0841cc`
-- **Encoding**: ASCII
+- **Modified**: 2026-09-11 13:49:12 (America/Caracas / GMT-04:00)
+- **MD5**: `1379f8b0f3ed8c962b74ea3b6483069a`
+- **SHA256**: `f33d7149545786ff69f2fecc1be8c8683b385b586c9c7802063e80f3eed2e915`
+- **Encoding**: UTF-8
 
 **File code content:**
 
@@ -1557,12 +1557,9 @@ export default function VisualizacionEmpleados() {
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { createClient } from "@supabase/supabase-js";
+// IMPORTACIÓN CORREGIDA
+import { supabase } from '@/lib/supabase';
 import Link from "next/link";
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export default function VistaFlotaAdmin() {
   const [registros, setRegistros] = useState<any[]>([]);
