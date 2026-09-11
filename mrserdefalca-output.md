@@ -3,7 +3,7 @@
 ## 📊 Project Information
 
 - **Project Name**: `mrserdefalca`
-- **Generated On**: 2026-09-11 13:49:13 (America/Caracas / GMT-04:00)
+- **Generated On**: 2026-09-11 13:51:52 (America/Caracas / GMT-04:00)
 - **Total Files Processed**: 36
 - **Export Tool**: Easy Whole Project to Single Text File for LLMs v1.1.0
 - **Tool Author**: Jota / José Guilherme Pandolfi
@@ -34,7 +34,7 @@
 │   │   │   └── 📄 page.tsx (20.39 KB)
 │   │   ├── 📁 flota/
 │   │   │   └── 📄 page.tsx (5.44 KB)
-│   │   ├── 📄 layout.tsx (8.53 KB)
+│   │   ├── 📄 layout.tsx (8.1 KB)
 │   │   └── 📄 page.tsx (5.11 KB)
 │   ├── 📁 comercial/
 │   │   └── 📄 page.tsx (18.26 KB)
@@ -116,7 +116,7 @@
 | Total Directories | 17 |
 | Text Files | 26 |
 | Binary Files | 10 |
-| Total Size | 939.36 KB |
+| Total Size | 938.92 KB |
 
 ### 📄 File Types Distribution
 
@@ -1687,16 +1687,16 @@ export default function VistaFlotaAdmin() {
 ### <a id="📄-app-admin-layout-tsx"></a>📄 `app/admin/layout.tsx`
 
 **File Info:**
-- **Size**: 8.53 KB
+- **Size**: 8.1 KB
 - **Extension**: `.tsx`
 - **Language**: `typescript`
 - **Location**: `app/admin/layout.tsx`
 - **Relative Path**: `app/admin`
 - **Created**: 2026-08-31 17:37:43 (America/Caracas / GMT-04:00)
-- **Modified**: 2026-09-01 16:49:39 (America/Caracas / GMT-04:00)
-- **MD5**: `cf167037f8004a948e212fff6657a1a4`
-- **SHA256**: `09fbfc554f07a4c7a1e435ef329615f62a8e03edfef9e86fb130d9e662054865`
-- **Encoding**: ASCII
+- **Modified**: 2026-09-11 13:51:51 (America/Caracas / GMT-04:00)
+- **MD5**: `87bc025bce5d5c715e316bd6bf302a2b`
+- **SHA256**: `cfae9cabc7819acf3dc666a0d9ef1c515a6085151ab4d20a358d0768d2b0c8e6`
+- **Encoding**: UTF-8
 
 **File code content:**
 
@@ -1706,11 +1706,8 @@ export default function VistaFlotaAdmin() {
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { createClient } from "@supabase/supabase-js";
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
-const supabase = createClient(supabaseUrl, supabaseKey);
+// IMPORTACIÓN CORREGIDA
+import { supabase } from '@/lib/supabase';
 
 export default function AdminLayout({
   children,
@@ -1741,7 +1738,6 @@ export default function AdminLayout({
       const rolNorm = usuario?.rol?.toLowerCase().trim() || "";
       setRolUsuario(rolNorm);
 
-      // Restricción estricta de rutas para roles no-administradores
       if (rolNorm === "comercial" && !pathname.startsWith("/admin/comercial")) {
         router.push("/admin/comercial");
       } else if (rolNorm === "flota" && !pathname.startsWith("/admin/flota")) {
@@ -1773,7 +1769,6 @@ export default function AdminLayout({
 
   const esAdmin = rolUsuario === "administrador" || rolUsuario === "admin" || rolUsuario === "super usuario";
 
-  // Si el usuario pertenece a una categoría operativa, sólo ve el contenido del reporte/formulario sin menú administrativo
   if (!esAdmin) {
     return (
       <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
@@ -1793,7 +1788,6 @@ export default function AdminLayout({
     );
   }
 
-  // Vista completa con menú lateral para administradores
   const menuItems = [
     {
       name: "Panel Principal",

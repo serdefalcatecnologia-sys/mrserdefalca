@@ -3,11 +3,8 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { createClient } from "@supabase/supabase-js";
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
-const supabase = createClient(supabaseUrl, supabaseKey);
+// IMPORTACIÓN CORREGIDA
+import { supabase } from '@/lib/supabase';
 
 export default function AdminLayout({
   children,
@@ -38,7 +35,6 @@ export default function AdminLayout({
       const rolNorm = usuario?.rol?.toLowerCase().trim() || "";
       setRolUsuario(rolNorm);
 
-      // Restricción estricta de rutas para roles no-administradores
       if (rolNorm === "comercial" && !pathname.startsWith("/admin/comercial")) {
         router.push("/admin/comercial");
       } else if (rolNorm === "flota" && !pathname.startsWith("/admin/flota")) {
@@ -70,7 +66,6 @@ export default function AdminLayout({
 
   const esAdmin = rolUsuario === "administrador" || rolUsuario === "admin" || rolUsuario === "super usuario";
 
-  // Si el usuario pertenece a una categoría operativa, sólo ve el contenido del reporte/formulario sin menú administrativo
   if (!esAdmin) {
     return (
       <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
@@ -90,7 +85,6 @@ export default function AdminLayout({
     );
   }
 
-  // Vista completa con menú lateral para administradores
   const menuItems = [
     {
       name: "Panel Principal",
