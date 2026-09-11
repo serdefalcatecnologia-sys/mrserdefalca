@@ -5,7 +5,7 @@ PROJECT EXPORT FOR LLMs
 PROJECT INFORMATION:
 --------------------------------------------------
 Project Name: mrserdefalca
-Generated On: 2026-09-04 14:13:54 (America/Caracas / GMT-04:00)
+Generated On: 2026-09-08 19:48:50 (America/Caracas / GMT-04:00)
 Total Files Processed: 36
 Export Tool: Easy Whole Project to Single Text File for LLMs v1.1.0
 Tool Author: Jota / José Guilherme Pandolfi
@@ -25,7 +25,7 @@ PROJECT STRUCTURE
 ├── 📁 app/
 │   ├── 📁 admin/
 │   │   ├── 📁 comercial/
-│   │   │   └── 📄 page.tsx (20.99 KB)
+│   │   │   └── 📄 page.tsx (20.83 KB)
 │   │   ├── 📁 configuracion/
 │   │   │   └── 📄 page.tsx (17.1 KB)
 │   │   ├── 📁 desechos/
@@ -83,7 +83,7 @@ Total Files: 36
 Total Directories: 17
 Text Files: 26
 Binary Files: 10
-Total Size: 943 KB
+Total Size: 942.84 KB
 
 FILE TYPES DISTRIBUTION:
 ------------------------------
@@ -109,16 +109,16 @@ FILE: app/admin/comercial/page.tsx
 
 FILE INFORMATION:
 ----------------------------------------
-Size: 20.99 KB
+Size: 20.83 KB
 Extension: .tsx
 Language: typescript
 Location: app/admin/comercial/page.tsx
 Relative Path: app/admin/comercial
 Created: 2026-08-27 19:14:58 (America/Caracas / GMT-04:00)
-Modified: 2026-09-04 09:54:14 (America/Caracas / GMT-04:00)
-MD5: 504c03b0078889ed768a0955e0eaa67b
-SHA256: e8d1c2946fa52ea96523d957b2ece14eca6b996a4e7dc4bb1511ef26bfd63c6e
-Encoding: ASCII
+Modified: 2026-09-08 19:48:50 (America/Caracas / GMT-04:00)
+MD5: 193700cc9f8f1ff8b1355435ffb1c2ff
+SHA256: 3eff44b3163b438d2af2672d399eff2ebd69c094d8054d2dc141f0fb4c738912
+Encoding: UTF-8
 
 FILE CONTENT:
 ----------------------------------------
@@ -126,11 +126,8 @@ FILE CONTENT:
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { createClient } from '@supabase/supabase-js';
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
-const supabase = createClient(supabaseUrl, supabaseKey);
+// IMPORTACIÓN CORREGIDA: Usando la instancia global
+import { supabase } from '@/lib/supabase';
 
 export default function VistaComercializacion() {
   const [datosComerciales, setDatosComerciales] = useState<any[]>([]);
