@@ -1,7 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@supabase/supabase-js";
+
+// Conexión directa y segura a Supabase para evitar errores de importación en Vercel
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export default function MantenimientoConfiguracionPage() {
   const [tablaSeleccionada, setTablaSeleccionada] = useState("registro_comercial");
@@ -43,13 +48,11 @@ export default function MantenimientoConfiguracionPage() {
     <div className="min-h-screen bg-zinc-100 p-6 font-sans">
       <div className="mx-auto max-w-5xl space-y-6">
         
-        {/* Encabezado */}
         <div>
           <h1 className="text-2xl font-bold text-zinc-800">Mantenimiento y Configuración</h1>
           <p className="text-xs text-zinc-500">Monitoreo del sistema, respaldos y purga de base de datos.</p>
         </div>
 
-        {/* 1. Salud del Sistema */}
         <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
           <h2 className="text-lg font-bold text-zinc-800 mb-4">Salud del Sistema</h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -74,7 +77,6 @@ export default function MantenimientoConfiguracionPage() {
           </div>
         </div>
 
-        {/* 2. Respaldo de Seguridad */}
         <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
           <h2 className="text-lg font-bold text-zinc-800">Respaldo y Exportación</h2>
           <p className="mt-1 text-xs text-zinc-500">Exporta una copia completa de los registros seleccionados en formato JSON.</p>
@@ -86,7 +88,6 @@ export default function MantenimientoConfiguracionPage() {
           </button>
         </div>
 
-        {/* 3. Selección de Tabla */}
         <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
           <label className="block text-sm font-bold text-zinc-800 mb-2">Seleccionar Tabla:</label>
           <select
@@ -104,7 +105,6 @@ export default function MantenimientoConfiguracionPage() {
           </p>
         </div>
 
-        {/* 4. Depuración de Registros */}
         <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
           <h2 className="text-lg font-bold text-zinc-800">Depuración de Registros Antiguos</h2>
           <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-end">

@@ -5,7 +5,7 @@ PROJECT EXPORT FOR LLMs
 PROJECT INFORMATION:
 --------------------------------------------------
 Project Name: mrserdefalca
-Generated On: 2026-09-16 16:59:54 (America/Caracas / GMT-04:00)
+Generated On: 2026-09-16 17:22:39 (America/Caracas / GMT-04:00)
 Total Files Processed: 38
 Export Tool: Easy Whole Project to Single Text File for LLMs v1.1.0
 Tool Author: Jota / José Guilherme Pandolfi
@@ -27,7 +27,7 @@ PROJECT STRUCTURE
 │   │   ├── 📁 comercial/
 │   │   │   └── 📄 page.tsx (20.83 KB)
 │   │   ├── 📁 configuracion/
-│   │   │   └── 📄 page.tsx (5.94 KB)
+│   │   │   └── 📄 page.tsx (6.05 KB)
 │   │   ├── 📁 desechos/
 │   │   │   └── 📄 page.tsx (4.74 KB)
 │   │   ├── 📁 empleados/
@@ -87,7 +87,7 @@ Total Files: 38
 Total Directories: 19
 Text Files: 28
 Binary Files: 10
-Total Size: 929.99 KB
+Total Size: 930.1 KB
 
 FILE TYPES DISTRIBUTION:
 ------------------------------
@@ -511,23 +511,28 @@ FILE: app/admin/configuracion/page.tsx
 
 FILE INFORMATION:
 ----------------------------------------
-Size: 5.94 KB
+Size: 6.05 KB
 Extension: .tsx
 Language: typescript
 Location: app/admin/configuracion/page.tsx
 Relative Path: app/admin/configuracion
 Created: 2026-07-24 02:24:19 (America/Caracas / GMT-04:00)
-Modified: 2026-09-16 16:59:53 (America/Caracas / GMT-04:00)
-MD5: b3abd3f4bf85dae68016608f1657517c
-SHA256: dd65a6a95ace4a0d70b2854d912186aec5b2fb52c45904cc9e4c1e16baf806ca
-Encoding: ASCII
+Modified: 2026-09-16 17:22:39 (America/Caracas / GMT-04:00)
+MD5: 2cca23093cafdb125f351da3b3cdcc1a
+SHA256: 5da903296edb5e36fe8b1ba1e324bb9c43c1aa087244270c74834b0077965d46
+Encoding: UTF-8
 
 FILE CONTENT:
 ----------------------------------------
 "use client";
 
 import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@supabase/supabase-js";
+
+// Conexión directa y segura a Supabase para evitar errores de importación en Vercel
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export default function MantenimientoConfiguracionPage() {
   const [tablaSeleccionada, setTablaSeleccionada] = useState("registro_comercial");
@@ -569,13 +574,11 @@ export default function MantenimientoConfiguracionPage() {
     <div className="min-h-screen bg-zinc-100 p-6 font-sans">
       <div className="mx-auto max-w-5xl space-y-6">
         
-        {/* Encabezado */}
         <div>
           <h1 className="text-2xl font-bold text-zinc-800">Mantenimiento y Configuración</h1>
           <p className="text-xs text-zinc-500">Monitoreo del sistema, respaldos y purga de base de datos.</p>
         </div>
 
-        {/* 1. Salud del Sistema */}
         <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
           <h2 className="text-lg font-bold text-zinc-800 mb-4">Salud del Sistema</h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -600,7 +603,6 @@ export default function MantenimientoConfiguracionPage() {
           </div>
         </div>
 
-        {/* 2. Respaldo de Seguridad */}
         <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
           <h2 className="text-lg font-bold text-zinc-800">Respaldo y Exportación</h2>
           <p className="mt-1 text-xs text-zinc-500">Exporta una copia completa de los registros seleccionados en formato JSON.</p>
@@ -612,7 +614,6 @@ export default function MantenimientoConfiguracionPage() {
           </button>
         </div>
 
-        {/* 3. Selección de Tabla */}
         <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
           <label className="block text-sm font-bold text-zinc-800 mb-2">Seleccionar Tabla:</label>
           <select
@@ -630,7 +631,6 @@ export default function MantenimientoConfiguracionPage() {
           </p>
         </div>
 
-        {/* 4. Depuración de Registros */}
         <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
           <h2 className="text-lg font-bold text-zinc-800">Depuración de Registros Antiguos</h2>
           <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-end">
