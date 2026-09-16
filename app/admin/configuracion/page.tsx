@@ -8,18 +8,27 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export default function ConfiguracionPage() {
+  // Estados para Salud del Sistema
   const [estadoDb, setEstadoDb] = useState<"cargando" | "conectado" | "error">("cargando");
   const [latencia, setLatencia] = useState<number | null>(null);
   const [calidadConexion, setCalidadConexion] = useState<"Buena" | "Media" | "Lenta" | null>(null);
+
+  // Estados para Respaldo y Exportación
   const [tablaSeleccionada, setTablaSeleccionada] = useState("registro_comercial");
   const [descargando, setDescargando] = useState(false);
+
+  // Estados para Depuración y Purga
+  const [tablaPurga, setTablaPurga] = useState("registro_comercial");
+  const [confirmacionTexto, setConfirmacionTexto] = useState("");
+  const [purgando, setPurgando] = useState(false);
+  const [mensajePurga, setMensajePurga] = useState<{ texto: string; tipo: "exito" | "error" } | null>(null);
 
   useEffect(() => {
     async function verificarSalud() {
       try {
         const inicio = performance.now();
         
-        // Consulta segura a registro_desechos para validar conexión
+        // Consulta ligera de prueba a la base de datos
         const { error } = await supabase.from("registro_desechos").select("*").limit(1);
         
         const fin = performance.now();
@@ -33,7 +42,6 @@ export default function ConfiguracionPage() {
           setEstadoDb("conectado");
           setLatencia(tiempoMs);
 
-          // Escala de calidad de velocidad de internet
           if (tiempoMs < 200) {
             setCalidadConexion("Buena");
           } else if (tiempoMs <= 500) {
@@ -52,6 +60,7 @@ export default function ConfiguracionPage() {
     verificarSalud();
   }, []);
 
+  // Función para descargar respaldos
   const handleDescargarRespaldo = async () => {
     setDescargando(true);
     try {
@@ -78,6 +87,51 @@ export default function ConfiguracionPage() {
     }
   };
 
+  // Función para depurar/limpiar datos antiguos
+  const handlePurgaBaseDeDatos = async () => {
+    if (confirmacionTexto.trim().toUpperCase() !== "BORRAR") {
+      setMensajePurga({
+        texto: "Debe escribir la palabra 'BORRAR' para confirmar la depuración.",
+        tipo: "error",
+      });
+      return;
+    }
+
+    const confirmacionNavegador = window.confirm(
+      `⚠️ ¿ESTÁS SEGURO?\n\nEsta acción eliminará TODOS los registros de la tabla '${tablaPurga}'. Esta operación no se puede deshacer.`
+    );
+
+    if (!confirmacionNavegador) return;
+
+    setPurgando(true);
+    setMensajePurga(null);
+
+    try {
+      // Elimina todos los registros de la tabla seleccionada (donde id no sea nulo/vacío)
+      const { error } = await supabase
+        .from(tablaPurga)
+        .delete()
+        .neq("id", "00000000-0000-0000-0000-000000000000");
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      setMensajePurga({
+        texto: `✅ La tabla '${tablaPurga}' ha sido purgada correctamente.`,
+        tipo: "exito",
+      });
+      setConfirmacionTexto("");
+    } catch (err: any) {
+      setMensajePurga({
+        texto: `❌ Error al depurar la tabla: ${err.message || "Error desconocido. Verifique permisos RLS."}`,
+        tipo: "error",
+      });
+    } finally {
+      setPurgando(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-zinc-50 p-6 md:p-8 font-sans">
       <div className="mx-auto max-w-5xl space-y-8">
@@ -88,12 +142,12 @@ export default function ConfiguracionPage() {
           </p>
         </div>
 
-        {/* Salud del Sistema */}
+        {/* 1. Salud del Sistema */}
         <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
           <h2 className="text-lg font-bold text-zinc-800 mb-4">Salud del Sistema</h2>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            {/* Estado BD */}
+            {/* Estado DB */}
             <div
               className={`rounded-xl p-4 border ${
                 estadoDb === "conectado"
@@ -153,7 +207,7 @@ export default function ConfiguracionPage() {
           </div>
         </div>
 
-        {/* Respaldo y Exportación */}
+        {/* 2. Respaldo y Exportación */}
         <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm space-y-6">
           <div>
             <h2 className="text-lg font-bold text-zinc-800">Respaldo y Exportación</h2>
@@ -187,6 +241,69 @@ export default function ConfiguracionPage() {
             <p className="mt-2 text-xs text-zinc-400">
               Descripción: Historial de datos, recaudación y registros del módulo seleccionado.
             </p>
+          </div>
+        </div>
+
+        {/* 3. Depuración y Purga de Base de Datos */}
+        <div className="rounded-2xl border border-rose-200 bg-rose-50/30 p-6 shadow-sm space-y-6">
+          <div>
+            <div className="flex items-center gap-2 text-rose-800">
+              <span className="text-xl">⚠️</span>
+              <h2 className="text-lg font-bold">Depuración y Limpieza de Base de Datos</h2>
+            </div>
+            <p className="text-sm text-zinc-600 mt-1">
+              Permite vaciar las tablas con datos antiguos o de prueba para reiniciar el sistema. <strong>Se recomienda descargar un respaldo antes de purgar.</strong>
+            </p>
+          </div>
+
+          <div className="space-y-4 max-w-md">
+            <div>
+              <label className="block text-xs font-bold uppercase text-zinc-600 mb-1">
+                Tabla a Depurar / Vaciar:
+              </label>
+              <select
+                value={tablaPurga}
+                onChange={(e) => setTablaPurga(e.target.value)}
+                className="w-full rounded-xl border border-zinc-300 p-3 text-sm text-zinc-800 bg-white focus:outline-none focus:ring-2 focus:ring-rose-500"
+              >
+                <option value="registro_comercial">registro_comercial</option>
+                <option value="registro_desechos">registro_desechos</option>
+                <option value="flota_rutas">flota_rutas</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold uppercase text-zinc-600 mb-1">
+                Confirmación de Seguridad:
+              </label>
+              <input
+                type="text"
+                placeholder="Escribe BORRAR para habilitar"
+                value={confirmacionTexto}
+                onChange={(e) => setConfirmacionTexto(e.target.value)}
+                className="w-full rounded-xl border border-zinc-300 p-3 text-sm text-zinc-800 focus:outline-none focus:ring-2 focus:ring-rose-500 font-mono uppercase"
+              />
+            </div>
+
+            {mensajePurga && (
+              <div
+                className={`p-3.5 rounded-xl text-xs font-bold ${
+                  mensajePurga.tipo === "exito"
+                    ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
+                    : "bg-rose-100 text-rose-800 border border-rose-200"
+                }`}
+              >
+                {mensajePurga.texto}
+              </div>
+            )}
+
+            <button
+              onClick={handlePurgaBaseDeDatos}
+              disabled={purgando || confirmacionTexto.trim().toUpperCase() !== "BORRAR"}
+              className="w-full rounded-xl bg-rose-600 px-5 py-3 text-sm font-bold text-white shadow-md transition hover:bg-rose-700 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {purgando ? "Purgando tabla..." : `Purgar Tabla ${tablaPurga}`}
+            </button>
           </div>
         </div>
       </div>
