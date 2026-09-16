@@ -3,7 +3,7 @@
 ## 📊 Project Information
 
 - **Project Name**: `mrserdefalca`
-- **Generated On**: 2026-09-16 14:57:13 (America/Caracas / GMT-04:00)
+- **Generated On**: 2026-09-16 15:16:26 (America/Caracas / GMT-04:00)
 - **Total Files Processed**: 36
 - **Export Tool**: Easy Whole Project to Single Text File for LLMs v1.1.0
 - **Tool Author**: Jota / José Guilherme Pandolfi
@@ -25,7 +25,7 @@
 │   │   ├── 📁 comercial/
 │   │   │   └── 📄 page.tsx (20.83 KB)
 │   │   ├── 📁 configuracion/
-│   │   │   └── 📄 page.tsx (1.66 KB)
+│   │   │   └── 📄 page.tsx (5.82 KB)
 │   │   ├── 📁 desechos/
 │   │   │   └── 📄 page.tsx (4.74 KB)
 │   │   ├── 📁 empleados/
@@ -116,7 +116,7 @@
 | Total Directories | 17 |
 | Text Files | 26 |
 | Binary Files | 10 |
-| Total Size | 923.9 KB |
+| Total Size | 928.06 KB |
 
 ### 📄 File Types Distribution
 
@@ -535,15 +535,15 @@ export default function VistaComercializacion() {
 ### <a id="📄-app-admin-configuracion-page-tsx"></a>📄 `app/admin/configuracion/page.tsx`
 
 **File Info:**
-- **Size**: 1.66 KB
+- **Size**: 5.82 KB
 - **Extension**: `.tsx`
 - **Language**: `typescript`
 - **Location**: `app/admin/configuracion/page.tsx`
 - **Relative Path**: `app/admin/configuracion`
 - **Created**: 2026-07-24 02:24:19 (America/Caracas / GMT-04:00)
-- **Modified**: 2026-09-16 14:57:13 (America/Caracas / GMT-04:00)
-- **MD5**: `8ff82f1dc3b9a09fa29bf125e6370f90`
-- **SHA256**: `de9ed6d97ddf95e9d075645ee642d7285a50ef42c3197645fc811502539d9bb2`
+- **Modified**: 2026-09-16 15:16:26 (America/Caracas / GMT-04:00)
+- **MD5**: `11185d93067f0051965fb4608113997a`
+- **SHA256**: `b3bb4140a20aa78f73acbc8a03e720d6038e8cc9f21bc3644ea5e6d45e51d398`
 - **Encoding**: UTF-8
 
 **File code content:**
@@ -552,44 +552,157 @@ export default function VistaComercializacion() {
 'use client';
 
 import { useState } from 'react';
-import { supabase } from '@/lib/supabase'; // Ajusta la ruta según la ubicación de tu cliente Supabase
+import { supabase } from '@/lib/supabase';
+
+const infoTablas: Record<string, { descripcion: string; uso: string }> = {
+  'usuarios': {
+    descripcion: 'Almacena credenciales, roles y accesos del personal.',
+    uso: 'Gestión de autenticación y privilegios.',
+  },
+  'registro_comercial': {
+    descripcion: 'Historial de pagos, recaudación y facturación comercial.',
+    uso: 'Generación de reportes contables y comprobantes.',
+  },
+  'flota_rutas': {
+    descripcion: 'Bitácora operativa diaria de camiones, conductores y rutas.',
+    uso: 'Estadísticas y control de cobertura de recolección.',
+  },
+  'registro_desechos': {
+    descripcion: 'Control de tonelaje y pesaje a la entrada del vertedero.',
+    uso: 'Monitoreo de volumen de desechos procesados.',
+  },
+};
 
 export default function ConfiguracionPage() {
-  // 1. Declaración de Estados
   const [tablaSeleccionada, setTablaSeleccionada] = useState<string>('registro_comercial');
   const [fechaLimpieza, setFechaLimpieza] = useState<string>('');
   const [mostrarModalConfirmacion, setMostrarModalConfirmacion] = useState<boolean>(false);
   const [procesandoDB, setProcesandoDB] = useState<boolean>(false);
+  const [mensaje, setMensaje] = useState<{ tipo: 'exito' | 'error'; texto: string } | null>(null);
 
-  // Función auxiliar de notificaciones (si aplica)
   const mostrarMensaje = (tipo: 'exito' | 'error', texto: string) => {
-    console.log(`[${tipo.toUpperCase()}]: ${texto}`);
+    setMensaje({ tipo, texto });
+    setTimeout(() => setMensaje(null), 4000);
   };
 
-  // 2. Función de Limpieza (Dentro del Componente)
   const ejecutarLimpiezaConfirmada = async () => {
-    setMostrarModalConfirmacion(false); 
+    if (!fechaLimpieza) {
+      mostrarMensaje('error', 'Seleccione una fecha límite para continuar.');
+      return;
+    }
+
+    setMostrarModalConfirmacion(false);
     setProcesandoDB(true);
+
     try {
-      const columnaFecha = 
-        tablaSeleccionada === 'registro_comercial' ? 'fecha' : 
-        (tablaSeleccionada === 'flota_rutas' || tablaSeleccionada === 'registro_desechos') ? 'fecha_hora' : 'created_at';
-                         
-      const { error } = await supabase.from(tablaSeleccionada).delete().lt(columnaFecha, fechaLimpieza);
+      // Determinación dinámica de la columna de fecha según el esquema real
+      const columnaFecha =
+        tablaSeleccionada === 'registro_comercial'
+          ? 'fecha'
+          : tablaSeleccionada === 'flota_rutas' || tablaSeleccionada === 'registro_desechos'
+          ? 'fecha_hora'
+          : 'created_at';
+
+      const { error } = await supabase
+        .from(tablaSeleccionada)
+        .delete()
+        .lt(columnaFecha, fechaLimpieza);
+
       if (error) throw error;
-      
-      mostrarMensaje('exito', `Registros anteriores a ${fechaLimpieza} eliminados exitosamente.`);
+
+      mostrarMensaje('exito', `Registros anteriores a ${fechaLimpieza} eliminados correctamente.`);
       setFechaLimpieza('');
     } catch (err: unknown) {
-      mostrarMensaje('error', 'Error en limpieza: ' + (err as Error).message);
+      mostrarMensaje('error', 'Error en la purga: ' + (err as Error).message);
     } finally {
       setProcesandoDB(false);
     }
   };
 
   return (
-    <div>
-      {/* Tu interfaz JSX */}
+    <div className="p-6 max-w-4xl mx-auto space-y-6">
+      <h1 className="text-2xl font-bold">Mantenimiento y Configuración</h1>
+
+      {mensaje && (
+        <div
+          className={`p-4 rounded-md ${
+            mensaje.tipo === 'exito'
+              ? 'bg-green-100 text-green-800 border border-green-300'
+              : 'bg-red-100 text-red-800 border border-red-300'
+          }`}
+        >
+          {mensaje.texto}
+        </div>
+      )}
+
+      {/* Selector de Tabla */}
+      <div className="bg-white p-4 rounded-lg shadow space-y-3">
+        <label className="block text-sm font-medium">Seleccionar Tabla:</label>
+        <select
+          value={tablaSeleccionada}
+          onChange={(e) => setTablaSeleccionada(e.target.value)}
+          className="w-full p-2 border rounded-md"
+        >
+          {Object.keys(infoTablas).map((tabla) => (
+            <option key={tabla} value={tabla}>
+              {tabla}
+            </option>
+          ))}
+        </select>
+        <p className="text-sm text-gray-600">
+          <strong>Descripción:</strong> {infoTablas[tablaSeleccionada]?.descripcion}
+        </p>
+      </div>
+
+      {/* Control de Purga */}
+      <div className="bg-white p-4 rounded-lg shadow space-y-4">
+        <h2 className="text-lg font-semibold">Depuración de Registros Antiguos</h2>
+        <div className="flex flex-col sm:flex-row gap-4 items-end">
+          <div className="w-full">
+            <label className="block text-sm font-medium">Eliminar registros anteriores a:</label>
+            <input
+              type="date"
+              value={fechaLimpieza}
+              onChange={(e) => setFechaLimpieza(e.target.value)}
+              className="w-full p-2 border rounded-md"
+            />
+          </div>
+          <button
+            onClick={() => setMostrarModalConfirmacion(true)}
+            disabled={procesandoDB || !fechaLimpieza}
+            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
+          >
+            {procesandoDB ? 'Procesando...' : 'Iniciar Purga'}
+          </button>
+        </div>
+      </div>
+
+      {/* Modal de Confirmación */}
+      {mostrarModalConfirmacion && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-white p-6 rounded-lg max-w-md w-full space-y-4">
+            <h3 className="text-lg font-bold text-red-600">Confirmación Requerida</h3>
+            <p className="text-sm text-gray-700">
+              ¿Confirmas la eliminación permanente de todos los registros en la tabla{' '}
+              <strong>{tablaSeleccionada}</strong> anteriores a la fecha <strong>{fechaLimpieza}</strong>?
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setMostrarModalConfirmacion(false)}
+                className="px-4 py-2 border rounded-md hover:bg-gray-100"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={ejecutarLimpiezaConfirmada}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+              >
+                Confirmar Eliminación
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
