@@ -5,7 +5,7 @@ PROJECT EXPORT FOR LLMs
 PROJECT INFORMATION:
 --------------------------------------------------
 Project Name: mrserdefalca
-Generated On: 2026-09-16 17:43:27 (America/Caracas / GMT-04:00)
+Generated On: 2026-09-16 18:18:08 (America/Caracas / GMT-04:00)
 Total Files Processed: 38
 Export Tool: Easy Whole Project to Single Text File for LLMs v1.1.0
 Tool Author: Jota / José Guilherme Pandolfi
@@ -27,7 +27,7 @@ PROJECT STRUCTURE
 │   │   ├── 📁 comercial/
 │   │   │   └── 📄 page.tsx (20.83 KB)
 │   │   ├── 📁 configuracion/
-│   │   │   └── 📄 page.tsx (6.05 KB)
+│   │   │   └── 📄 page.tsx (8.03 KB)
 │   │   ├── 📁 desechos/
 │   │   │   └── 📄 page.tsx (4.74 KB)
 │   │   ├── 📁 empleados/
@@ -87,7 +87,7 @@ Total Files: 38
 Total Directories: 19
 Text Files: 28
 Binary Files: 10
-Total Size: 930.32 KB
+Total Size: 932.3 KB
 
 FILE TYPES DISTRIBUTION:
 ------------------------------
@@ -511,147 +511,210 @@ FILE: app/admin/configuracion/page.tsx
 
 FILE INFORMATION:
 ----------------------------------------
-Size: 6.05 KB
+Size: 8.03 KB
 Extension: .tsx
 Language: typescript
 Location: app/admin/configuracion/page.tsx
 Relative Path: app/admin/configuracion
 Created: 2026-07-24 02:24:19 (America/Caracas / GMT-04:00)
-Modified: 2026-09-16 17:22:39 (America/Caracas / GMT-04:00)
-MD5: 2cca23093cafdb125f351da3b3cdcc1a
-SHA256: 5da903296edb5e36fe8b1ba1e324bb9c43c1aa087244270c74834b0077965d46
+Modified: 2026-09-16 18:18:07 (America/Caracas / GMT-04:00)
+MD5: c6637c80e6cecb0688be5dad4f314f5d
+SHA256: 3bca81901fe8f6886487720af2fbb052b5146afe40cdc30b80d22ad024685a44
 Encoding: UTF-8
 
 FILE CONTENT:
 ----------------------------------------
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 
-// Conexión directa y segura a Supabase para evitar errores de importación en Vercel
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-export default function MantenimientoConfiguracionPage() {
-  const [tablaSeleccionada, setTablaSeleccionada] = useState("registro_comercial");
-  const [fechaPurga, setFechaPurga] = useState("");
-  const [estadoDb, setEstadoDb] = useState<"conectado" | "error" | "cargando">("cargando");
+export default function ConfiguracionPage() {
+  const [estadoDb, setEstadoDb] = useState<"cargando" | "conectado" | "error">("cargando");
   const [latencia, setLatencia] = useState<number | null>(null);
+  const [calidadConexion, setCalidadConexion] = useState<"Buena" | "Media" | "Lenta" | null>(null);
+  const [tablaSeleccionada, setTablaSeleccionada] = useState("registro_comercial");
+  const [descargando, setDescargando] = useState(false);
 
   useEffect(() => {
     async function verificarSalud() {
-      const inicio = performance.now();
-      const { error } = await supabase.from("usuarios").select("id").limit(1);
-      const fin = performance.now();
+      try {
+        const inicio = performance.now();
+        
+        // Consulta segura a registro_desechos para validar conexión
+        const { error } = await supabase.from("registro_desechos").select("*").limit(1);
+        
+        const fin = performance.now();
+        const tiempoMs = Math.round(fin - inicio);
 
-      if (error) {
+        if (error && error.message.includes("Failed to fetch")) {
+          setEstadoDb("error");
+          setLatencia(null);
+          setCalidadConexion(null);
+        } else {
+          setEstadoDb("conectado");
+          setLatencia(tiempoMs);
+
+          // Escala de calidad de velocidad de internet
+          if (tiempoMs < 200) {
+            setCalidadConexion("Buena");
+          } else if (tiempoMs <= 500) {
+            setCalidadConexion("Media");
+          } else {
+            setCalidadConexion("Lenta");
+          }
+        }
+      } catch (err) {
         setEstadoDb("error");
-      } else {
-        setEstadoDb("conectado");
-        setLatencia(Math.round(fin - inicio));
+        setLatencia(null);
+        setCalidadConexion(null);
       }
     }
+
     verificarSalud();
   }, []);
 
-  const descargarRespaldo = async () => {
-    const { data, error } = await supabase.from(tablaSeleccionada).select("*");
-    if (error) {
-      alert("Error al descargar respaldo");
-      return;
+  const handleDescargarRespaldo = async () => {
+    setDescargando(true);
+    try {
+      const { data, error } = await supabase.from(tablaSeleccionada).select("*");
+
+      if (error) {
+        alert(`Error al exportar la tabla ${tablaSeleccionada}: ${error.message}`);
+        return;
+      }
+
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `respaldo_${tablaSeleccionada}_${new Date().toISOString().split("T")[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      alert("Ocurrió un error inesperado al generar la descarga.");
+    } finally {
+      setDescargando(false);
     }
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `respaldo_${tablaSeleccionada}_${new Date().toISOString().split("T")[0]}.json`;
-    a.click();
   };
 
   return (
-    <div className="min-h-screen bg-zinc-100 p-6 font-sans">
-      <div className="mx-auto max-w-5xl space-y-6">
-        
+    <div className="min-h-screen bg-zinc-50 p-6 md:p-8 font-sans">
+      <div className="mx-auto max-w-5xl space-y-8">
         <div>
           <h1 className="text-2xl font-bold text-zinc-800">Mantenimiento y Configuración</h1>
-          <p className="text-xs text-zinc-500">Monitoreo del sistema, respaldos y purga de base de datos.</p>
-        </div>
-
-        <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-          <h2 className="text-lg font-bold text-zinc-800 mb-4">Salud del Sistema</h2>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <div className="rounded-xl border border-emerald-100 bg-emerald-50 p-4">
-              <span className="text-xs font-semibold uppercase text-emerald-700">Conexión Supabase DB</span>
-              <p className="mt-1 text-sm font-bold text-emerald-900">
-                {estadoDb === "conectado" ? "● Operativo / Conectado" : estadoDb === "error" ? "✕ Error de Conexión" : "Verificando..."}
-              </p>
-            </div>
-
-            <div className="rounded-xl border border-blue-100 bg-blue-50 p-4">
-              <span className="text-xs font-semibold uppercase text-blue-700">Latencia API</span>
-              <p className="mt-1 text-sm font-bold text-blue-900">
-                {latencia !== null ? `${latencia} ms` : "Midiendo..."}
-              </p>
-            </div>
-
-            <div className="rounded-xl border border-purple-100 bg-purple-50 p-4">
-              <span className="text-xs font-semibold uppercase text-purple-700">Servicio Autenticación</span>
-              <p className="mt-1 text-sm font-bold text-purple-900">Activo (Auth & Admin)</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-          <h2 className="text-lg font-bold text-zinc-800">Respaldo y Exportación</h2>
-          <p className="mt-1 text-xs text-zinc-500">Exporta una copia completa de los registros seleccionados en formato JSON.</p>
-          <button
-            onClick={descargarRespaldo}
-            className="mt-4 inline-flex items-center gap-2 rounded-xl bg-emerald-700 px-4 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-emerald-800"
-          >
-            Descargar Respaldo de {tablaSeleccionada}
-          </button>
-        </div>
-
-        <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-          <label className="block text-sm font-bold text-zinc-800 mb-2">Seleccionar Tabla:</label>
-          <select
-            value={tablaSeleccionada}
-            onChange={(e) => setTablaSeleccionada(e.target.value)}
-            className="w-full rounded-xl border border-zinc-300 p-3 text-sm focus:border-emerald-600 focus:outline-none"
-          >
-            <option value="registro_comercial">registro_comercial</option>
-            <option value="registro_desechos">registro_desechos</option>
-            <option value="flota_rutas">flota_rutas</option>
-            <option value="usuarios">usuarios</option>
-          </select>
-          <p className="mt-2 text-xs text-zinc-500">
-            <strong>Descripción:</strong> Historial de datos, recaudación y registros del módulo seleccionado.
+          <p className="mt-1 text-sm text-zinc-500">
+            Monitoreo del sistema, respaldos y purga de base de datos.
           </p>
         </div>
 
+        {/* Salud del Sistema */}
         <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-          <h2 className="text-lg font-bold text-zinc-800">Depuración de Registros Antiguos</h2>
-          <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-end">
-            <div className="flex-1">
-              <label className="block text-xs font-semibold text-zinc-600 mb-1">Eliminar registros anteriores a:</label>
-              <input
-                type="date"
-                value={fechaPurga}
-                onChange={(e) => setFechaPurga(e.target.value)}
-                className="w-full rounded-xl border border-zinc-300 p-2.5 text-sm focus:border-emerald-600 focus:outline-none"
-              />
-            </div>
-            <button
-              onClick={() => alert(`Iniciando depuración en ${tablaSeleccionada}`)}
-              className="rounded-xl bg-red-500 px-6 py-2.5 text-xs font-bold text-white transition-colors hover:bg-red-600"
+          <h2 className="text-lg font-bold text-zinc-800 mb-4">Salud del Sistema</h2>
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            {/* Estado BD */}
+            <div
+              className={`rounded-xl p-4 border ${
+                estadoDb === "conectado"
+                  ? "bg-emerald-50/70 border-emerald-200 text-emerald-800"
+                  : estadoDb === "error"
+                  ? "bg-rose-50 border-rose-200 text-rose-800"
+                  : "bg-zinc-50 border-zinc-200 text-zinc-600"
+              }`}
             >
-              Iniciar Purga
-            </button>
+              <p className="text-xs font-bold uppercase tracking-wide opacity-80">Conexión Supabase DB</p>
+              <p className="mt-2 text-base font-semibold flex items-center gap-2">
+                {estadoDb === "conectado" && (
+                  <>
+                    <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                    Conectado
+                  </>
+                )}
+                {estadoDb === "error" && (
+                  <>
+                    <span className="text-rose-600">✕</span> Error de Conexión
+                  </>
+                )}
+                {estadoDb === "cargando" && "Midiendo..."}
+              </p>
+            </div>
+
+            {/* Latencia e Internet */}
+            <div className="rounded-xl border border-blue-100 bg-blue-50/50 p-4 text-blue-900">
+              <p className="text-xs font-bold uppercase tracking-wide text-blue-700">Latencia / Conexión Internet</p>
+              <div className="mt-2 text-base font-semibold">
+                {latencia !== null && calidadConexion !== null ? (
+                  <div className="flex items-center gap-2">
+                    <span>{latencia} ms</span>
+                    <span
+                      className={`text-xs px-2 py-0.5 rounded-full font-bold uppercase ${
+                        calidadConexion === "Buena"
+                          ? "bg-emerald-100 text-emerald-700 border border-emerald-300"
+                          : calidadConexion === "Media"
+                          ? "bg-amber-100 text-amber-700 border border-amber-300"
+                          : "bg-rose-100 text-rose-700 border border-rose-300"
+                      }`}
+                    >
+                      {calidadConexion}
+                    </span>
+                  </div>
+                ) : (
+                  <span className="text-sm font-normal text-zinc-500">Midiendo...</span>
+                )}
+              </div>
+            </div>
+
+            {/* Servicio Auth */}
+            <div className="rounded-xl border border-purple-100 bg-purple-50/50 p-4 text-purple-900">
+              <p className="text-xs font-bold uppercase tracking-wide text-purple-700">Servicio Autenticación</p>
+              <p className="mt-2 text-base font-semibold text-purple-800">Activo (Auth & Admin)</p>
+            </div>
           </div>
         </div>
 
+        {/* Respaldo y Exportación */}
+        <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm space-y-6">
+          <div>
+            <h2 className="text-lg font-bold text-zinc-800">Respaldo y Exportación</h2>
+            <p className="text-sm text-zinc-500">
+              Exporta una copia completa de los registros seleccionados en formato JSON.
+            </p>
+          </div>
+
+          <div>
+            <button
+              onClick={handleDescargarRespaldo}
+              disabled={descargando}
+              className="rounded-xl bg-emerald-700 px-5 py-2.5 text-sm font-semibold text-white shadow transition hover:bg-emerald-800 disabled:opacity-50"
+            >
+              {descargando ? "Generando respaldo..." : `Descargar Respaldo de ${tablaSeleccionada}`}
+            </button>
+          </div>
+
+          <div className="pt-2 border-t border-zinc-100">
+            <label className="block text-xs font-bold uppercase text-zinc-500 mb-2">Seleccionar Tabla:</label>
+            <select
+              value={tablaSeleccionada}
+              onChange={(e) => setTablaSeleccionada(e.target.value)}
+              className="w-full max-w-md rounded-xl border border-zinc-300 p-3 text-sm text-zinc-700 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            >
+              <option value="registro_comercial">registro_comercial</option>
+              <option value="registro_desechos">registro_desechos</option>
+              <option value="flota_rutas">flota_rutas</option>
+              <option value="usuarios">usuarios</option>
+            </select>
+            <p className="mt-2 text-xs text-zinc-400">
+              Descripción: Historial de datos, recaudación y registros del módulo seleccionado.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
