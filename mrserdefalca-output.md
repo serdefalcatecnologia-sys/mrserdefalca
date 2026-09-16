@@ -3,8 +3,8 @@
 ## 📊 Project Information
 
 - **Project Name**: `mrserdefalca`
-- **Generated On**: 2026-09-16 15:18:25 (America/Caracas / GMT-04:00)
-- **Total Files Processed**: 36
+- **Generated On**: 2026-09-16 15:42:47 (America/Caracas / GMT-04:00)
+- **Total Files Processed**: 37
 - **Export Tool**: Easy Whole Project to Single Text File for LLMs v1.1.0
 - **Tool Author**: Jota / José Guilherme Pandolfi
 
@@ -36,6 +36,9 @@
 │   │   │   └── 📄 page.tsx (5.44 KB)
 │   │   ├── 📄 layout.tsx (8.1 KB)
 │   │   └── 📄 page.tsx (5.11 KB)
+│   ├── 📁 api/
+│   │   └── 📁 crear-usuario/
+│   │       └── 📄 route.ts (1.04 KB)
 │   ├── 📁 comercial/
 │   │   └── 📄 page.tsx (18.26 KB)
 │   ├── 📁 desechos/
@@ -87,6 +90,7 @@
 - [📄 app/admin/flota/page.tsx](#📄-app-admin-flota-page-tsx)
 - [📄 app/admin/layout.tsx](#📄-app-admin-layout-tsx)
 - [📄 app/admin/page.tsx](#📄-app-admin-page-tsx)
+- [📄 app/api/crear-usuario/route.ts](#📄-app-api-crear-usuario-route-ts)
 - [📄 app/comercial/page.tsx](#📄-app-comercial-page-tsx)
 - [📄 app/desechos/page.tsx](#📄-app-desechos-page-tsx)
 - [📄 app/flota/page.tsx](#📄-app-flota-page-tsx)
@@ -112,11 +116,11 @@
 
 | Metric | Count |
 |--------|-------|
-| Total Files | 36 |
-| Total Directories | 17 |
-| Text Files | 26 |
+| Total Files | 37 |
+| Total Directories | 19 |
+| Text Files | 27 |
 | Binary Files | 10 |
-| Total Size | 928.06 KB |
+| Total Size | 929.1 KB |
 
 ### 📄 File Types Distribution
 
@@ -124,7 +128,7 @@
 |-----------|-------|
 | `.tsx` | 15 |
 | `.svg` | 5 |
-| `.ts` | 3 |
+| `.ts` | 4 |
 | `.md` | 3 |
 | `.json` | 3 |
 | `.png` | 2 |
@@ -1848,6 +1852,65 @@ export default function AdminDashboard() {
       </div>
     </div>
   );
+}
+```
+
+---
+
+### <a id="📄-app-api-crear-usuario-route-ts"></a>📄 `app/api/crear-usuario/route.ts`
+
+**File Info:**
+- **Size**: 1.04 KB
+- **Extension**: `.ts`
+- **Language**: `typescript`
+- **Location**: `app/api/crear-usuario/route.ts`
+- **Relative Path**: `app/api/crear-usuario`
+- **Created**: 2026-09-16 15:26:35 (America/Caracas / GMT-04:00)
+- **Modified**: 2026-09-16 15:42:46 (America/Caracas / GMT-04:00)
+- **MD5**: `08d67fb9d6937973bd6bc88bad35082e`
+- **SHA256**: `5591cc6092952b9d34c2540da77bfdd30cfd4e246b8b5de0013b4f9a46e1213b`
+- **Encoding**: UTF-8
+
+**File code content:**
+
+```typescript
+import { NextResponse } from 'next/server';
+import { supabaseAdmin } from '@/lib/supabase-admin';
+
+export async function POST(request: Request) {
+  try {
+    const { email, password, nombre, rol } = await request.json();
+
+    // Crear usuario en Auth sin cerrar la sesión actual del administrador
+    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+    });
+
+    if (authError) throw authError;
+
+    // Registrar los datos complementarios en la tabla de usuarios
+    const { error: dbError } = await supabaseAdmin
+      .from('usuarios')
+      .insert([
+        {
+          id_usuario: authData.user.id,
+          nombre,
+          email,
+          rol,
+        },
+      ]);
+
+    if (dbError) throw dbError;
+
+    return NextResponse.json({ success: true, user: authData.user });
+  } catch (error: unknown) {
+    return NextResponse.json(
+      { success: false, error: (error as Error).message },
+      { status: 400 }
+    );
+  }
 }
 ```
 
