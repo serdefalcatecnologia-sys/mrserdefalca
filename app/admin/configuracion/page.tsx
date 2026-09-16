@@ -1,11 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { createClient } from "@supabase/supabase-js";
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+import { supabase } from "@/lib/supabase";
 
 export default function MantenimientoConfiguracionPage() {
   const [tablaSeleccionada, setTablaSeleccionada] = useState("registro_comercial");
@@ -72,7 +68,7 @@ export default function MantenimientoConfiguracionPage() {
             </div>
 
             <div className="rounded-xl border border-purple-100 bg-purple-50 p-4">
-              <span className="text-xs font-semibold uppercase text-purple-700">Servicio de Autenticación</span>
+              <span className="text-xs font-semibold uppercase text-purple-700">Servicio Autenticación</span>
               <p className="mt-1 text-sm font-bold text-purple-900">Activo (Auth & Admin)</p>
             </div>
           </div>

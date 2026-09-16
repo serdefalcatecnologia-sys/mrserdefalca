@@ -3,7 +3,7 @@
 ## 📊 Project Information
 
 - **Project Name**: `mrserdefalca`
-- **Generated On**: 2026-09-16 16:54:31 (America/Caracas / GMT-04:00)
+- **Generated On**: 2026-09-16 16:59:54 (America/Caracas / GMT-04:00)
 - **Total Files Processed**: 38
 - **Export Tool**: Easy Whole Project to Single Text File for LLMs v1.1.0
 - **Tool Author**: Jota / José Guilherme Pandolfi
@@ -25,7 +25,7 @@
 │   │   ├── 📁 comercial/
 │   │   │   └── 📄 page.tsx (20.83 KB)
 │   │   ├── 📁 configuracion/
-│   │   │   └── 📄 page.tsx (6.16 KB)
+│   │   │   └── 📄 page.tsx (5.94 KB)
 │   │   ├── 📁 desechos/
 │   │   │   └── 📄 page.tsx (4.74 KB)
 │   │   ├── 📁 empleados/
@@ -122,7 +122,7 @@
 | Total Directories | 19 |
 | Text Files | 28 |
 | Binary Files | 10 |
-| Total Size | 930.21 KB |
+| Total Size | 929.99 KB |
 
 ### 📄 File Types Distribution
 
@@ -541,15 +541,15 @@ export default function VistaComercializacion() {
 ### <a id="📄-app-admin-configuracion-page-tsx"></a>📄 `app/admin/configuracion/page.tsx`
 
 **File Info:**
-- **Size**: 6.16 KB
+- **Size**: 5.94 KB
 - **Extension**: `.tsx`
 - **Language**: `typescript`
 - **Location**: `app/admin/configuracion/page.tsx`
 - **Relative Path**: `app/admin/configuracion`
 - **Created**: 2026-07-24 02:24:19 (America/Caracas / GMT-04:00)
-- **Modified**: 2026-09-16 16:54:30 (America/Caracas / GMT-04:00)
-- **MD5**: `ab7ffb91e092de7c8ace4301b709a8b3`
-- **SHA256**: `83286a28b6e2b71990bc6fdd9839e00fbe63c3cc0df43fa8be2177adcfbafdc3`
+- **Modified**: 2026-09-16 16:59:53 (America/Caracas / GMT-04:00)
+- **MD5**: `b3abd3f4bf85dae68016608f1657517c`
+- **SHA256**: `dd65a6a95ace4a0d70b2854d912186aec5b2fb52c45904cc9e4c1e16baf806ca`
 - **Encoding**: ASCII
 
 **File code content:**
@@ -558,11 +558,7 @@ export default function VistaComercializacion() {
 "use client";
 
 import { useState, useEffect } from "react";
-import { createClient } from "@supabase/supabase-js";
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+import { supabase } from "@/lib/supabase";
 
 export default function MantenimientoConfiguracionPage() {
   const [tablaSeleccionada, setTablaSeleccionada] = useState("registro_comercial");
@@ -629,7 +625,7 @@ export default function MantenimientoConfiguracionPage() {
             </div>
 
             <div className="rounded-xl border border-purple-100 bg-purple-50 p-4">
-              <span className="text-xs font-semibold uppercase text-purple-700">Servicio de Autenticación</span>
+              <span className="text-xs font-semibold uppercase text-purple-700">Servicio Autenticación</span>
               <p className="mt-1 text-sm font-bold text-purple-900">Activo (Auth & Admin)</p>
             </div>
           </div>
