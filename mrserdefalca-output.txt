@@ -5,7 +5,7 @@ PROJECT EXPORT FOR LLMs
 PROJECT INFORMATION:
 --------------------------------------------------
 Project Name: mrserdefalca
-Generated On: 2026-09-22 15:02:08 (America/Caracas / GMT-04:00)
+Generated On: 2026-09-22 15:09:52 (America/Caracas / GMT-04:00)
 Total Files Processed: 41
 Export Tool: Easy Whole Project to Single Text File for LLMs v1.1.0
 Tool Author: Jota / José Guilherme Pandolfi
@@ -62,7 +62,7 @@ PROJECT STRUCTURE
 │   └── 📄 page.tsx (7.02 KB)
 ├── 📁 lib/
 │   ├── 📄 supabase-admin.ts (361 B)
-│   └── 📄 supabase.ts (265 B)
+│   └── 📄 supabase.ts (192 B)
 ├── 📁 public/
 │   ├── 📄 file.svg (391 B)
 │   ├── 📄 globe.svg (1.01 KB)
@@ -92,7 +92,7 @@ Total Files: 41
 Total Directories: 21
 Text Files: 31
 Binary Files: 10
-Total Size: 927.52 KB
+Total Size: 927.45 KB
 
 FILE TYPES DISTRIBUTION:
 ------------------------------
@@ -3515,25 +3515,25 @@ FILE: lib/supabase.ts
 
 FILE INFORMATION:
 ----------------------------------------
-Size: 265 B
+Size: 192 B
 Extension: .ts
 Language: typescript
 Location: lib/supabase.ts
 Relative Path: lib
 Created: 2026-07-21 20:24:25 (America/Caracas / GMT-04:00)
-Modified: 2026-09-16 15:18:24 (America/Caracas / GMT-04:00)
-MD5: 797d503ef45f81292f7279fb39c548e8
-SHA256: d39481669a81007130f30a11e04c8f11e386bb4f102a25b28ef7073b8973a1ef
+Modified: 2026-09-22 15:09:51 (America/Caracas / GMT-04:00)
+MD5: 79ce071534140b2b6c2d3cfe44f241e5
+SHA256: accb35d725b90cdb436a38471b6ebf06cc86c427800a195224d11396bfd418e6
 Encoding: ASCII
 
 FILE CONTENT:
 ----------------------------------------
-import { createClient } from '@supabase/supabase-js';
+import { createBrowserClient } from "@supabase/ssr";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
-
-export const supabase = createClient(supabaseUrl, supabaseKey);
+export const supabase = createBrowserClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 ================================================================================
 
 
