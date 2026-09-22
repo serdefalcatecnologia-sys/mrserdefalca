@@ -5,8 +5,8 @@ PROJECT EXPORT FOR LLMs
 PROJECT INFORMATION:
 --------------------------------------------------
 Project Name: mrserdefalca
-Generated On: 2026-09-22 14:47:00 (America/Caracas / GMT-04:00)
-Total Files Processed: 39
+Generated On: 2026-09-22 14:53:59 (America/Caracas / GMT-04:00)
+Total Files Processed: 40
 Export Tool: Easy Whole Project to Single Text File for LLMs v1.1.0
 Tool Author: Jota / José Guilherme Pandolfi
 
@@ -39,10 +39,12 @@ PROJECT STRUCTURE
 │   │   ├── 📄 layout.tsx (8.1 KB)
 │   │   └── 📄 page.tsx (5.11 KB)
 │   ├── 📁 api/
-│   │   └── 📁 crear-usuario/
-│   │       ├── 📁 actualizar-usuario/
-│   │       │   └── 📄 route.ts (1.65 KB)
-│   │       └── 📄 route.ts (1.86 KB)
+│   │   ├── 📁 actualizar-usuario/
+│   │   │   └── 📄 route.ts (1.65 KB)
+│   │   ├── 📁 crear-usuario/
+│   │   │   └── 📄 route.ts (1.86 KB)
+│   │   └── 📁 eliminar-usuario/
+│   │       └── 📄 route.ts (1.5 KB)
 │   ├── 📁 comercial/
 │   │   └── 📄 page.tsx (18.25 KB)
 │   ├── 📁 desechos/
@@ -85,16 +87,16 @@ PROJECT STRUCTURE
 ================================================================================
 PROJECT STATISTICS
 ================================================================================
-Total Files: 39
-Total Directories: 20
-Text Files: 29
+Total Files: 40
+Total Directories: 21
+Text Files: 30
 Binary Files: 10
-Total Size: 929.07 KB
+Total Size: 930.57 KB
 
 FILE TYPES DISTRIBUTION:
 ------------------------------
 .tsx            : 15
-.ts             : 6
+.ts             : 7
 .svg            : 5
 .md             : 3
 .json           : 3
@@ -1753,7 +1755,7 @@ export default function AdminDashboard() {
 
 
 ================================================================================
-FILE: app/api/crear-usuario/actualizar-usuario/route.ts
+FILE: app/api/actualizar-usuario/route.ts
 ================================================================================
 
 FILE INFORMATION:
@@ -1761,10 +1763,10 @@ FILE INFORMATION:
 Size: 1.65 KB
 Extension: .ts
 Language: typescript
-Location: app/api/crear-usuario/actualizar-usuario/route.ts
-Relative Path: app/api/crear-usuario/actualizar-usuario
+Location: app/api/actualizar-usuario/route.ts
+Relative Path: app/api/actualizar-usuario
 Created: 2026-09-22 14:46:38 (America/Caracas / GMT-04:00)
-Modified: 2026-09-22 14:46:59 (America/Caracas / GMT-04:00)
+Modified: 2026-09-22 14:53:58 (America/Caracas / GMT-04:00)
 MD5: 68b39085a79e2778dd5b51b3d86b76ae
 SHA256: 31e69b45f127d7e366d0d6324b4d461477cdb71c3349194857a34c6d0030d388
 Encoding: UTF-8
@@ -1835,7 +1837,7 @@ Language: typescript
 Location: app/api/crear-usuario/route.ts
 Relative Path: app/api/crear-usuario
 Created: 2026-09-16 15:26:35 (America/Caracas / GMT-04:00)
-Modified: 2026-09-22 14:44:51 (America/Caracas / GMT-04:00)
+Modified: 2026-09-22 14:53:39 (America/Caracas / GMT-04:00)
 MD5: 5333361303524757218a2078bb2e4a27
 SHA256: 17fdf8528f516f0198fb651fef8cdeed683863dcfa093b6e7b7325c3c9c2e58d
 Encoding: UTF-8
@@ -1899,6 +1901,70 @@ export async function POST(request: Request) {
       { success: true, message: "Empleado registrado exitosamente." },
       { status: 200 }
     );
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 400 });
+  }
+}
+================================================================================
+
+
+================================================================================
+FILE: app/api/eliminar-usuario/route.ts
+================================================================================
+
+FILE INFORMATION:
+----------------------------------------
+Size: 1.5 KB
+Extension: .ts
+Language: typescript
+Location: app/api/eliminar-usuario/route.ts
+Relative Path: app/api/eliminar-usuario
+Created: 2026-09-22 14:51:31 (America/Caracas / GMT-04:00)
+Modified: 2026-09-22 14:51:59 (America/Caracas / GMT-04:00)
+MD5: be49ccd7daa6076c8a7b77400b4cea97
+SHA256: 29a7fedb50ae3126c89198d5c8361a4c37cc86c0e537c7c62b625afad2569124
+Encoding: ASCII
+
+FILE CONTENT:
+----------------------------------------
+import { NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
+
+export async function DELETE(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const idUsuario = searchParams.get("id");
+
+    if (!idUsuario) {
+      return NextResponse.json({ error: "Falta el ID del usuario a eliminar." }, { status: 400 });
+    }
+
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      return NextResponse.json({ error: "Faltan credenciales de servidor." }, { status: 500 });
+    }
+
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+
+    // 1. Eliminar acceso de Supabase Auth
+    const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(idUsuario);
+    if (authError) {
+      throw new Error("Error al borrar credenciales de acceso: " + authError.message);
+    }
+
+    // 2. Eliminar registro de la tabla pública
+    const { error: dbError } = await supabaseAdmin
+      .from("usuarios")
+      .delete()
+      .eq("id_usuario", idUsuario);
+
+    if (dbError) {
+      throw new Error("Error al borrar registro de la base de datos: " + dbError.message);
+    }
+
+    return NextResponse.json({ success: true, message: "Empleado eliminado definitivamente." }, { status: 200 });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 400 });
   }
