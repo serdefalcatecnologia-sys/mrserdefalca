@@ -3,8 +3,8 @@
 ## 📊 Project Information
 
 - **Project Name**: `mrserdefalca`
-- **Generated On**: 2026-09-22 14:53:59 (America/Caracas / GMT-04:00)
-- **Total Files Processed**: 40
+- **Generated On**: 2026-09-22 14:58:23 (America/Caracas / GMT-04:00)
+- **Total Files Processed**: 41
 - **Export Tool**: Easy Whole Project to Single Text File for LLMs v1.1.0
 - **Tool Author**: Jota / José Guilherme Pandolfi
 
@@ -74,6 +74,7 @@
 ├── 📄 AGENTS.md (327 B)
 ├── 📄 CLAUDE.md (11 B)
 ├── 📄 eslint.config.mjs (465 B)
+├── 📄 middleware.ts (1.17 KB)
 ├── 📄 next-env.d.ts (251 B)
 ├── 📄 next.config.ts (133 B)
 ├── 📄 package-lock.json (242.31 KB)
@@ -111,6 +112,7 @@
 - [📄 supabase/config.toml](#📄-supabase-config-toml)
 - [📄 AGENTS.md](#📄-agents-md)
 - [📄 CLAUDE.md](#📄-claude-md)
+- [📄 middleware.ts](#📄-middleware-ts)
 - [📄 next-env.d.ts](#📄-next-env-d-ts)
 - [📄 next.config.ts](#📄-next-config-ts)
 - [📄 package-lock.json](#📄-package-lock-json)
@@ -124,18 +126,18 @@
 
 | Metric | Count |
 |--------|-------|
-| Total Files | 40 |
+| Total Files | 41 |
 | Total Directories | 21 |
-| Text Files | 30 |
+| Text Files | 31 |
 | Binary Files | 10 |
-| Total Size | 930.57 KB |
+| Total Size | 931.74 KB |
 
 ### 📄 File Types Distribution
 
 | Extension | Count |
 |-----------|-------|
 | `.tsx` | 15 |
-| `.ts` | 7 |
+| `.ts` | 8 |
 | `.svg` | 5 |
 | `.md` | 3 |
 | `.json` | 3 |
@@ -3982,6 +3984,70 @@ This version has breaking changes — APIs, conventions, and file structure may 
 @AGENTS.md
 
 ````
+
+---
+
+### <a id="📄-middleware-ts"></a>📄 `middleware.ts`
+
+**File Info:**
+- **Size**: 1.17 KB
+- **Extension**: `.ts`
+- **Language**: `typescript`
+- **Location**: `middleware.ts`
+- **Relative Path**: `root`
+- **Created**: 2026-09-22 14:57:56 (America/Caracas / GMT-04:00)
+- **Modified**: 2026-09-22 14:58:23 (America/Caracas / GMT-04:00)
+- **MD5**: `bfb4db03416ce4c3cd9de3b046934691`
+- **SHA256**: `ddca66a9881a058a0235ae581d096df4e393d9851493bd9544797f5ffc4e7f5d`
+- **Encoding**: ASCII
+
+**File code content:**
+
+```typescript
+import { createServerClient } from "@supabase/ssr";
+import { NextResponse, type NextRequest } from "next/server";
+
+export async function middleware(request: NextRequest) {
+  let response = NextResponse.next({
+    request: {
+      headers: request.headers,
+    },
+  });
+
+  if (request.nextUrl.pathname.startsWith("/admin")) {
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return request.cookies.getAll();
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+            response = NextResponse.next({ request });
+            cookiesToSet.forEach(({ name, value, options }) =>
+              response.cookies.set(name, value, options)
+            );
+          },
+        },
+      }
+    );
+
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
+  }
+
+  return response;
+}
+
+export const config = {
+  matcher: ["/admin/:path*"],
+};
+```
 
 ---
 
