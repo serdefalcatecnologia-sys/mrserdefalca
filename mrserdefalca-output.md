@@ -3,7 +3,7 @@
 ## 📊 Project Information
 
 - **Project Name**: `mrserdefalca`
-- **Generated On**: 2026-09-22 14:20:44 (America/Caracas / GMT-04:00)
+- **Generated On**: 2026-09-22 14:44:52 (America/Caracas / GMT-04:00)
 - **Total Files Processed**: 38
 - **Export Tool**: Easy Whole Project to Single Text File for LLMs v1.1.0
 - **Tool Author**: Jota / José Guilherme Pandolfi
@@ -38,7 +38,7 @@
 │   │   └── 📄 page.tsx (5.11 KB)
 │   ├── 📁 api/
 │   │   └── 📁 crear-usuario/
-│   │       └── 📄 route.ts (1.87 KB)
+│   │       └── 📄 route.ts (1.86 KB)
 │   ├── 📁 comercial/
 │   │   └── 📄 page.tsx (18.25 KB)
 │   ├── 📁 desechos/
@@ -122,7 +122,7 @@
 | Total Directories | 19 |
 | Text Files | 28 |
 | Binary Files | 10 |
-| Total Size | 927.43 KB |
+| Total Size | 927.42 KB |
 
 ### 📄 File Types Distribution
 
@@ -1779,15 +1779,15 @@ export default function AdminDashboard() {
 ### <a id="📄-app-api-crear-usuario-route-ts"></a>📄 `app/api/crear-usuario/route.ts`
 
 **File Info:**
-- **Size**: 1.87 KB
+- **Size**: 1.86 KB
 - **Extension**: `.ts`
 - **Language**: `typescript`
 - **Location**: `app/api/crear-usuario/route.ts`
 - **Relative Path**: `app/api/crear-usuario`
 - **Created**: 2026-09-16 15:26:35 (America/Caracas / GMT-04:00)
-- **Modified**: 2026-09-22 13:57:55 (America/Caracas / GMT-04:00)
-- **MD5**: `87474fec0866c5f87b6732d37cb9c0f6`
-- **SHA256**: `94330a6312a0b8e3af45232a3be5e93603cd141b1682ef185027ad2e6427c962`
+- **Modified**: 2026-09-22 14:44:51 (America/Caracas / GMT-04:00)
+- **MD5**: `5333361303524757218a2078bb2e4a27`
+- **SHA256**: `17fdf8528f516f0198fb651fef8cdeed683863dcfa093b6e7b7325c3c9c2e58d`
 - **Encoding**: UTF-8
 
 **File code content:**
@@ -1802,32 +1802,34 @@ export async function POST(request: Request) {
     const { email, password, cedula, telefono, nombres, apellidos, rol } = body;
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY; 
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     if (!supabaseUrl || !supabaseServiceKey) {
-      return NextResponse.json({ error: "Faltan credenciales de Supabase en el servidor." }, { status: 500 });
+      return NextResponse.json(
+        { error: "Faltan credenciales de Supabase en el servidor." },
+        { status: 500 }
+      );
     }
 
-    // El Service Role Client permite crear usuarios sin modificar la sesión actual
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
       auth: {
         autoRefreshToken: false,
-        persistSession: false
-      }
+        persistSession: false,
+      },
     });
 
-    // 1. Crear usuario en la autenticación de Supabase
+    // 1. Crear usuario en Auth de Supabase sin alterar la sesión cliente actual
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
-      email_confirm: true 
+      email_confirm: true,
     });
 
     if (authError || !authData.user) {
       throw new Error(authError?.message || "Error al crear credenciales.");
     }
 
-    // 2. Insertar los datos públicos del empleado en la tabla "usuarios"
+    // 2. Insertar información del empleado en la tabla pública "usuarios"
     const { error: dbError } = await supabaseAdmin.from("usuarios").insert([
       {
         id_usuario: authData.user.id,
@@ -1844,8 +1846,10 @@ export async function POST(request: Request) {
       throw new Error("El usuario se autenticó, pero falló al guardar en la base de datos: " + dbError.message);
     }
 
-    return NextResponse.json({ success: true, message: "Empleado registrado exitosamente." }, { status: 200 });
-
+    return NextResponse.json(
+      { success: true, message: "Empleado registrado exitosamente." },
+      { status: 200 }
+    );
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 400 });
   }
