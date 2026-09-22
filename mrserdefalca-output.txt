@@ -5,7 +5,7 @@ PROJECT EXPORT FOR LLMs
 PROJECT INFORMATION:
 --------------------------------------------------
 Project Name: mrserdefalca
-Generated On: 2026-09-22 19:52:53 (America/Caracas / GMT-04:00)
+Generated On: 2026-09-22 20:04:51 (America/Caracas / GMT-04:00)
 Total Files Processed: 41
 Export Tool: Easy Whole Project to Single Text File for LLMs v1.1.0
 Tool Author: Jota / José Guilherme Pandolfi
@@ -62,7 +62,7 @@ PROJECT STRUCTURE
 │   └── 📄 page.tsx (4.82 KB)
 ├── 📁 lib/
 │   ├── 📄 supabase-admin.ts (361 B)
-│   └── 📄 supabase.ts (255 B)
+│   └── 📄 supabase.ts (275 B)
 ├── 📁 public/
 │   ├── 📄 file.svg (391 B)
 │   ├── 📄 globe.svg (1.01 KB)
@@ -92,7 +92,7 @@ Total Files: 41
 Total Directories: 21
 Text Files: 31
 Binary Files: 10
-Total Size: 916.34 KB
+Total Size: 916.36 KB
 
 FILE TYPES DISTRIBUTION:
 ------------------------------
@@ -3346,19 +3346,20 @@ FILE: lib/supabase.ts
 
 FILE INFORMATION:
 ----------------------------------------
-Size: 255 B
+Size: 275 B
 Extension: .ts
 Language: typescript
 Location: lib/supabase.ts
 Relative Path: lib
 Created: 2026-07-21 20:24:25 (America/Caracas / GMT-04:00)
-Modified: 2026-09-22 17:07:36 (America/Caracas / GMT-04:00)
-MD5: 285330011661eb1c4669efe634f6bd59
-SHA256: b50b91a078120108e121f35e7c4231f3f66a03faf2ea829f347e1aac766e4f47
+Modified: 2026-09-22 20:04:50 (America/Caracas / GMT-04:00)
+MD5: 71f7b304e3fc1135435074f8bceb72c3
+SHA256: 282f8f7d9522c679f84218202980856951912d506f6d16ce58f7d9c188badf5f
 Encoding: ASCII
 
 FILE CONTENT:
 ----------------------------------------
+// lib/supabase.ts
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
