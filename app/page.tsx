@@ -81,7 +81,7 @@ export default function LoginPage() {
               priority 
             />
           </div>
-          <h1 className="text-3xl font-black text-emerald-800 tracking-wider">SERDEFALCA</h1>
+          <h1 className="text-3xl font-black text-emerald-800 tracking-wider">SERDEFAL C.A</h1>
           <p className="text-xs font-semibold text-zinc-500 uppercase tracking-widest mt-1">
             Sistema Regional de Gestión de Desechos Sólidos
           </p>

@@ -5,7 +5,7 @@ PROJECT EXPORT FOR LLMs
 PROJECT INFORMATION:
 --------------------------------------------------
 Project Name: mrserdefalca
-Generated On: 2026-09-22 19:51:04 (America/Caracas / GMT-04:00)
+Generated On: 2026-09-22 19:52:53 (America/Caracas / GMT-04:00)
 Total Files Processed: 41
 Export Tool: Easy Whole Project to Single Text File for LLMs v1.1.0
 Tool Author: Jota / José Guilherme Pandolfi
@@ -92,7 +92,7 @@ Total Files: 41
 Total Directories: 21
 Text Files: 31
 Binary Files: 10
-Total Size: 916.33 KB
+Total Size: 916.34 KB
 
 FILE TYPES DISTRIBUTION:
 ------------------------------
@@ -3155,9 +3155,9 @@ Language: typescript
 Location: app/page.tsx
 Relative Path: app
 Created: 2026-07-21 20:24:25 (America/Caracas / GMT-04:00)
-Modified: 2026-09-22 19:51:02 (America/Caracas / GMT-04:00)
-MD5: d2d205fe744767c5e519290bdb4e3b1a
-SHA256: 8f5291f0f8d7a281a2d835b631c22e9dac7cc11d0a95309ceaba9d29d48045b7
+Modified: 2026-09-22 19:52:52 (America/Caracas / GMT-04:00)
+MD5: 5a6a6c38d7bf711339cd9a7475678866
+SHA256: 737071758fd9a90a583dbf9b4d9674a639eebecf28deac4a69ce6c84b93c6c02
 Encoding: UTF-8
 
 FILE CONTENT:
@@ -3245,7 +3245,7 @@ export default function LoginPage() {
               priority 
             />
           </div>
-          <h1 className="text-3xl font-black text-emerald-800 tracking-wider">SERDEFALCA</h1>
+          <h1 className="text-3xl font-black text-emerald-800 tracking-wider">SERDEFAL C.A</h1>
           <p className="text-xs font-semibold text-zinc-500 uppercase tracking-widest mt-1">
             Sistema Regional de Gestión de Desechos Sólidos
           </p>
