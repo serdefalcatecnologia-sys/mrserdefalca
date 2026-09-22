@@ -3,7 +3,7 @@
 ## 📊 Project Information
 
 - **Project Name**: `mrserdefalca`
-- **Generated On**: 2026-09-22 15:09:52 (America/Caracas / GMT-04:00)
+- **Generated On**: 2026-09-22 15:11:09 (America/Caracas / GMT-04:00)
 - **Total Files Processed**: 41
 - **Export Tool**: Easy Whole Project to Single Text File for LLMs v1.1.0
 - **Tool Author**: Jota / José Guilherme Pandolfi
@@ -74,7 +74,7 @@
 ├── 📄 AGENTS.md (327 B)
 ├── 📄 CLAUDE.md (11 B)
 ├── 📄 eslint.config.mjs (465 B)
-├── 📄 middleware.ts (1.17 KB)
+├── 📄 middleware.ts (1.24 KB)
 ├── 📄 next-env.d.ts (251 B)
 ├── 📄 next.config.ts (133 B)
 ├── 📄 package-lock.json (242.31 KB)
@@ -130,7 +130,7 @@
 | Total Directories | 21 |
 | Text Files | 31 |
 | Binary Files | 10 |
-| Total Size | 927.45 KB |
+| Total Size | 927.53 KB |
 
 ### 📄 File Types Distribution
 
@@ -4048,15 +4048,15 @@ This version has breaking changes — APIs, conventions, and file structure may 
 ### <a id="📄-middleware-ts"></a>📄 `middleware.ts`
 
 **File Info:**
-- **Size**: 1.17 KB
+- **Size**: 1.24 KB
 - **Extension**: `.ts`
 - **Language**: `typescript`
 - **Location**: `middleware.ts`
 - **Relative Path**: `root`
 - **Created**: 2026-09-22 14:57:56 (America/Caracas / GMT-04:00)
-- **Modified**: 2026-09-22 14:58:23 (America/Caracas / GMT-04:00)
-- **MD5**: `bfb4db03416ce4c3cd9de3b046934691`
-- **SHA256**: `ddca66a9881a058a0235ae581d096df4e393d9851493bd9544797f5ffc4e7f5d`
+- **Modified**: 2026-09-22 15:11:08 (America/Caracas / GMT-04:00)
+- **MD5**: `d1d5cb469383b156d1488fe191e21c49`
+- **SHA256**: `08ed5ce99b259d84974be21457acfb1ebc077da8ad3dd0461bba472961b40735`
 - **Encoding**: ASCII
 
 **File code content:**
@@ -4094,6 +4094,7 @@ export async function middleware(request: NextRequest) {
 
     const { data: { user } } = await supabase.auth.getUser();
 
+    // Si intenta acceder a /admin sin estar autenticado, redirige al login
     if (!user) {
       return NextResponse.redirect(new URL("/", request.url));
     }
