@@ -3,7 +3,7 @@
 ## 📊 Project Information
 
 - **Project Name**: `mrserdefalca`
-- **Generated On**: 2026-09-22 14:58:23 (America/Caracas / GMT-04:00)
+- **Generated On**: 2026-09-22 14:59:43 (America/Caracas / GMT-04:00)
 - **Total Files Processed**: 41
 - **Export Tool**: Easy Whole Project to Single Text File for LLMs v1.1.0
 - **Tool Author**: Jota / José Guilherme Pandolfi
@@ -30,7 +30,7 @@
 │   │   │   └── 📄 page.tsx (4.74 KB)
 │   │   ├── 📁 empleados/
 │   │   │   ├── 📁 registro/
-│   │   │   │   └── 📄 page.tsx (6.57 KB)
+│   │   │   │   └── 📄 page.tsx (7.74 KB)
 │   │   │   └── 📄 page.tsx (20.39 KB)
 │   │   ├── 📁 flota/
 │   │   │   └── 📄 page.tsx (5.44 KB)
@@ -130,7 +130,7 @@
 | Total Directories | 21 |
 | Text Files | 31 |
 | Binary Files | 10 |
-| Total Size | 931.74 KB |
+| Total Size | 932.91 KB |
 
 ### 📄 File Types Distribution
 
@@ -806,15 +806,15 @@ export default function VistaDesechosAdmin() {
 ### <a id="📄-app-admin-empleados-registro-page-tsx"></a>📄 `app/admin/empleados/registro/page.tsx`
 
 **File Info:**
-- **Size**: 6.57 KB
+- **Size**: 7.74 KB
 - **Extension**: `.tsx`
 - **Language**: `typescript`
 - **Location**: `app/admin/empleados/registro/page.tsx`
 - **Relative Path**: `app/admin/empleados/registro`
 - **Created**: 2026-07-21 23:05:12 (America/Caracas / GMT-04:00)
-- **Modified**: 2026-09-22 14:00:05 (America/Caracas / GMT-04:00)
-- **MD5**: `542a4be8861b60e4b96177de8129822f`
-- **SHA256**: `048c7dcbf3e040fd1a94e4a5c2d227c388352fc35fb4d71e9c558d744a9be91d`
+- **Modified**: 2026-09-22 14:59:42 (America/Caracas / GMT-04:00)
+- **MD5**: `78c0623343e6211ab0f01b37f4848f0a`
+- **SHA256**: `c2f43882aad81d0d954819934d6f9c73a151c8f408d205cd4cccd90b3ac2f39f`
 - **Encoding**: ASCII
 
 **File code content:**
@@ -834,7 +834,7 @@ export default function RegistroEmpleados() {
   const [password, setPassword] = useState("");
   const [rol, setRol] = useState("comercial");
   const [mensaje, setMensaje] = useState({ texto: "", tipo: "" });
-  
+
   const [isPending, startTransition] = useTransition();
 
   const handleCrearEmpleado = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -847,7 +847,13 @@ export default function RegistroEmpleados() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            email, password, cedula, telefono, nombres, apellidos, rol
+            email,
+            password,
+            cedula,
+            telefono,
+            nombres,
+            apellidos,
+            rol,
           }),
         });
 
@@ -856,7 +862,10 @@ export default function RegistroEmpleados() {
         if (!response.ok) {
           setMensaje({ texto: "❌ Error: " + data.error, tipo: "error" });
         } else {
-          setMensaje({ texto: "✅ Empleado registrado exitosamente sin afectar su sesión actual.", tipo: "exito" });
+          setMensaje({
+            texto: "✅ Empleado registrado exitosamente sin afectar su sesión actual.",
+            tipo: "exito",
+          });
           setCedula("");
           setTelefono("");
           setNombres("");
@@ -882,39 +891,87 @@ export default function RegistroEmpleados() {
 
         <div className="rounded-2xl bg-white p-8 shadow-xl">
           <h1 className="text-2xl font-bold text-emerald-800">Alta de Personal y Asignación de Roles</h1>
-          <p className="mt-1 text-xs text-zinc-500">Registra al nuevo operador para darle acceso a su módulo correspondiente.</p>
+          <p className="mt-1 text-xs text-zinc-500">
+            Registra al nuevo operador para darle acceso a su módulo correspondiente.
+          </p>
 
           <form onSubmit={handleCrearEmpleado} className="mt-6 space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label className="block text-xs font-semibold text-zinc-700">Cédula de Identidad *</label>
-                <input type="text" required value={cedula} onChange={(e) => setCedula(e.target.value)} placeholder="Ej: 21357148" className="mt-1 w-full rounded-lg border border-zinc-300 p-3 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600" />
+                <input
+                  type="text"
+                  required
+                  value={cedula}
+                  onChange={(e) => setCedula(e.target.value)}
+                  placeholder="Ej: 21357148"
+                  className="mt-1 w-full rounded-lg border border-zinc-300 p-3 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
+                />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-zinc-700">Teléfono *</label>
-                <input type="text" required value={telefono} onChange={(e) => setTelefono(e.target.value)} placeholder="Ej: 04123571468" className="mt-1 w-full rounded-lg border border-zinc-300 p-3 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600" />
+                <input
+                  type="text"
+                  required
+                  value={telefono}
+                  onChange={(e) => setTelefono(e.target.value)}
+                  placeholder="Ej: 04123571468"
+                  className="mt-1 w-full rounded-lg border border-zinc-300 p-3 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
+                />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-zinc-700">Nombres *</label>
-                <input type="text" required value={nombres} onChange={(e) => setNombres(e.target.value)} placeholder="Nombres del empleado" className="mt-1 w-full rounded-lg border border-zinc-300 p-3 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600" />
+                <input
+                  type="text"
+                  required
+                  value={nombres}
+                  onChange={(e) => setNombres(e.target.value)}
+                  placeholder="Nombres del empleado"
+                  className="mt-1 w-full rounded-lg border border-zinc-300 p-3 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
+                />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-zinc-700">Apellidos *</label>
-                <input type="text" required value={apellidos} onChange={(e) => setApellidos(e.target.value)} placeholder="Apellidos del empleado" className="mt-1 w-full rounded-lg border border-zinc-300 p-3 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600" />
+                <input
+                  type="text"
+                  required
+                  value={apellidos}
+                  onChange={(e) => setApellidos(e.target.value)}
+                  placeholder="Apellidos del empleado"
+                  className="mt-1 w-full rounded-lg border border-zinc-300 p-3 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
+                />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-zinc-700">Correo Electrónico (Para Login) *</label>
-                <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="usuario@serdefalca.com" className="mt-1 w-full rounded-lg border border-zinc-300 p-3 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600" />
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="usuario@serdefalca.com"
+                  className="mt-1 w-full rounded-lg border border-zinc-300 p-3 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
+                />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-zinc-700">Contraseña Provisional *</label>
-                <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className="mt-1 w-full rounded-lg border border-zinc-300 p-3 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600" />
+                <input
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="mt-1 w-full rounded-lg border border-zinc-300 p-3 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
+                />
               </div>
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-zinc-700">Rol / Módulo Asignado *</label>
-              <select value={rol} onChange={(e) => setRol(e.target.value)} className="mt-1 w-full rounded-lg border border-zinc-300 p-3 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600">
+              <select
+                value={rol}
+                onChange={(e) => setRol(e.target.value)}
+                className="mt-1 w-full rounded-lg border border-zinc-300 p-3 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
+              >
                 <option value="administrador">Administrador del Sistema (Acceso Total)</option>
                 <option value="comercial">Operador de Comercialización y Facturación</option>
                 <option value="flota">Operador de Flota de Rutas</option>
@@ -923,13 +980,25 @@ export default function RegistroEmpleados() {
             </div>
 
             {mensaje.texto && (
-              <div className={`rounded-lg p-3 text-center text-xs font-medium ${mensaje.tipo === 'error' ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-green-50 text-green-700 border border-green-200'}`}>
+              <div
+                className={`rounded-lg p-3 text-center text-xs font-medium ${
+                  mensaje.tipo === "error"
+                    ? "bg-red-50 text-red-600 border border-red-200"
+                    : "bg-green-50 text-green-700 border border-green-200"
+                }`}
+              >
                 {mensaje.texto}
               </div>
             )}
 
-            <button type="submit" disabled={isPending} className={`w-full rounded-lg py-3 text-sm font-semibold text-white transition-colors ${isPending ? 'bg-emerald-400 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-700'}`}>
-              {isPending ? 'Registrando en el sistema...' : 'Guardar y Registrar Empleado'}
+            <button
+              type="submit"
+              disabled={isPending}
+              className={`w-full rounded-lg py-3 text-sm font-semibold text-white transition-colors ${
+                isPending ? "bg-emerald-400 cursor-not-allowed" : "bg-emerald-600 hover:bg-emerald-700"
+              }`}
+            >
+              {isPending ? "Registrando en el sistema..." : "Guardar y Registrar Empleado"}
             </button>
           </form>
         </div>
