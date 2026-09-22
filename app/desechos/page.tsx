@@ -1,55 +1,64 @@
 "use client";
 
-import { useState, useEffect, useTransition, useCallback } from "react";
-import { createClient } from "@supabase/supabase-js";
+import { useState, useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+import { supabase } from "@/lib/supabase";
 
 export default function DesechosPage() {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [cargandoSesion, setCargandoSesion] = useState(true);
 
-  const [usuarioNombre, setUsuarioNombre] = useState("Cargando...");
+  const [usuarioNombre, setUsuarioNombre] = useState("");
   const [usuarioIniciales, setUsuarioIniciales] = useState("--");
 
-  // Estados del formulario
-  const [tipoDesecho, setTipoDesecho] = useState("Sólidos Urbanos");
-  const [tipoTransporte, setTipoTransporte] = useState("Camión Compactador");
+  // Formulario
+  const [tipoDesecho, setTipoDesecho] = useState("Desechos Domiciliarios");
+  const [tipoTransporte, setTipoTransporte] = useState("Compactador");
   const [placa, setPlaca] = useState("");
-  const [municipio, setMunicipio] = useState("Miranda");
+  const [origenMunicipio, setOrigenMunicipio] = useState("Miranda");
   const [observaciones, setObservaciones] = useState("");
-
   const [mensaje, setMensaje] = useState({ texto: "", tipo: "" });
 
-  const obtenerUsuario = useCallback(async () => {
-    try {
+  useEffect(() => {
+    let isMounted = true;
+
+    const verificarUsuario = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        startTransition(() => router.push("/"));
+        if (isMounted) router.push("/");
         return;
       }
-      const email = session.user.email || "";
-      const nombre = email.split("@")[0].toUpperCase();
-      setUsuarioNombre(nombre);
-      setUsuarioIniciales(nombre.substring(0, 2));
-    } catch (error) {
-      console.error("Error obteniendo usuario:", error);
-    }
-  }, [router]);
 
-  useEffect(() => {
-    obtenerUsuario();
-  }, [obtenerUsuario]);
+      if (isMounted) {
+        const email = session.user.email || "";
+        const nombre = email.split("@")[0].toUpperCase();
+        setUsuarioNombre(nombre);
+        setUsuarioIniciales(nombre.substring(0, 2));
+        setCargandoSesion(false);
+      }
+    };
+
+    verificarUsuario();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_OUT" || !session) {
+        router.push("/");
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      authListener.subscription.unsubscribe();
+    };
+  }, [router]);
 
   const handleCerrarSesion = async () => {
     await supabase.auth.signOut();
-    startTransition(() => router.push("/"));
+    router.push("/");
   };
 
-  const handleGuardarIngreso = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleGuardarRegistro = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setMensaje({ texto: "", tipo: "" });
 
@@ -59,30 +68,32 @@ export default function DesechosPage() {
           {
             tipo_desecho: tipoDesecho,
             tipo_transporte: tipoTransporte,
-            placa: placa,
-            origen_municipio: municipio, // <- AQUÍ CORREGIMOS EL NOMBRE PARA SUPABASE
-            observaciones: observaciones,
-            responsable: usuarioNombre 
+            placa: placa.toUpperCase(),
+            origen_municipio: origenMunicipio,
+            observaciones,
+            responsable: usuarioNombre,
+            fecha_hora: new Date().toISOString(),
           },
         ]);
 
         if (error) throw error;
 
-        setMensaje({ texto: "✅ Ingreso de desechos registrado exitosamente.", tipo: "exito" });
-        
-        // Limpiar para el siguiente registro
+        setMensaje({ texto: "✅ Recepción de desechos registrada correctamente.", tipo: "exito" });
         setPlaca("");
         setObservaciones("");
-        setTipoDesecho("Sólidos Urbanos");
-        setTipoTransporte("Camión Compactador");
-        setMunicipio("Miranda");
-        
-        setTimeout(() => setMensaje({ texto: "", tipo: "" }), 4000);
       } catch (err: any) {
-        setMensaje({ texto: "❌ Error al registrar: " + (err.message || "Error inesperado"), tipo: "error" });
+        setMensaje({ texto: "❌ Error al guardar: " + (err.message || "Error inesperado"), tipo: "error" });
       }
     });
   };
+
+  if (cargandoSesion) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-zinc-100 text-zinc-600">
+        Verificando sesión...
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-zinc-100 font-sans">
@@ -90,12 +101,12 @@ export default function DesechosPage() {
         <div>
           <div className="py-4 px-2 border-b border-emerald-800/60 mb-6">
             <h1 className="text-xl font-black tracking-wider text-white">SERDEFALCA</h1>
-            <p className="text-[10px] text-emerald-300 font-medium">Gestión Integral de Desechos</p>
+            <p className="text-[10px] text-emerald-300 font-medium">Control de Desechos</p>
           </div>
           <nav className="space-y-1 text-sm font-medium">
             <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-emerald-800 text-white shadow-inner">
-              <span className="text-lg">🚛</span>
-              <span>Recepción de Unidades</span>
+              <span>♻️</span>
+              <span>Recepción de Desechos</span>
             </div>
           </nav>
         </div>
@@ -110,11 +121,11 @@ export default function DesechosPage() {
 
       <main className="flex-1 flex flex-col overflow-hidden">
         <header className="bg-emerald-900 text-white px-6 md:px-8 py-4 flex items-center justify-between shadow-md">
-          <h2 className="text-base md:text-lg font-bold tracking-wide">Módulo Control de Desechos</h2>
+          <h2 className="text-base md:text-lg font-bold tracking-wide">Módulo de Desechos Sólidos</h2>
           <div className="flex items-center gap-3">
             <div className="text-right text-xs hidden sm:block">
               <p className="font-bold text-white">{usuarioNombre}</p>
-              <p className="text-emerald-200">Operador de Recepción</p>
+              <p className="text-emerald-200">Operador de Botadero</p>
             </div>
             <div className="w-9 h-9 rounded-full bg-emerald-500 text-emerald-950 font-bold flex items-center justify-center text-xs border-2 border-emerald-300 shrink-0">
               {usuarioIniciales}
@@ -122,30 +133,28 @@ export default function DesechosPage() {
           </div>
         </header>
 
-        <section className="p-4 md:p-8 w-full max-w-3xl mx-auto overflow-y-auto">
+        <section className="p-4 md:p-8 w-full max-w-4xl mx-auto overflow-y-auto">
           <div className="bg-white rounded-2xl p-6 md:p-8 shadow-xl border border-zinc-200/80">
             <div className="border-b border-zinc-100 pb-4 mb-6">
-              <h3 className="text-xl md:text-2xl font-extrabold text-emerald-900">Registro de Ingreso al Vertedero</h3>
+              <h3 className="text-xl md:text-2xl font-extrabold text-emerald-900">Registro de Ingreso a Vertedero</h3>
               <p className="text-xs text-zinc-500 mt-1">
-                Complete los datos de la unidad recolectora para registrar su ingreso.
+                Complete la clasificación y procedencia del transporte que ingresa.
               </p>
             </div>
 
-            <form onSubmit={handleGuardarIngreso} className="space-y-5">
+            <form onSubmit={handleGuardarRegistro} className="space-y-5">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5">
                 <div>
                   <label className="block text-xs font-semibold text-zinc-700 mb-1">Clasificación de Desecho *</label>
                   <select
                     value={tipoDesecho}
                     onChange={(e) => setTipoDesecho(e.target.value)}
-                    className="w-full p-2.5 md:p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 bg-white"
+                    className="w-full p-2.5 md:p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 bg-white"
                   >
-                    <option value="Sólidos Urbanos">Sólidos Urbanos (Domiciliario)</option>
-                    <option value="Comercial e Industrial">Comercial e Industrial</option>
-                    <option value="Orgánicos">Orgánicos</option>
-                    <option value="Plástico/Reciclable">Plástico / Reciclable</option>
-                    <option value="Escombros">Escombros / Construcción</option>
-                    <option value="Hospitalarios/Peligrosos">Hospitalarios / Biológicos</option>
+                    <option value="Desechos Domiciliarios">Desechos Domiciliarios</option>
+                    <option value="Desechos Comerciales">Desechos Comerciales</option>
+                    <option value="Desechos Industriales">Desechos Industriales</option>
+                    <option value="Escombros y Vegetal">Escombros y Vegetal</option>
                   </select>
                 </div>
 
@@ -154,14 +163,12 @@ export default function DesechosPage() {
                   <select
                     value={tipoTransporte}
                     onChange={(e) => setTipoTransporte(e.target.value)}
-                    className="w-full p-2.5 md:p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 bg-white"
+                    className="w-full p-2.5 md:p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 bg-white"
                   >
-                    <option value="Camión Compactador">Camión Compactador</option>
-                    <option value="Camión Volteo">Camión Volteo</option>
-                    <option value="Camión 350 / 750">Camión 350 / 750</option>
-                    <option value="Camioneta Pick-up">Camioneta Pick-up</option>
-                    <option value="Vehículo Particular">Vehículo Particular</option>
-                    <option value="Otro">Otro</option>
+                    <option value="Compactador">Camión Compactador</option>
+                    <option value="Volteo">Camión Volteo</option>
+                    <option value="Chasis Largo">Camión Chasis Largo</option>
+                    <option value="Particular / Particular">Particular / Pick-Up</option>
                   </select>
                 </div>
 
@@ -173,16 +180,16 @@ export default function DesechosPage() {
                     placeholder="Ej: A82BK9"
                     value={placa}
                     onChange={(e) => setPlaca(e.target.value.toUpperCase())}
-                    className="w-full p-2.5 md:p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 font-mono uppercase"
+                    className="w-full p-2.5 md:p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 font-mono uppercase"
                   />
                 </div>
 
                 <div>
                   <label className="block text-xs font-semibold text-zinc-700 mb-1">Municipio de Origen *</label>
                   <select
-                    value={municipio}
-                    onChange={(e) => setMunicipio(e.target.value)}
-                    className="w-full p-2.5 md:p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 bg-white"
+                    value={origenMunicipio}
+                    onChange={(e) => setOrigenMunicipio(e.target.value)}
+                    className="w-full p-2.5 md:p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 bg-white"
                   >
                     <option value="Miranda">Miranda</option>
                     <option value="Carirubana">Carirubana</option>
@@ -190,18 +197,17 @@ export default function DesechosPage() {
                     <option value="Zamora">Zamora</option>
                     <option value="Falcón">Falcón</option>
                     <option value="Silva">Silva</option>
-                    <option value="Otro">Otro Municipio</option>
                   </select>
                 </div>
 
                 <div className="sm:col-span-2">
                   <label className="block text-xs font-semibold text-zinc-700 mb-1">Observaciones</label>
-                  <input
-                    type="text"
-                    placeholder="Ej: Chofer no portaba carnet, carga mixta..."
+                  <textarea
+                    rows={3}
+                    placeholder="Detalles adicionales del estado de la carga o vehículo..."
                     value={observaciones}
                     onChange={(e) => setObservaciones(e.target.value)}
-                    className="w-full p-2.5 md:p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
+                    className="w-full p-2.5 md:p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600"
                   />
                 </div>
               </div>
@@ -219,9 +225,9 @@ export default function DesechosPage() {
               <button
                 type="submit"
                 disabled={isPending}
-                className="w-full py-3.5 bg-emerald-700 text-white font-bold text-sm rounded-xl hover:bg-emerald-800 transition-colors disabled:bg-emerald-400 shadow-md mt-4 flex justify-center items-center gap-2"
+                className="w-full py-3.5 bg-emerald-700 text-white font-bold text-sm rounded-xl hover:bg-emerald-800 transition-colors disabled:bg-emerald-400 shadow-md mt-4"
               >
-                {isPending ? "Procesando..." : "Registrar Ingreso"}
+                {isPending ? "Guardando..." : "Registrar Recepción de Desechos"}
               </button>
             </form>
           </div>

@@ -1,22 +1,19 @@
 "use client";
 
-import { useState, useEffect, useTransition, useCallback } from "react";
-import { createClient } from "@supabase/supabase-js";
+import { useState, useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+import { supabase } from "@/lib/supabase";
 
 export default function ComercialPage() {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [cargandoSesion, setCargandoSesion] = useState(true);
   const [generandoPDF, setGenerandoPDF] = useState(false);
 
-  const [usuarioNombre, setUsuarioNombre] = useState("Cargando...");
+  const [usuarioNombre, setUsuarioNombre] = useState("");
   const [usuarioIniciales, setUsuarioIniciales] = useState("--");
 
-  // Estados del formulario
+  // Formulario
   const [cliente, setCliente] = useState("");
   const [rif, setRif] = useState("");
   const [municipio, setMunicipio] = useState("Miranda");
@@ -26,33 +23,48 @@ export default function ComercialPage() {
   const [metodoPago, setMetodoPago] = useState("Transferencia");
   const [estatusPago, setEstatusPago] = useState("Pagado");
 
-  // Estado para guardar la factura recién creada y poder imprimirla
   const [ultimaFactura, setUltimaFactura] = useState<any>(null);
   const [mensaje, setMensaje] = useState({ texto: "", tipo: "" });
 
-  const obtenerUsuario = useCallback(async () => {
-    try {
+  useEffect(() => {
+    let isMounted = true;
+
+    const verificarUsuario = async () => {
       const { data: { session } } = await supabase.auth.getSession();
+      
       if (!session) {
-        startTransition(() => router.push("/"));
+        if (isMounted) {
+          router.push("/");
+        }
         return;
       }
-      const email = session.user.email || "";
-      const nombre = email.split("@")[0].toUpperCase();
-      setUsuarioNombre(nombre);
-      setUsuarioIniciales(nombre.substring(0, 2));
-    } catch (error) {
-      console.error("Error obteniendo usuario:", error);
-    }
-  }, [router]);
 
-  useEffect(() => {
-    obtenerUsuario();
-  }, [obtenerUsuario]);
+      if (isMounted) {
+        const email = session.user.email || "";
+        const nombre = email.split("@")[0].toUpperCase();
+        setUsuarioNombre(nombre);
+        setUsuarioIniciales(nombre.substring(0, 2));
+        setCargandoSesion(false);
+      }
+    };
+
+    verificarUsuario();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_OUT" || !session) {
+        router.push("/");
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      authListener.subscription.unsubscribe();
+    };
+  }, [router]);
 
   const handleCerrarSesion = async () => {
     await supabase.auth.signOut();
-    startTransition(() => router.push("/"));
+    router.push("/");
   };
 
   const montoBsCalculado = (parseFloat(montoUsd || "0") * parseFloat(tasaBcv || "0")).toFixed(2);
@@ -69,17 +81,13 @@ export default function ComercialPage() {
         const bs = usd * bcv;
 
         const hoy = new Date();
-        const año = hoy.getFullYear();
-        const mes = String(hoy.getMonth() + 1).padStart(2, '0');
-        const dia = String(hoy.getDate()).padStart(2, '0');
-        const fechaActual = `${año}-${mes}-${dia}`;
+        const fechaActual = hoy.toISOString().split("T")[0];
 
-        // Hacemos el INSERT y pedimos que nos devuelva los datos guardados (.select().single())
         const { data, error } = await supabase.from("registro_comercial").insert([
           {
-            cliente: cliente,
+            cliente,
             rif_cedula: rif,
-            municipio: municipio,
+            municipio,
             tipo_servicio: tipoServicio,
             monto_usd: usd,
             tasa_bcv: bcv,
@@ -93,24 +101,19 @@ export default function ComercialPage() {
 
         if (error) throw error;
 
-        // Guardamos los datos de la factura recién creada para habilitar el botón de impresión
         setUltimaFactura(data);
-        setMensaje({ texto: "✅ Registro guardado exitosamente. Puede imprimir el comprobante.", tipo: "exito" });
+        setMensaje({ texto: "✅ Registro guardado exitosamente.", tipo: "exito" });
         
-        // Limpiamos los campos visuales para el siguiente cliente (pero mantenemos tasaBcv por comodidad)
         setCliente("");
         setRif("");
         setMontoUsd("");
         setEstatusPago("Pagado");
-        
-        setTimeout(() => setMensaje({ texto: "", tipo: "" }), 8000);
       } catch (err: any) {
         setMensaje({ texto: "❌ Error al registrar: " + (err.message || "Error inesperado"), tipo: "error" });
       }
     });
   };
 
-  // Función idéntica a la del Administrador para generar el PDF de la factura
   const imprimirComprobante = async () => {
     if (!ultimaFactura) return;
     setGenerandoPDF(true);
@@ -177,6 +180,14 @@ export default function ComercialPage() {
     }
   };
 
+  if (cargandoSesion) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-zinc-100 text-zinc-600">
+        Verificando sesión...
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen bg-zinc-100 font-sans">
       <aside className="w-64 bg-emerald-950 text-white flex flex-col justify-between p-4 shadow-xl shrink-0 hidden md:flex">
@@ -187,7 +198,7 @@ export default function ComercialPage() {
           </div>
           <nav className="space-y-1 text-sm font-medium">
             <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-emerald-800 text-white shadow-inner">
-              <span className="text-lg">💼</span>
+              <span>💼</span>
               <span>Facturación y Cobranza</span>
             </div>
           </nav>
@@ -226,7 +237,6 @@ export default function ComercialPage() {
 
             <form onSubmit={handleGuardarFactura} className="space-y-5">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5">
-                
                 <div className="sm:col-span-2">
                   <label className="block text-xs font-semibold text-zinc-700 mb-1">Razón Social / Cliente *</label>
                   <input
@@ -347,8 +357,6 @@ export default function ComercialPage() {
                   }`}
                 >
                   <p>{mensaje.texto}</p>
-                  
-                  {/* BOTÓN PARA IMPRIMIR COMPROBANTE - Solo se muestra cuando es exitoso */}
                   {mensaje.tipo === "exito" && ultimaFactura && (
                     <button
                       type="button"
@@ -356,7 +364,6 @@ export default function ComercialPage() {
                       disabled={generandoPDF}
                       className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors flex items-center gap-2 text-xs disabled:opacity-50"
                     >
-                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
                       {generandoPDF ? 'Generando PDF...' : 'Imprimir Comprobante Ahora'}
                     </button>
                   )}
