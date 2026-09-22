@@ -1,56 +1,60 @@
+// app/page.tsx
 "use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { supabase } from "@/lib/supabase";
 
 export default function LoginPage() {
-  const router = useRouter();
-  const [correo, setCorreo] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [cargando, setCargando] = useState(false);
-  const [errorMsg, setErrorMsg] = useState("");
+  const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
     setCargando(true);
-    setErrorMsg("");
 
     try {
+      // 1. Autenticación contra Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email: correo.trim(),
+        email,
         password,
       });
 
-      if (authError || !authData.session) {
-        throw new Error(authError?.message || "Credenciales inválidas.");
-      }
+      if (authError) throw authError;
 
-      const { data: usuarioData, error: dbError } = await supabase
-        .from("usuarios")
-        .select("rol")
-        .eq("id_usuario", authData.session.user.id)
-        .maybeSingle();
+      if (authData.user) {
+        // 2. Consulta del rol en la tabla de usuarios
+        const { data: perfil, error: perfilError } = await supabase
+          .from("usuarios")
+          .select("rol")
+          .eq("id_usuario", authData.user.id)
+          .single();
 
-      if (dbError) {
-        console.error("Error consultando rol:", dbError);
-      }
+        if (perfilError) throw new Error("No se pudo obtener la información del rol.");
 
-      const rol = usuarioData?.rol?.toLowerCase().trim() || "administrador";
+        const rol = perfil?.rol?.toLowerCase().trim();
 
-      if (rol === "administrador") {
-        router.push("/admin");
-      } else if (rol === "comercial") {
-        router.push("/comercial");
-      } else if (rol === "flota") {
-        router.push("/flota");
-      } else if (rol === "desechos") {
-        router.push("/desechos");
-      } else {
-        router.push("/admin");
+        // 3. Enrutamiento dinámico según el rol
+        if (rol === "administrador") {
+          router.push("/admin");
+        } else if (rol === "comercial") {
+          router.push("/comercial");
+        } else if (rol === "desechos") {
+          router.push("/desechos");
+        } else if (rol === "flota") {
+          router.push("/admin/flota");
+        } else {
+          setError("Acceso denegado: Rol no reconocido.");
+          await supabase.auth.signOut();
+        }
       }
     } catch (err: any) {
-      setErrorMsg("❌ " + (err.message || "Error al iniciar sesión"));
+      setError(err.message || "Credenciales inválidas o error de conexión.");
     } finally {
       setCargando(false);
     }
@@ -58,57 +62,71 @@ export default function LoginPage() {
 
   return (
     <div 
-      className="min-h-screen flex items-center justify-center p-4 font-sans relative bg-cover bg-center"
-      style={{ backgroundImage: "url('/fondo.jpg')" }} /* Asegúrate de que el archivo exista en tu carpeta /public */
+      className="min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat relative"
+      style={{ backgroundImage: "url('/imagen1.png')" }}
     >
-      {/* Capa oscura semitransparente para que el texto sea legible sobre el fondo */}
-      <div className="absolute inset-0 bg-black/60"></div>
+      {/* Capa de contraste semitransparente */}
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] z-0"></div>
 
-      <div className="relative w-full max-w-md bg-white/10 backdrop-blur-md p-8 rounded-2xl shadow-2xl border border-white/20 text-white">
-        <div className="text-center mb-6 flex flex-col items-center">
-          {/* Logo restaurado */}
-          <img src="/logo1.png" alt="Logo Serdefalca" className="h-24 w-auto mb-4 drop-shadow-md" />
-          <h1 className="text-2xl font-extrabold tracking-wider text-emerald-400 drop-shadow-md">SERDEFALCA</h1>
-          <p className="text-xs text-zinc-300 mt-1">Sistema Integrado de Gestión Operativa</p>
+      {/* Tarjeta de Inicio de Sesión */}
+      <div className="w-full max-w-md bg-white/95 backdrop-blur-md p-8 rounded-2xl shadow-2xl relative z-10 border border-white/20">
+        <div className="text-center mb-8 flex flex-col items-center">
+          <div className="relative w-28 h-28 mb-2">
+            <Image 
+              src="/logo1.png" 
+              alt="Logo Serdefalca" 
+              fill 
+              className="object-contain"
+              priority 
+            />
+          </div>
+          <h1 className="text-3xl font-black text-emerald-800 tracking-wider">SERDEFALCA</h1>
+          <p className="text-xs font-semibold text-zinc-500 uppercase tracking-widest mt-1">
+            Sistema Regional de Gestión de Desechos Sólidos
+          </p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-4">
+        <form onSubmit={handleLogin} className="space-y-5">
           <div>
-            <label className="block text-xs font-semibold text-zinc-200 mb-1">Correo Electrónico</label>
+            <label className="block text-xs font-bold text-zinc-700 uppercase tracking-wider mb-2">
+              Correo Electrónico
+            </label>
             <input
               type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
+              className="w-full p-3.5 rounded-xl border border-zinc-300 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 text-zinc-800 transition-all text-sm"
               placeholder="usuario@serdefalca.com"
-              value={correo}
-              onChange={(e) => setCorreo(e.target.value)}
-              className="w-full p-3 rounded-lg bg-black/40 border border-white/20 text-sm text-white outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 placeholder:text-zinc-500"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-zinc-200 mb-1">Contraseña</label>
+            <label className="block text-xs font-bold text-zinc-700 uppercase tracking-wider mb-2">
+              Contraseña
+            </label>
             <input
               type="password"
-              required
-              placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-3 rounded-lg bg-black/40 border border-white/20 text-sm text-white outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 placeholder:text-zinc-500"
+              required
+              className="w-full p-3.5 rounded-xl border border-zinc-300 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 text-zinc-800 transition-all text-sm"
+              placeholder="••••••••"
             />
           </div>
 
-          {errorMsg && (
-            <div className="p-3 bg-red-950/80 border border-red-500 text-red-200 text-xs rounded-lg text-center font-semibold backdrop-blur-sm">
-              {errorMsg}
+          {error && (
+            <div className="p-3.5 rounded-xl bg-red-50 text-red-600 text-xs font-semibold border border-red-200 text-center">
+              {error}
             </div>
           )}
 
           <button
             type="submit"
             disabled={cargando}
-            className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-lg transition-colors disabled:opacity-50 mt-2 shadow-lg"
+            className="w-full bg-emerald-700 text-white font-bold py-3.5 rounded-xl hover:bg-emerald-800 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm shadow-lg shadow-emerald-900/20"
           >
-            {cargando ? "Verificando..." : "Ingresar al Sistema"}
+            {cargando ? "Verificando..." : "Iniciar Sesión"}
           </button>
         </form>
       </div>
