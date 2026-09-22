@@ -3,8 +3,8 @@
 ## 📊 Project Information
 
 - **Project Name**: `mrserdefalca`
-- **Generated On**: 2026-09-22 14:44:52 (America/Caracas / GMT-04:00)
-- **Total Files Processed**: 38
+- **Generated On**: 2026-09-22 14:47:00 (America/Caracas / GMT-04:00)
+- **Total Files Processed**: 39
 - **Export Tool**: Easy Whole Project to Single Text File for LLMs v1.1.0
 - **Tool Author**: Jota / José Guilherme Pandolfi
 
@@ -38,6 +38,8 @@
 │   │   └── 📄 page.tsx (5.11 KB)
 │   ├── 📁 api/
 │   │   └── 📁 crear-usuario/
+│   │       ├── 📁 actualizar-usuario/
+│   │       │   └── 📄 route.ts (1.65 KB)
 │   │       └── 📄 route.ts (1.86 KB)
 │   ├── 📁 comercial/
 │   │   └── 📄 page.tsx (18.25 KB)
@@ -91,6 +93,7 @@
 - [📄 app/admin/flota/page.tsx](#📄-app-admin-flota-page-tsx)
 - [📄 app/admin/layout.tsx](#📄-app-admin-layout-tsx)
 - [📄 app/admin/page.tsx](#📄-app-admin-page-tsx)
+- [📄 app/api/crear-usuario/actualizar-usuario/route.ts](#📄-app-api-crear-usuario-actualizar-usuario-route-ts)
 - [📄 app/api/crear-usuario/route.ts](#📄-app-api-crear-usuario-route-ts)
 - [📄 app/comercial/page.tsx](#📄-app-comercial-page-tsx)
 - [📄 app/desechos/page.tsx](#📄-app-desechos-page-tsx)
@@ -118,18 +121,18 @@
 
 | Metric | Count |
 |--------|-------|
-| Total Files | 38 |
-| Total Directories | 19 |
-| Text Files | 28 |
+| Total Files | 39 |
+| Total Directories | 20 |
+| Text Files | 29 |
 | Binary Files | 10 |
-| Total Size | 927.42 KB |
+| Total Size | 929.07 KB |
 
 ### 📄 File Types Distribution
 
 | Extension | Count |
 |-----------|-------|
 | `.tsx` | 15 |
-| `.ts` | 5 |
+| `.ts` | 6 |
 | `.svg` | 5 |
 | `.md` | 3 |
 | `.json` | 3 |
@@ -1771,6 +1774,76 @@ export default function AdminDashboard() {
       </div>
     </div>
   );
+}
+```
+
+---
+
+### <a id="📄-app-api-crear-usuario-actualizar-usuario-route-ts"></a>📄 `app/api/crear-usuario/actualizar-usuario/route.ts`
+
+**File Info:**
+- **Size**: 1.65 KB
+- **Extension**: `.ts`
+- **Language**: `typescript`
+- **Location**: `app/api/crear-usuario/actualizar-usuario/route.ts`
+- **Relative Path**: `app/api/crear-usuario/actualizar-usuario`
+- **Created**: 2026-09-22 14:46:38 (America/Caracas / GMT-04:00)
+- **Modified**: 2026-09-22 14:46:59 (America/Caracas / GMT-04:00)
+- **MD5**: `68b39085a79e2778dd5b51b3d86b76ae`
+- **SHA256**: `31e69b45f127d7e366d0d6324b4d461477cdb71c3349194857a34c6d0030d388`
+- **Encoding**: UTF-8
+
+**File code content:**
+
+```typescript
+import { NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
+
+export async function PUT(request: Request) {
+  try {
+    const body = await request.json();
+    const { idUsuario, password, rol } = body;
+
+    if (!idUsuario) {
+      return NextResponse.json({ error: "Se requiere el ID del usuario." }, { status: 400 });
+    }
+
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      return NextResponse.json({ error: "Faltan credenciales en el servidor." }, { status: 500 });
+    }
+
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+
+    // 1. Actualizar contraseña si fue proporcionada
+    if (password && password.trim() !== "") {
+      const { error: authError } = await supabaseAdmin.auth.admin.updateUserById(idUsuario, {
+        password: password,
+      });
+
+      if (authError) {
+        throw new Error("Error al cambiar la contraseña: " + authError.message);
+      }
+    }
+
+    // 2. Actualizar rol en la tabla usuarios si fue especificado
+    if (rol) {
+      const { error: dbError } = await supabaseAdmin
+        .from("usuarios")
+        .update({ rol })
+        .eq("id_usuario", idUsuario);
+
+      if (dbError) {
+        throw new Error("Error al actualizar la tabla de usuarios: " + dbError.message);
+      }
+    }
+
+    return NextResponse.json({ success: true, message: "Usuario actualizado correctamente." }, { status: 200 });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 400 });
+  }
 }
 ```
 
