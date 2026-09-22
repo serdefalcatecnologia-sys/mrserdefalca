@@ -3,7 +3,7 @@
 ## 📊 Project Information
 
 - **Project Name**: `mrserdefalca`
-- **Generated On**: 2026-09-22 19:45:24 (America/Caracas / GMT-04:00)
+- **Generated On**: 2026-09-22 19:51:04 (America/Caracas / GMT-04:00)
 - **Total Files Processed**: 41
 - **Export Tool**: Easy Whole Project to Single Text File for LLMs v1.1.0
 - **Tool Author**: Jota / José Guilherme Pandolfi
@@ -57,7 +57,7 @@
 │   ├── 📄 favicon.ico (264.06 KB)
 │   ├── 📄 globals.css (488 B)
 │   ├── 📄 layout.tsx (821 B)
-│   └── 📄 page.tsx (4.75 KB)
+│   └── 📄 page.tsx (4.82 KB)
 ├── 📁 lib/
 │   ├── 📄 supabase-admin.ts (361 B)
 │   └── 📄 supabase.ts (255 B)
@@ -130,7 +130,7 @@
 | Total Directories | 21 |
 | Text Files | 31 |
 | Binary Files | 10 |
-| Total Size | 916.27 KB |
+| Total Size | 916.33 KB |
 
 ### 📄 File Types Distribution
 
@@ -3165,15 +3165,15 @@ export default function RootLayout({
 ### <a id="📄-app-page-tsx"></a>📄 `app/page.tsx`
 
 **File Info:**
-- **Size**: 4.75 KB
+- **Size**: 4.82 KB
 - **Extension**: `.tsx`
 - **Language**: `typescript`
 - **Location**: `app/page.tsx`
 - **Relative Path**: `app`
 - **Created**: 2026-07-21 20:24:25 (America/Caracas / GMT-04:00)
-- **Modified**: 2026-09-22 19:45:23 (America/Caracas / GMT-04:00)
-- **MD5**: `f994a61d5aa380589e57d84379fd1e0d`
-- **SHA256**: `f7c9a17633bd92ed6d0d9f33b139dd0e53d6cecf506e94d180f497e29f473642`
+- **Modified**: 2026-09-22 19:51:02 (America/Caracas / GMT-04:00)
+- **MD5**: `d2d205fe744767c5e519290bdb4e3b1a`
+- **SHA256**: `8f5291f0f8d7a281a2d835b631c22e9dac7cc11d0a95309ceaba9d29d48045b7`
 - **Encoding**: UTF-8
 
 **File code content:**
@@ -3251,8 +3251,9 @@ export default function LoginPage() {
 
       {/* Tarjeta de Inicio de Sesión */}
       <div className="w-full max-w-md bg-white/95 backdrop-blur-md p-8 rounded-2xl shadow-2xl relative z-10 border border-white/20">
-        <div className="text-center mb-8 flex flex-col items-center">
-          <div className="relative w-28 h-28 mb-2">
+        <div className="text-center mb-6 flex flex-col items-center">
+          {/* Contenedor optimizado para logos horizontales */}
+          <div className="relative w-64 h-20 mb-2">
             <Image 
               src="/logo1.png" 
               alt="Logo Serdefalca" 

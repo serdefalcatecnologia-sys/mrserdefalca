@@ -70,8 +70,9 @@ export default function LoginPage() {
 
       {/* Tarjeta de Inicio de Sesión */}
       <div className="w-full max-w-md bg-white/95 backdrop-blur-md p-8 rounded-2xl shadow-2xl relative z-10 border border-white/20">
-        <div className="text-center mb-8 flex flex-col items-center">
-          <div className="relative w-28 h-28 mb-2">
+        <div className="text-center mb-6 flex flex-col items-center">
+          {/* Contenedor optimizado para logos horizontales */}
+          <div className="relative w-64 h-20 mb-2">
             <Image 
               src="/logo1.png" 
               alt="Logo Serdefalca" 
