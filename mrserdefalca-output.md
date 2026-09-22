@@ -3,7 +3,7 @@
 ## 📊 Project Information
 
 - **Project Name**: `mrserdefalca`
-- **Generated On**: 2026-09-22 17:13:16 (America/Caracas / GMT-04:00)
+- **Generated On**: 2026-09-22 17:39:56 (America/Caracas / GMT-04:00)
 - **Total Files Processed**: 41
 - **Export Tool**: Easy Whole Project to Single Text File for LLMs v1.1.0
 - **Tool Author**: Jota / José Guilherme Pandolfi
@@ -57,7 +57,7 @@
 │   ├── 📄 favicon.ico (264.06 KB)
 │   ├── 📄 globals.css (488 B)
 │   ├── 📄 layout.tsx (821 B)
-│   └── 📄 page.tsx (3.7 KB)
+│   └── 📄 page.tsx (4.33 KB)
 ├── 📁 lib/
 │   ├── 📄 supabase-admin.ts (361 B)
 │   └── 📄 supabase.ts (255 B)
@@ -130,7 +130,7 @@
 | Total Directories | 21 |
 | Text Files | 31 |
 | Binary Files | 10 |
-| Total Size | 915.22 KB |
+| Total Size | 915.84 KB |
 
 ### 📄 File Types Distribution
 
@@ -3165,15 +3165,15 @@ export default function RootLayout({
 ### <a id="📄-app-page-tsx"></a>📄 `app/page.tsx`
 
 **File Info:**
-- **Size**: 3.7 KB
+- **Size**: 4.33 KB
 - **Extension**: `.tsx`
 - **Language**: `typescript`
 - **Location**: `app/page.tsx`
 - **Relative Path**: `app`
 - **Created**: 2026-07-21 20:24:25 (America/Caracas / GMT-04:00)
-- **Modified**: 2026-09-22 17:13:15 (America/Caracas / GMT-04:00)
-- **MD5**: `749e572a5c69a5a71c107d0f26c16206`
-- **SHA256**: `f9eaf6aea7e48210cc6e4fa162ada316ed4f03668b455d60883a21de40f503eb`
+- **Modified**: 2026-09-22 17:39:55 (America/Caracas / GMT-04:00)
+- **MD5**: `68d57df4cd4e6b1968e2fb79e4fe052a`
+- **SHA256**: `8af45d19098789bca3b0d86be0856c3703019f08e41542f046b24486fc284722`
 - **Encoding**: UTF-8
 
 **File code content:**
@@ -3238,40 +3238,48 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-zinc-900 p-4 font-sans">
-      <div className="w-full max-w-md bg-zinc-950 p-8 rounded-2xl shadow-2xl border border-zinc-800 text-white">
-        <div className="text-center mb-6">
-          <h1 className="text-2xl font-extrabold tracking-wider text-emerald-500">SERDEFALCA</h1>
-          <p className="text-xs text-zinc-400 mt-1">Sistema Integrado de Gestión Operativa</p>
+    <div 
+      className="min-h-screen flex items-center justify-center p-4 font-sans relative bg-cover bg-center"
+      style={{ backgroundImage: "url('/fondo.jpg')" }} /* Asegúrate de que el archivo exista en tu carpeta /public */
+    >
+      {/* Capa oscura semitransparente para que el texto sea legible sobre el fondo */}
+      <div className="absolute inset-0 bg-black/60"></div>
+
+      <div className="relative w-full max-w-md bg-white/10 backdrop-blur-md p-8 rounded-2xl shadow-2xl border border-white/20 text-white">
+        <div className="text-center mb-6 flex flex-col items-center">
+          {/* Logo restaurado */}
+          <img src="/logo1.png" alt="Logo Serdefalca" className="h-24 w-auto mb-4 drop-shadow-md" />
+          <h1 className="text-2xl font-extrabold tracking-wider text-emerald-400 drop-shadow-md">SERDEFALCA</h1>
+          <p className="text-xs text-zinc-300 mt-1">Sistema Integrado de Gestión Operativa</p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-zinc-300 mb-1">Correo Electrónico</label>
+            <label className="block text-xs font-semibold text-zinc-200 mb-1">Correo Electrónico</label>
             <input
               type="email"
               required
               placeholder="usuario@serdefalca.com"
               value={correo}
               onChange={(e) => setCorreo(e.target.value)}
-              className="w-full p-3 rounded-lg bg-zinc-900 border border-zinc-800 text-sm text-white outline-none focus:border-emerald-500"
+              className="w-full p-3 rounded-lg bg-black/40 border border-white/20 text-sm text-white outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 placeholder:text-zinc-500"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-zinc-300 mb-1">Contraseña</label>
+            <label className="block text-xs font-semibold text-zinc-200 mb-1">Contraseña</label>
             <input
               type="password"
               required
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-3 rounded-lg bg-zinc-900 border border-zinc-800 text-sm text-white outline-none focus:border-emerald-500"
+              className="w-full p-3 rounded-lg bg-black/40 border border-white/20 text-sm text-white outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 placeholder:text-zinc-500"
             />
           </div>
 
           {errorMsg && (
-            <div className="p-3 bg-red-950/60 border border-red-800 text-red-200 text-xs rounded-lg text-center font-semibold">
+            <div className="p-3 bg-red-950/80 border border-red-500 text-red-200 text-xs rounded-lg text-center font-semibold backdrop-blur-sm">
               {errorMsg}
             </div>
           )}
@@ -3279,9 +3287,9 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={cargando}
-            className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-lg transition-colors disabled:opacity-50 mt-2"
+            className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-lg transition-colors disabled:opacity-50 mt-2 shadow-lg"
           >
-            {cargando ? "Iniciando sesión..." : "Ingresar al Sistema"}
+            {cargando ? "Verificando..." : "Ingresar al Sistema"}
           </button>
         </form>
       </div>

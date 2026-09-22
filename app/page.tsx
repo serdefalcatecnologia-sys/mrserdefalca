@@ -57,40 +57,48 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-zinc-900 p-4 font-sans">
-      <div className="w-full max-w-md bg-zinc-950 p-8 rounded-2xl shadow-2xl border border-zinc-800 text-white">
-        <div className="text-center mb-6">
-          <h1 className="text-2xl font-extrabold tracking-wider text-emerald-500">SERDEFALCA</h1>
-          <p className="text-xs text-zinc-400 mt-1">Sistema Integrado de Gestión Operativa</p>
+    <div 
+      className="min-h-screen flex items-center justify-center p-4 font-sans relative bg-cover bg-center"
+      style={{ backgroundImage: "url('/fondo.jpg')" }} /* Asegúrate de que el archivo exista en tu carpeta /public */
+    >
+      {/* Capa oscura semitransparente para que el texto sea legible sobre el fondo */}
+      <div className="absolute inset-0 bg-black/60"></div>
+
+      <div className="relative w-full max-w-md bg-white/10 backdrop-blur-md p-8 rounded-2xl shadow-2xl border border-white/20 text-white">
+        <div className="text-center mb-6 flex flex-col items-center">
+          {/* Logo restaurado */}
+          <img src="/logo1.png" alt="Logo Serdefalca" className="h-24 w-auto mb-4 drop-shadow-md" />
+          <h1 className="text-2xl font-extrabold tracking-wider text-emerald-400 drop-shadow-md">SERDEFALCA</h1>
+          <p className="text-xs text-zinc-300 mt-1">Sistema Integrado de Gestión Operativa</p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-zinc-300 mb-1">Correo Electrónico</label>
+            <label className="block text-xs font-semibold text-zinc-200 mb-1">Correo Electrónico</label>
             <input
               type="email"
               required
               placeholder="usuario@serdefalca.com"
               value={correo}
               onChange={(e) => setCorreo(e.target.value)}
-              className="w-full p-3 rounded-lg bg-zinc-900 border border-zinc-800 text-sm text-white outline-none focus:border-emerald-500"
+              className="w-full p-3 rounded-lg bg-black/40 border border-white/20 text-sm text-white outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 placeholder:text-zinc-500"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-zinc-300 mb-1">Contraseña</label>
+            <label className="block text-xs font-semibold text-zinc-200 mb-1">Contraseña</label>
             <input
               type="password"
               required
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-3 rounded-lg bg-zinc-900 border border-zinc-800 text-sm text-white outline-none focus:border-emerald-500"
+              className="w-full p-3 rounded-lg bg-black/40 border border-white/20 text-sm text-white outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 placeholder:text-zinc-500"
             />
           </div>
 
           {errorMsg && (
-            <div className="p-3 bg-red-950/60 border border-red-800 text-red-200 text-xs rounded-lg text-center font-semibold">
+            <div className="p-3 bg-red-950/80 border border-red-500 text-red-200 text-xs rounded-lg text-center font-semibold backdrop-blur-sm">
               {errorMsg}
             </div>
           )}
@@ -98,9 +106,9 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={cargando}
-            className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-lg transition-colors disabled:opacity-50 mt-2"
+            className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-lg transition-colors disabled:opacity-50 mt-2 shadow-lg"
           >
-            {cargando ? "Iniciando sesión..." : "Ingresar al Sistema"}
+            {cargando ? "Verificando..." : "Ingresar al Sistema"}
           </button>
         </form>
       </div>
