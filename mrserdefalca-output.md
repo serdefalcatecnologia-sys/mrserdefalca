@@ -3,7 +3,7 @@
 ## 📊 Project Information
 
 - **Project Name**: `mrserdefalca`
-- **Generated On**: 2026-09-22 14:01:29 (America/Caracas / GMT-04:00)
+- **Generated On**: 2026-09-22 14:20:44 (America/Caracas / GMT-04:00)
 - **Total Files Processed**: 38
 - **Export Tool**: Easy Whole Project to Single Text File for LLMs v1.1.0
 - **Tool Author**: Jota / José Guilherme Pandolfi
@@ -40,7 +40,7 @@
 │   │   └── 📁 crear-usuario/
 │   │       └── 📄 route.ts (1.87 KB)
 │   ├── 📁 comercial/
-│   │   └── 📄 page.tsx (18.26 KB)
+│   │   └── 📄 page.tsx (18.25 KB)
 │   ├── 📁 desechos/
 │   │   └── 📄 page.tsx (10.8 KB)
 │   ├── 📁 flota/
@@ -122,7 +122,7 @@
 | Total Directories | 19 |
 | Text Files | 28 |
 | Binary Files | 10 |
-| Total Size | 927.45 KB |
+| Total Size | 927.43 KB |
 
 ### 📄 File Types Distribution
 
@@ -1857,15 +1857,15 @@ export async function POST(request: Request) {
 ### <a id="📄-app-comercial-page-tsx"></a>📄 `app/comercial/page.tsx`
 
 **File Info:**
-- **Size**: 18.26 KB
+- **Size**: 18.25 KB
 - **Extension**: `.tsx`
 - **Language**: `typescript`
 - **Location**: `app/comercial/page.tsx`
 - **Relative Path**: `app/comercial`
 - **Created**: 2026-07-21 22:06:40 (America/Caracas / GMT-04:00)
-- **Modified**: 2026-09-04 14:13:54 (America/Caracas / GMT-04:00)
-- **MD5**: `1db5d13fab15ec8fbee8c8424072021e`
-- **SHA256**: `145a78da73c58e047c499661ceb849cc8ad9075a0e8c66c525b94cdbffeaf884`
+- **Modified**: 2026-09-22 14:20:43 (America/Caracas / GMT-04:00)
+- **MD5**: `b2c5c215bbe145815c73926c3c035ed7`
+- **SHA256**: `5d74293a298693ad853e688ee9b4f6cb5310676800748b774415eb443488585b`
 - **Encoding**: UTF-8
 
 **File code content:**
@@ -2149,7 +2149,7 @@ export default function ComercialPage() {
                   >
                     <option value="Recolección Comercial">Recolección Comercial</option>
                     <option value="Recolección Industrial">Recolección Industrial</option>
-                    <option value="Servicio Especial">Servicio Especial (Escombros)</option>
+                    <option value="Servicio Especial">Servicio Especial</option>
                     <option value="Deuda Atrasada">Deuda Atrasada</option>
                   </select>
                 </div>

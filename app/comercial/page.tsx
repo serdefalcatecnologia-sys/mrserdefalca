@@ -276,7 +276,7 @@ export default function ComercialPage() {
                   >
                     <option value="Recolección Comercial">Recolección Comercial</option>
                     <option value="Recolección Industrial">Recolección Industrial</option>
-                    <option value="Servicio Especial">Servicio Especial (Escombros)</option>
+                    <option value="Servicio Especial">Servicio Especial</option>
                     <option value="Deuda Atrasada">Deuda Atrasada</option>
                   </select>
                 </div>
