@@ -5,7 +5,7 @@ PROJECT EXPORT FOR LLMs
 PROJECT INFORMATION:
 --------------------------------------------------
 Project Name: mrserdefalca
-Generated On: 2026-09-16 18:27:28 (America/Caracas / GMT-04:00)
+Generated On: 2026-09-22 13:57:56 (America/Caracas / GMT-04:00)
 Total Files Processed: 38
 Export Tool: Easy Whole Project to Single Text File for LLMs v1.1.0
 Tool Author: Jota / José Guilherme Pandolfi
@@ -40,7 +40,7 @@ PROJECT STRUCTURE
 │   │   └── 📄 page.tsx (5.11 KB)
 │   ├── 📁 api/
 │   │   └── 📁 crear-usuario/
-│   │       └── 📄 route.ts (1.68 KB)
+│   │       └── 📄 route.ts (1.87 KB)
 │   ├── 📁 comercial/
 │   │   └── 📄 page.tsx (18.26 KB)
 │   ├── 📁 desechos/
@@ -87,7 +87,7 @@ Total Files: 38
 Total Directories: 19
 Text Files: 28
 Binary Files: 10
-Total Size: 937.02 KB
+Total Size: 937.22 KB
 
 FILE TYPES DISTRIBUTION:
 ------------------------------
@@ -1994,15 +1994,15 @@ FILE: app/api/crear-usuario/route.ts
 
 FILE INFORMATION:
 ----------------------------------------
-Size: 1.68 KB
+Size: 1.87 KB
 Extension: .ts
 Language: typescript
 Location: app/api/crear-usuario/route.ts
 Relative Path: app/api/crear-usuario
 Created: 2026-09-16 15:26:35 (America/Caracas / GMT-04:00)
-Modified: 2026-09-16 17:43:27 (America/Caracas / GMT-04:00)
-MD5: 217bdbeec759991f4fad027be9cff12f
-SHA256: 0b8017557c83867418808edf881c51c25a20cbc9a6b04bbb342c0612fca17c25
+Modified: 2026-09-22 13:57:55 (America/Caracas / GMT-04:00)
+MD5: 87474fec0866c5f87b6732d37cb9c0f6
+SHA256: 94330a6312a0b8e3af45232a3be5e93603cd141b1682ef185027ad2e6427c962
 Encoding: UTF-8
 
 FILE CONTENT:
@@ -2011,55 +2011,57 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
 export async function POST(request: Request) {
-  // Las variables se leen e inicializan dentro de la petición
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-  if (!supabaseUrl || !supabaseKey) {
-    return NextResponse.json(
-      { error: "Error de configuración: Claves de Supabase no encontradas" },
-      { status: 500 }
-    );
-  }
-
-  const supabaseAdmin = createClient(supabaseUrl, supabaseKey, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
-  });
-
   try {
     const body = await request.json();
-    const { email, password, role, ...userData } = body;
+    const { email, password, cedula, telefono, nombres, apellidos, rol } = body;
 
-    // 1. Crear usuario en la Auth de Supabase
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY; 
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      return NextResponse.json({ error: "Faltan credenciales de Supabase en el servidor." }, { status: 500 });
+    }
+
+    // El Service Role Client permite crear usuarios sin modificar la sesión actual
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    });
+
+    // 1. Crear usuario en la autenticación de Supabase
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
-      email_confirm: true,
+      email_confirm: true 
     });
 
-    if (authError) {
-      return NextResponse.json({ error: authError.message }, { status: 400 });
+    if (authError || !authData.user) {
+      throw new Error(authError?.message || "Error al crear credenciales.");
     }
 
-    // 2. Insertar en la tabla de usuarios de la base de datos
+    // 2. Insertar los datos públicos del empleado en la tabla "usuarios"
     const { error: dbError } = await supabaseAdmin.from("usuarios").insert([
       {
-        id: authData.user.id,
-        email,
-        ...userData,
+        id_usuario: authData.user.id,
+        cedula,
+        telefono,
+        nombre: nombres,
+        apellido: apellidos,
+        correo: email,
+        rol,
       },
     ]);
 
     if (dbError) {
-      return NextResponse.json({ error: dbError.message }, { status: 400 });
+      throw new Error("El usuario se autenticó, pero falló al guardar en la base de datos: " + dbError.message);
     }
 
-    return NextResponse.json({ success: true, user: authData.user });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message || "Error interno del servidor" }, { status: 500 });
+    return NextResponse.json({ success: true, message: "Empleado registrado exitosamente." }, { status: 200 });
+
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 400 });
   }
 }
 ================================================================================

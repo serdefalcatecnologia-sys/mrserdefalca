@@ -2,54 +2,56 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
 export async function POST(request: Request) {
-  // Las variables se leen e inicializan dentro de la petición
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-  if (!supabaseUrl || !supabaseKey) {
-    return NextResponse.json(
-      { error: "Error de configuración: Claves de Supabase no encontradas" },
-      { status: 500 }
-    );
-  }
-
-  const supabaseAdmin = createClient(supabaseUrl, supabaseKey, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
-  });
-
   try {
     const body = await request.json();
-    const { email, password, role, ...userData } = body;
+    const { email, password, cedula, telefono, nombres, apellidos, rol } = body;
 
-    // 1. Crear usuario en la Auth de Supabase
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY; 
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      return NextResponse.json({ error: "Faltan credenciales de Supabase en el servidor." }, { status: 500 });
+    }
+
+    // El Service Role Client permite crear usuarios sin modificar la sesión actual
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    });
+
+    // 1. Crear usuario en la autenticación de Supabase
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
-      email_confirm: true,
+      email_confirm: true 
     });
 
-    if (authError) {
-      return NextResponse.json({ error: authError.message }, { status: 400 });
+    if (authError || !authData.user) {
+      throw new Error(authError?.message || "Error al crear credenciales.");
     }
 
-    // 2. Insertar en la tabla de usuarios de la base de datos
+    // 2. Insertar los datos públicos del empleado en la tabla "usuarios"
     const { error: dbError } = await supabaseAdmin.from("usuarios").insert([
       {
-        id: authData.user.id,
-        email,
-        ...userData,
+        id_usuario: authData.user.id,
+        cedula,
+        telefono,
+        nombre: nombres,
+        apellido: apellidos,
+        correo: email,
+        rol,
       },
     ]);
 
     if (dbError) {
-      return NextResponse.json({ error: dbError.message }, { status: 400 });
+      throw new Error("El usuario se autenticó, pero falló al guardar en la base de datos: " + dbError.message);
     }
 
-    return NextResponse.json({ success: true, user: authData.user });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message || "Error interno del servidor" }, { status: 500 });
+    return NextResponse.json({ success: true, message: "Empleado registrado exitosamente." }, { status: 200 });
+
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 400 });
   }
 }
