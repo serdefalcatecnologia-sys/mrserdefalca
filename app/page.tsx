@@ -1,181 +1,128 @@
-"use client";
+'use client'
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { createClient } from "@supabase/supabase-js";
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import Image from 'next/image'
+import { supabase } from '@/lib/supabase'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export default function Login() {
+  const [identificador, setIdentificador] = useState('') // Guarda el usuario, cédula o correo
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const router = useRouter()
 
-export default function LoginPage() {
-  const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [cargando, setCargando] = useState(false);
-  const [errorMsj, setErrorMsj] = useState("");
-
-  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setErrorMsj("");
-    setCargando(true);
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
 
     try {
-      // 1. Iniciar sesión en Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
+      let emailParaAuth = identificador
+
+      // Si el texto no contiene "@", asumimos que ingresó una Cédula o Usuario
+      if (!identificador.includes('@')) {
+        const { data, error: fetchError } = await supabase
+          .from('usuarios')
+          .select('correo')
+          .eq('cedula', identificador) // Asegúrate de que la columna se llame 'cedula' en tu tabla
+          .single()
+
+        if (fetchError || !data) {
+          setError('Cédula o usuario no encontrado en el sistema.')
+          setLoading(false)
+          return
+        }
+        
+        // Asignamos el correo encontrado en la base de datos
+        emailParaAuth = data.correo
+      }
+
+      // Iniciar sesión en Supabase con el correo (ingresado o encontrado) y la contraseña
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email: emailParaAuth,
         password: password,
-      });
+      })
 
       if (authError) {
-        if (authError.message.includes("Invalid login credentials")) {
-          setErrorMsj("Correo o contraseña incorrectos.");
-        } else {
-          setErrorMsj(`Error de conexión: ${authError.message}`);
-        }
-        setCargando(false);
-        return;
-      }
-
-      if (!authData.user) {
-        setErrorMsj("No se pudo obtener la sesión del usuario.");
-        setCargando(false);
-        return;
-      }
-
-      // 2. Consultar el rol en la tabla 'usuarios'
-      const { data: usuarioData, error: usuarioError } = await supabase
-        .from("usuarios")
-        .select("rol")
-        .eq("id_usuario", authData.user.id)
-        .maybeSingle();
-
-      if (usuarioError) {
-        console.error("Error al consultar el rol:", usuarioError);
-        setErrorMsj(`Error al consultar perfil: ${usuarioError.message}`);
-        setCargando(false);
-        return;
-      }
-
-      if (!usuarioData) {
-        setErrorMsj("El usuario se autenticó pero no está registrado en la tabla 'usuarios'.");
-        setCargando(false);
-        return;
-      }
-
-      // 3. Redirección basada en el rol del usuario
-      const rol = (usuarioData.rol || "").toLowerCase().trim();
-
-      if (rol === "administrador" || rol === "admin") {
-        router.push("/admin");
-      } else if (rol === "desechos") {
-        router.push("/desechos");
-      } else if (rol === "flota" || rol === "rutas") {
-        router.push("/flota");
-      } else if (rol === "comercial" || rol === "comercializacion") {
-        router.push("/comercializacion");
+        setError('Contraseña incorrecta.')
       } else {
-        router.push("/admin");
+        // Si es exitoso, redirigir al panel administrativo
+        router.push('/dashboard') 
       }
-
-      router.refresh();
-
-    } catch (err: any) {
-      setErrorMsj(`Error inesperado: ${err.message || "Consulte con soporte."}`);
-      setCargando(false);
+    } catch (err) {
+      setError('Ocurrió un error inesperado al intentar conectar.')
+    } finally {
+      setLoading(false)
     }
-  };
+  }
 
   return (
-    <div className="relative min-h-screen w-full flex items-center justify-center bg-zinc-900 overflow-hidden font-sans">
-      {/* Imagen de fondo con overlay suave */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-40 scale-105 transform transition-transform duration-1000"
-        style={{ backgroundImage: "url('/fondo-serdefalca.jpg')" }} 
-      />
-      
-      {/* Superposición de degradado para darle elegancia */}
-      <div className="absolute inset-0 bg-gradient-to-tr from-emerald-950/80 via-black/50 to-zinc-900/80" />
-
-      {/* Tarjeta Central del Login */}
-      <main className="relative z-10 w-full max-w-md p-6 sm:p-8 mx-4 bg-white rounded-3xl shadow-2xl border border-white/20 backdrop-blur-md">
+    <div 
+      className="min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat" 
+      style={{ backgroundImage: "url('/imagen1.jpg')" }} // Llama a public/imagen1.jpg
+    >
+      <div className="bg-white/90 backdrop-blur-sm p-8 rounded-xl shadow-2xl w-full max-w-md">
         
-        {/* Encabezado con Logos */}
-        <div className="flex flex-col items-center text-center mb-6">
-          <div className="flex items-center justify-center gap-6 mb-3">
-            {/* Si no tienes las imágenes locales, usa img directo o los componentes de Next.js */}
-            <img src="/logo-falcon.png" alt="Gobernación del Estado Falcón" className="h-12 w-auto object-contain" />
-            <img src="/logo-serdefalca.png" alt="SERDEFALCA Logo" className="h-12 w-auto object-contain" />
-          </div>
-
-          <h1 className="text-2xl font-black tracking-tight text-emerald-900 uppercase">
-            SERDEFAL C.A
-          </h1>
-          <p className="text-[10px] sm:text-xs font-bold text-zinc-500 tracking-wider uppercase mt-0.5">
-            Sistema Regional de Gestión de Desechos Sólidos
-          </p>
+        {/* Logo de la empresa */}
+        <div className="flex justify-center mb-4">
+          <Image 
+            src="/logo1.png" // Llama a public/logo1.png
+            alt="Logo Serdefalca" 
+            width={120} 
+            height={120} 
+            priority
+          />
         </div>
 
-        {/* Formulario */}
-        <form onSubmit={handleLogin} className="space-y-4">
-          
-          {/* Campo Correo */}
+        <h2 className="text-2xl font-bold text-center text-gray-800 mb-8">
+          Portal Serdefalca
+        </h2>
+
+        {error && (
+          <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-3 mb-6 rounded text-sm">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleLogin} className="space-y-6">
           <div>
-            <label className="block text-[11px] font-bold text-zinc-600 uppercase tracking-wider mb-1">
-              Correo Electrónico
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Usuario o Cédula
             </label>
             <input
-              type="email"
+              type="text"
               required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="ejemplo@serdefalca.gob.ve"
-              className="w-full px-4 py-3 rounded-xl bg-slate-100 border border-slate-200 text-zinc-800 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:bg-white transition-all font-medium"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-gray-900"
+              placeholder="Ej: V-00000000 o correo"
+              value={identificador}
+              onChange={(e) => setIdentificador(e.target.value)}
             />
           </div>
 
-          {/* Campo Contraseña */}
           <div>
-            <label className="block text-[11px] font-bold text-zinc-600 uppercase tracking-wider mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Contraseña
             </label>
             <input
               type="password"
               required
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-gray-900"
+              placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="w-full px-4 py-3 rounded-xl bg-slate-100 border border-slate-200 text-zinc-800 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:bg-white transition-all font-medium"
             />
           </div>
 
-          {/* Mensaje de Error en Pantalla */}
-          {errorMsj && (
-            <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-600 text-xs font-bold text-center animate-shake">
-              {errorMsj}
-            </div>
-          )}
-
-          {/* Botón de Iniciar Sesión */}
           <button
             type="submit"
-            disabled={cargando}
-            className="w-full py-3.5 px-4 bg-emerald-700 hover:bg-emerald-800 active:bg-emerald-900 text-white font-bold text-sm rounded-xl transition-all shadow-lg hover:shadow-emerald-900/20 disabled:opacity-75 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2"
+            disabled={loading}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md transition-colors duration-200 shadow-md disabled:bg-blue-400"
           >
-            {cargando ? (
-              <>
-                <svg className="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24" fill="none">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                </svg>
-                <span>Verificando...</span>
-              </>
-            ) : (
-              <span>Iniciar Sesión</span>
-            )}
+            {loading ? 'Iniciando sesión...' : 'Ingresar'}
           </button>
         </form>
-      </main>
+      </div>
     </div>
-  );
+  )
 }
