@@ -5,7 +5,7 @@ PROJECT EXPORT FOR LLMs
 PROJECT INFORMATION:
 --------------------------------------------------
 Project Name: mrserdefalca
-Generated On: 2026-10-13 17:47:11 (America/Caracas / GMT-04:00)
+Generated On: 2026-10-13 18:04:02 (America/Caracas / GMT-04:00)
 Total Files Processed: 41
 Export Tool: Easy Whole Project to Single Text File for LLMs v1.1.0
 Tool Author: Jota / José Guilherme Pandolfi
@@ -44,7 +44,7 @@ PROJECT STRUCTURE
 │   │   ├── 📁 crear-usuario/
 │   │   │   └── 📄 route.ts (1.86 KB)
 │   │   └── 📁 eliminar-usuario/
-│   │       └── 📄 route.ts (3.2 KB)
+│   │       └── 📄 route.ts (3.77 KB)
 │   ├── 📁 comercial/
 │   │   └── 📄 page.tsx (17.29 KB)
 │   ├── 📁 desechos/
@@ -77,7 +77,7 @@ PROJECT STRUCTURE
 ├── 📄 CLAUDE.md (11 B)
 ├── 📄 eslint.config.mjs (465 B)
 ├── 📄 middleware.ts (1.24 KB)
-├── 📄 next-env.d.ts (251 B)
+├── 📄 next-env.d.ts (247 B)
 ├── 📄 next.config.ts (133 B)
 ├── 📄 package-lock.json (242.31 KB)
 ├── 📄 package.json (666 B)
@@ -92,7 +92,7 @@ Total Files: 41
 Total Directories: 21
 Text Files: 31
 Binary Files: 10
-Total Size: 917.7 KB
+Total Size: 918.27 KB
 
 FILE TYPES DISTRIBUTION:
 ------------------------------
@@ -1833,15 +1833,15 @@ FILE: app/api/eliminar-usuario/route.ts
 
 FILE INFORMATION:
 ----------------------------------------
-Size: 3.2 KB
+Size: 3.77 KB
 Extension: .ts
 Language: typescript
 Location: app/api/eliminar-usuario/route.ts
 Relative Path: app/api/eliminar-usuario
 Created: 2026-09-22 14:51:31 (America/Caracas / GMT-04:00)
-Modified: 2026-10-13 16:53:16 (America/Caracas / GMT-04:00)
-MD5: fbc27fd954d611b986dceb278a1f2cc8
-SHA256: ddedce6fc80f980feb8657ed55962842bf8e3c7b799e5517c4b024d04574302c
+Modified: 2026-10-13 18:04:02 (America/Caracas / GMT-04:00)
+MD5: 2237c951aa2aabf017c0bb20925a1f73
+SHA256: c95d85b7488841c1c7cd3cc1b0bc6a1b722d8c2436a6263d00982a27d4f7263d
 Encoding: UTF-8
 
 FILE CONTENT:
@@ -1859,10 +1859,9 @@ export async function DELETE(request: Request) {
     }
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-    if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceKey) {
+    if (!supabaseUrl || !supabaseServiceKey) {
       return NextResponse.json({ error: "Faltan credenciales de servidor." }, { status: 500 });
     }
 
@@ -1871,23 +1870,17 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "Se requiere iniciar sesión." }, { status: 401 });
     }
 
-    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    });
-    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(accessToken);
-    if (authError || !user) {
-      return NextResponse.json({ error: "La sesión no es válida." }, { status: 401 });
-    }
-
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
       auth: {
         autoRefreshToken: false,
         persistSession: false,
       },
     });
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(accessToken);
+    if (authError || !user) {
+      return NextResponse.json({ error: "La sesión no es válida." }, { status: 401 });
+    }
+
     const { data: profile, error: profileError } = await supabaseAdmin
       .from("usuarios")
       .select("rol")
@@ -1903,14 +1896,17 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "No tienes permisos para eliminar usuarios." }, { status: 403 });
     }
 
-    // 1. Eliminar acceso de Supabase Auth
-    const { error: deleteAuthError } = await supabaseAdmin.auth.admin.deleteUser(idUsuario);
-    if (deleteAuthError) {
-      console.error("Error al borrar credenciales de acceso:", deleteAuthError);
-      return NextResponse.json({ error: "No se pudieron eliminar las credenciales del usuario." }, { status: 500 });
+    const { data: targetProfile, error: targetProfileError } = await supabaseAdmin
+      .from("usuarios")
+      .select("*")
+      .eq("id_usuario", idUsuario)
+      .maybeSingle();
+
+    if (targetProfileError) {
+      console.error("Error al obtener el registro de usuario:", targetProfileError);
+      return NextResponse.json({ error: "No se pudo preparar la eliminación del usuario." }, { status: 500 });
     }
 
-    // 2. Eliminar registro de la tabla pública
     const { error: dbError } = await supabaseAdmin
       .from("usuarios")
       .delete()
@@ -1919,6 +1915,27 @@ export async function DELETE(request: Request) {
     if (dbError) {
       console.error("Error al borrar el registro de usuario:", dbError);
       return NextResponse.json({ error: "No se pudo eliminar el registro del usuario." }, { status: 500 });
+    }
+
+    const { error: deleteAuthError } = await supabaseAdmin.auth.admin.deleteUser(idUsuario);
+    if (deleteAuthError) {
+      console.error("Error al borrar credenciales de acceso:", deleteAuthError);
+
+      if (targetProfile) {
+        const { error: restoreError } = await supabaseAdmin.from("usuarios").insert(targetProfile);
+        if (restoreError) {
+          console.error("Error al restaurar el registro de usuario:", restoreError);
+          return NextResponse.json(
+            { error: "No se pudieron eliminar las credenciales y tampoco restaurar el registro del usuario." },
+            { status: 500 }
+          );
+        }
+      }
+
+      return NextResponse.json(
+        { error: "No se pudieron eliminar las credenciales del usuario; el registro se restauró." },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json({ success: true, message: "Empleado eliminado definitivamente." }, { status: 200 });
@@ -3975,22 +3992,22 @@ FILE: next-env.d.ts
 
 FILE INFORMATION:
 ----------------------------------------
-Size: 251 B
+Size: 247 B
 Extension: .ts
 Language: typescript
 Location: next-env.d.ts
 Relative Path: root
 Created: 2026-07-21 20:24:17 (America/Caracas / GMT-04:00)
-Modified: 2026-07-21 14:14:38 (America/Caracas / GMT-04:00)
-MD5: d0f8375ae1199dc7acd3977fc33b78b8
-SHA256: 7ad303e40d4fddf44f156129e397511953a71481c5cfd86b1862649aaaf240cc
+Modified: 2026-10-13 17:47:45 (America/Caracas / GMT-04:00)
+MD5: 2a74d3909800ca5467fa83b0ab4a4890
+SHA256: 7b550dda9686c16f36a17bf9051d5dbf31e98555b30d114ac49fc49a1e712651
 Encoding: ASCII
 
 FILE CONTENT:
 ----------------------------------------
 /// <reference types="next" />
 /// <reference types="next/image-types/global" />
-import "./.next/dev/types/routes.d.ts";
+import "./.next/types/routes.d.ts";
 
 // NOTE: This file should not be edited
 // see https://nextjs.org/docs/app/api-reference/config/typescript for more information.
@@ -4040,7 +4057,7 @@ Language: json
 Location: package-lock.json
 Relative Path: root
 Created: 2026-07-21 20:24:17 (America/Caracas / GMT-04:00)
-Modified: 2026-10-13 16:44:44 (America/Caracas / GMT-04:00)
+Modified: 2026-10-13 17:47:20 (America/Caracas / GMT-04:00)
 MD5: a4add02c9010ad50adb3b8075b526345
 SHA256: 737a61f1a7845ab544a820a52d2197fc3203dea7189a95af3ce7850fab795d13
 Encoding: ASCII

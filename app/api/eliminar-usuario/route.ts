@@ -11,10 +11,9 @@ export async function DELETE(request: Request) {
     }
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-    if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceKey) {
+    if (!supabaseUrl || !supabaseServiceKey) {
       return NextResponse.json({ error: "Faltan credenciales de servidor." }, { status: 500 });
     }
 
@@ -23,23 +22,17 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "Se requiere iniciar sesión." }, { status: 401 });
     }
 
-    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    });
-    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(accessToken);
-    if (authError || !user) {
-      return NextResponse.json({ error: "La sesión no es válida." }, { status: 401 });
-    }
-
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
       auth: {
         autoRefreshToken: false,
         persistSession: false,
       },
     });
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(accessToken);
+    if (authError || !user) {
+      return NextResponse.json({ error: "La sesión no es válida." }, { status: 401 });
+    }
+
     const { data: profile, error: profileError } = await supabaseAdmin
       .from("usuarios")
       .select("rol")
@@ -55,14 +48,17 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "No tienes permisos para eliminar usuarios." }, { status: 403 });
     }
 
-    // 1. Eliminar acceso de Supabase Auth
-    const { error: deleteAuthError } = await supabaseAdmin.auth.admin.deleteUser(idUsuario);
-    if (deleteAuthError) {
-      console.error("Error al borrar credenciales de acceso:", deleteAuthError);
-      return NextResponse.json({ error: "No se pudieron eliminar las credenciales del usuario." }, { status: 500 });
+    const { data: targetProfile, error: targetProfileError } = await supabaseAdmin
+      .from("usuarios")
+      .select("*")
+      .eq("id_usuario", idUsuario)
+      .maybeSingle();
+
+    if (targetProfileError) {
+      console.error("Error al obtener el registro de usuario:", targetProfileError);
+      return NextResponse.json({ error: "No se pudo preparar la eliminación del usuario." }, { status: 500 });
     }
 
-    // 2. Eliminar registro de la tabla pública
     const { error: dbError } = await supabaseAdmin
       .from("usuarios")
       .delete()
@@ -71,6 +67,27 @@ export async function DELETE(request: Request) {
     if (dbError) {
       console.error("Error al borrar el registro de usuario:", dbError);
       return NextResponse.json({ error: "No se pudo eliminar el registro del usuario." }, { status: 500 });
+    }
+
+    const { error: deleteAuthError } = await supabaseAdmin.auth.admin.deleteUser(idUsuario);
+    if (deleteAuthError) {
+      console.error("Error al borrar credenciales de acceso:", deleteAuthError);
+
+      if (targetProfile) {
+        const { error: restoreError } = await supabaseAdmin.from("usuarios").insert(targetProfile);
+        if (restoreError) {
+          console.error("Error al restaurar el registro de usuario:", restoreError);
+          return NextResponse.json(
+            { error: "No se pudieron eliminar las credenciales y tampoco restaurar el registro del usuario." },
+            { status: 500 }
+          );
+        }
+      }
+
+      return NextResponse.json(
+        { error: "No se pudieron eliminar las credenciales del usuario; el registro se restauró." },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json({ success: true, message: "Empleado eliminado definitivamente." }, { status: 200 });
