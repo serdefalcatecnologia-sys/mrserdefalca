@@ -5,7 +5,7 @@ PROJECT EXPORT FOR LLMs
 PROJECT INFORMATION:
 --------------------------------------------------
 Project Name: mrserdefalca
-Generated On: 2026-10-13 16:47:30 (America/Caracas / GMT-04:00)
+Generated On: 2026-10-13 17:47:11 (America/Caracas / GMT-04:00)
 Total Files Processed: 41
 Export Tool: Easy Whole Project to Single Text File for LLMs v1.1.0
 Tool Author: Jota / José Guilherme Pandolfi
@@ -33,7 +33,7 @@ PROJECT STRUCTURE
 │   │   ├── 📁 empleados/
 │   │   │   ├── 📁 registro/
 │   │   │   │   └── 📄 page.tsx (7.74 KB)
-│   │   │   └── 📄 page.tsx (9.5 KB)
+│   │   │   └── 📄 page.tsx (9.8 KB)
 │   │   ├── 📁 flota/
 │   │   │   └── 📄 page.tsx (5.44 KB)
 │   │   ├── 📄 layout.tsx (1.26 KB)
@@ -44,7 +44,7 @@ PROJECT STRUCTURE
 │   │   ├── 📁 crear-usuario/
 │   │   │   └── 📄 route.ts (1.86 KB)
 │   │   └── 📁 eliminar-usuario/
-│   │       └── 📄 route.ts (1.5 KB)
+│   │       └── 📄 route.ts (3.2 KB)
 │   ├── 📁 comercial/
 │   │   └── 📄 page.tsx (17.29 KB)
 │   ├── 📁 desechos/
@@ -92,7 +92,7 @@ Total Files: 41
 Total Directories: 21
 Text Files: 31
 Binary Files: 10
-Total Size: 915.71 KB
+Total Size: 917.7 KB
 
 FILE TYPES DISTRIBUTION:
 ------------------------------
@@ -1089,15 +1089,15 @@ FILE: app/admin/empleados/page.tsx
 
 FILE INFORMATION:
 ----------------------------------------
-Size: 9.5 KB
+Size: 9.8 KB
 Extension: .tsx
 Language: typescript
 Location: app/admin/empleados/page.tsx
 Relative Path: app/admin/empleados
 Created: 2026-07-21 23:28:20 (America/Caracas / GMT-04:00)
-Modified: 2026-09-22 15:00:59 (America/Caracas / GMT-04:00)
-MD5: 9ec6db4766ee51e6f7ee073e6c851cc9
-SHA256: bc721432e71504c8d7398537d2bce8cb48b15a8ea153fe89024ebdb9e435db9a
+Modified: 2026-10-13 16:53:16 (America/Caracas / GMT-04:00)
+MD5: 7c07770834f7b805b6765eff63310bde
+SHA256: b1f3928a59b88436e5de0fe2f3e166cfc40e5dc558b3710b6cd0ab11cbb2a40d
 Encoding: ASCII
 
 FILE CONTENT:
@@ -1177,8 +1177,17 @@ export default function GestionEmpleados() {
     if (!confirm("¿Deseas eliminar este usuario permanentemente del sistema?")) return;
 
     try {
-      const res = await fetch(`/api/eliminar-usuario?id=${idUsuario}`, {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        alert("Debes iniciar sesión para eliminar un usuario.");
+        return;
+      }
+
+      const res = await fetch(`/api/eliminar-usuario?id=${encodeURIComponent(idUsuario)}`, {
         method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
       });
 
       const data = await res.json();
@@ -1824,16 +1833,16 @@ FILE: app/api/eliminar-usuario/route.ts
 
 FILE INFORMATION:
 ----------------------------------------
-Size: 1.5 KB
+Size: 3.2 KB
 Extension: .ts
 Language: typescript
 Location: app/api/eliminar-usuario/route.ts
 Relative Path: app/api/eliminar-usuario
 Created: 2026-09-22 14:51:31 (America/Caracas / GMT-04:00)
-Modified: 2026-09-22 14:51:59 (America/Caracas / GMT-04:00)
-MD5: be49ccd7daa6076c8a7b77400b4cea97
-SHA256: 29a7fedb50ae3126c89198d5c8361a4c37cc86c0e537c7c62b625afad2569124
-Encoding: ASCII
+Modified: 2026-10-13 16:53:16 (America/Caracas / GMT-04:00)
+MD5: fbc27fd954d611b986dceb278a1f2cc8
+SHA256: ddedce6fc80f980feb8657ed55962842bf8e3c7b799e5517c4b024d04574302c
+Encoding: UTF-8
 
 FILE CONTENT:
 ----------------------------------------
@@ -1850,18 +1859,55 @@ export async function DELETE(request: Request) {
     }
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-    if (!supabaseUrl || !supabaseServiceKey) {
+    if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceKey) {
       return NextResponse.json({ error: "Faltan credenciales de servidor." }, { status: 500 });
     }
 
-    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+    const accessToken = request.headers.get("authorization")?.match(/^Bearer\s+(.+)$/i)?.[1];
+    if (!accessToken) {
+      return NextResponse.json({ error: "Se requiere iniciar sesión." }, { status: 401 });
+    }
+
+    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    });
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(accessToken);
+    if (authError || !user) {
+      return NextResponse.json({ error: "La sesión no es válida." }, { status: 401 });
+    }
+
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    });
+    const { data: profile, error: profileError } = await supabaseAdmin
+      .from("usuarios")
+      .select("rol")
+      .eq("id_usuario", user.id)
+      .maybeSingle();
+
+    if (profileError) {
+      console.error("Error al comprobar los permisos del usuario:", profileError);
+      return NextResponse.json({ error: "No se pudieron comprobar los permisos." }, { status: 500 });
+    }
+
+    if (typeof profile?.rol !== "string" || profile.rol.trim().toLowerCase() !== "administrador") {
+      return NextResponse.json({ error: "No tienes permisos para eliminar usuarios." }, { status: 403 });
+    }
 
     // 1. Eliminar acceso de Supabase Auth
-    const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(idUsuario);
-    if (authError) {
-      throw new Error("Error al borrar credenciales de acceso: " + authError.message);
+    const { error: deleteAuthError } = await supabaseAdmin.auth.admin.deleteUser(idUsuario);
+    if (deleteAuthError) {
+      console.error("Error al borrar credenciales de acceso:", deleteAuthError);
+      return NextResponse.json({ error: "No se pudieron eliminar las credenciales del usuario." }, { status: 500 });
     }
 
     // 2. Eliminar registro de la tabla pública
@@ -1871,12 +1917,14 @@ export async function DELETE(request: Request) {
       .eq("id_usuario", idUsuario);
 
     if (dbError) {
-      throw new Error("Error al borrar registro de la base de datos: " + dbError.message);
+      console.error("Error al borrar el registro de usuario:", dbError);
+      return NextResponse.json({ error: "No se pudo eliminar el registro del usuario." }, { status: 500 });
     }
 
     return NextResponse.json({ success: true, message: "Empleado eliminado definitivamente." }, { status: 200 });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 400 });
+  } catch (error) {
+    console.error("Error inesperado al eliminar el usuario:", error);
+    return NextResponse.json({ error: "Ocurrió un error al eliminar el usuario." }, { status: 500 });
   }
 }
 ================================================================================
