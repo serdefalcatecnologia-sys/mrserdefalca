@@ -73,8 +73,17 @@ export default function GestionEmpleados() {
     if (!confirm("¿Deseas eliminar este usuario permanentemente del sistema?")) return;
 
     try {
-      const res = await fetch(`/api/eliminar-usuario?id=${idUsuario}`, {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        alert("Debes iniciar sesión para eliminar un usuario.");
+        return;
+      }
+
+      const res = await fetch(`/api/eliminar-usuario?id=${encodeURIComponent(idUsuario)}`, {
         method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
       });
 
       const data = await res.json();
