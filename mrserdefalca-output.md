@@ -3,7 +3,7 @@
 ## 📊 Project Information
 
 - **Project Name**: `mrserdefalca`
-- **Generated On**: 2026-10-13 16:47:30 (America/Caracas / GMT-04:00)
+- **Generated On**: 2026-10-13 17:47:11 (America/Caracas / GMT-04:00)
 - **Total Files Processed**: 41
 - **Export Tool**: Easy Whole Project to Single Text File for LLMs v1.1.0
 - **Tool Author**: Jota / José Guilherme Pandolfi
@@ -31,7 +31,7 @@
 │   │   ├── 📁 empleados/
 │   │   │   ├── 📁 registro/
 │   │   │   │   └── 📄 page.tsx (7.74 KB)
-│   │   │   └── 📄 page.tsx (9.5 KB)
+│   │   │   └── 📄 page.tsx (9.8 KB)
 │   │   ├── 📁 flota/
 │   │   │   └── 📄 page.tsx (5.44 KB)
 │   │   ├── 📄 layout.tsx (1.26 KB)
@@ -42,7 +42,7 @@
 │   │   ├── 📁 crear-usuario/
 │   │   │   └── 📄 route.ts (1.86 KB)
 │   │   └── 📁 eliminar-usuario/
-│   │       └── 📄 route.ts (1.5 KB)
+│   │       └── 📄 route.ts (3.2 KB)
 │   ├── 📁 comercial/
 │   │   └── 📄 page.tsx (17.29 KB)
 │   ├── 📁 desechos/
@@ -130,7 +130,7 @@
 | Total Directories | 21 |
 | Text Files | 31 |
 | Binary Files | 10 |
-| Total Size | 915.71 KB |
+| Total Size | 917.7 KB |
 
 ### 📄 File Types Distribution
 
@@ -1119,15 +1119,15 @@ export default function RegistroEmpleados() {
 ### <a id="📄-app-admin-empleados-page-tsx"></a>📄 `app/admin/empleados/page.tsx`
 
 **File Info:**
-- **Size**: 9.5 KB
+- **Size**: 9.8 KB
 - **Extension**: `.tsx`
 - **Language**: `typescript`
 - **Location**: `app/admin/empleados/page.tsx`
 - **Relative Path**: `app/admin/empleados`
 - **Created**: 2026-07-21 23:28:20 (America/Caracas / GMT-04:00)
-- **Modified**: 2026-09-22 15:00:59 (America/Caracas / GMT-04:00)
-- **MD5**: `9ec6db4766ee51e6f7ee073e6c851cc9`
-- **SHA256**: `bc721432e71504c8d7398537d2bce8cb48b15a8ea153fe89024ebdb9e435db9a`
+- **Modified**: 2026-10-13 16:53:16 (America/Caracas / GMT-04:00)
+- **MD5**: `7c07770834f7b805b6765eff63310bde`
+- **SHA256**: `b1f3928a59b88436e5de0fe2f3e166cfc40e5dc558b3710b6cd0ab11cbb2a40d`
 - **Encoding**: ASCII
 
 **File code content:**
@@ -1857,16 +1857,16 @@ export async function POST(request: Request) {
 ### <a id="📄-app-api-eliminar-usuario-route-ts"></a>📄 `app/api/eliminar-usuario/route.ts`
 
 **File Info:**
-- **Size**: 1.5 KB
+- **Size**: 3.2 KB
 - **Extension**: `.ts`
 - **Language**: `typescript`
 - **Location**: `app/api/eliminar-usuario/route.ts`
 - **Relative Path**: `app/api/eliminar-usuario`
 - **Created**: 2026-09-22 14:51:31 (America/Caracas / GMT-04:00)
-- **Modified**: 2026-09-22 14:51:59 (America/Caracas / GMT-04:00)
-- **MD5**: `be49ccd7daa6076c8a7b77400b4cea97`
-- **SHA256**: `29a7fedb50ae3126c89198d5c8361a4c37cc86c0e537c7c62b625afad2569124`
-- **Encoding**: ASCII
+- **Modified**: 2026-10-13 16:53:16 (America/Caracas / GMT-04:00)
+- **MD5**: `fbc27fd954d611b986dceb278a1f2cc8`
+- **SHA256**: `ddedce6fc80f980feb8657ed55962842bf8e3c7b799e5517c4b024d04574302c`
+- **Encoding**: UTF-8
 
 **File code content:**
 
