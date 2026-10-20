@@ -3,7 +3,7 @@
 ## 📊 Project Information
 
 - **Project Name**: `mrserdefalca`
-- **Generated On**: 2026-10-13 17:47:11 (America/Caracas / GMT-04:00)
+- **Generated On**: 2026-10-20 16:24:01 (America/Caracas / GMT-04:00)
 - **Total Files Processed**: 41
 - **Export Tool**: Easy Whole Project to Single Text File for LLMs v1.1.0
 - **Tool Author**: Jota / José Guilherme Pandolfi
@@ -42,7 +42,7 @@
 │   │   ├── 📁 crear-usuario/
 │   │   │   └── 📄 route.ts (1.86 KB)
 │   │   └── 📁 eliminar-usuario/
-│   │       └── 📄 route.ts (3.2 KB)
+│   │       └── 📄 route.ts (3.77 KB)
 │   ├── 📁 comercial/
 │   │   └── 📄 page.tsx (17.29 KB)
 │   ├── 📁 desechos/
@@ -57,7 +57,7 @@
 │   ├── 📄 favicon.ico (264.06 KB)
 │   ├── 📄 globals.css (488 B)
 │   ├── 📄 layout.tsx (821 B)
-│   └── 📄 page.tsx (4.18 KB)
+│   └── 📄 page.tsx (6.7 KB)
 ├── 📁 lib/
 │   ├── 📄 supabase-admin.ts (361 B)
 │   └── 📄 supabase.ts (269 B)
@@ -75,7 +75,7 @@
 ├── 📄 CLAUDE.md (11 B)
 ├── 📄 eslint.config.mjs (465 B)
 ├── 📄 middleware.ts (1.24 KB)
-├── 📄 next-env.d.ts (251 B)
+├── 📄 next-env.d.ts (247 B)
 ├── 📄 next.config.ts (133 B)
 ├── 📄 package-lock.json (242.31 KB)
 ├── 📄 package.json (666 B)
@@ -130,7 +130,7 @@
 | Total Directories | 21 |
 | Text Files | 31 |
 | Binary Files | 10 |
-| Total Size | 917.7 KB |
+| Total Size | 920.79 KB |
 
 ### 📄 File Types Distribution
 
@@ -1857,15 +1857,15 @@ export async function POST(request: Request) {
 ### <a id="📄-app-api-eliminar-usuario-route-ts"></a>📄 `app/api/eliminar-usuario/route.ts`
 
 **File Info:**
-- **Size**: 3.2 KB
+- **Size**: 3.77 KB
 - **Extension**: `.ts`
 - **Language**: `typescript`
 - **Location**: `app/api/eliminar-usuario/route.ts`
 - **Relative Path**: `app/api/eliminar-usuario`
 - **Created**: 2026-09-22 14:51:31 (America/Caracas / GMT-04:00)
-- **Modified**: 2026-10-13 16:53:16 (America/Caracas / GMT-04:00)
-- **MD5**: `fbc27fd954d611b986dceb278a1f2cc8`
-- **SHA256**: `ddedce6fc80f980feb8657ed55962842bf8e3c7b799e5517c4b024d04574302c`
+- **Modified**: 2026-10-13 18:04:02 (America/Caracas / GMT-04:00)
+- **MD5**: `2237c951aa2aabf017c0bb20925a1f73`
+- **SHA256**: `c95d85b7488841c1c7cd3cc1b0bc6a1b722d8c2436a6263d00982a27d4f7263d`
 - **Encoding**: UTF-8
 
 **File code content:**
@@ -1884,10 +1884,9 @@ export async function DELETE(request: Request) {
     }
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-    if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceKey) {
+    if (!supabaseUrl || !supabaseServiceKey) {
       return NextResponse.json({ error: "Faltan credenciales de servidor." }, { status: 500 });
     }
 
@@ -1896,23 +1895,17 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "Se requiere iniciar sesión." }, { status: 401 });
     }
 
-    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    });
-    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(accessToken);
-    if (authError || !user) {
-      return NextResponse.json({ error: "La sesión no es válida." }, { status: 401 });
-    }
-
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
       auth: {
         autoRefreshToken: false,
         persistSession: false,
       },
     });
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(accessToken);
+    if (authError || !user) {
+      return NextResponse.json({ error: "La sesión no es válida." }, { status: 401 });
+    }
+
     const { data: profile, error: profileError } = await supabaseAdmin
       .from("usuarios")
       .select("rol")
@@ -1928,14 +1921,17 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "No tienes permisos para eliminar usuarios." }, { status: 403 });
     }
 
-    // 1. Eliminar acceso de Supabase Auth
-    const { error: deleteAuthError } = await supabaseAdmin.auth.admin.deleteUser(idUsuario);
-    if (deleteAuthError) {
-      console.error("Error al borrar credenciales de acceso:", deleteAuthError);
-      return NextResponse.json({ error: "No se pudieron eliminar las credenciales del usuario." }, { status: 500 });
+    const { data: targetProfile, error: targetProfileError } = await supabaseAdmin
+      .from("usuarios")
+      .select("*")
+      .eq("id_usuario", idUsuario)
+      .maybeSingle();
+
+    if (targetProfileError) {
+      console.error("Error al obtener el registro de usuario:", targetProfileError);
+      return NextResponse.json({ error: "No se pudo preparar la eliminación del usuario." }, { status: 500 });
     }
 
-    // 2. Eliminar registro de la tabla pública
     const { error: dbError } = await supabaseAdmin
       .from("usuarios")
       .delete()
@@ -1944,6 +1940,27 @@ export async function DELETE(request: Request) {
     if (dbError) {
       console.error("Error al borrar el registro de usuario:", dbError);
       return NextResponse.json({ error: "No se pudo eliminar el registro del usuario." }, { status: 500 });
+    }
+
+    const { error: deleteAuthError } = await supabaseAdmin.auth.admin.deleteUser(idUsuario);
+    if (deleteAuthError) {
+      console.error("Error al borrar credenciales de acceso:", deleteAuthError);
+
+      if (targetProfile) {
+        const { error: restoreError } = await supabaseAdmin.from("usuarios").insert(targetProfile);
+        if (restoreError) {
+          console.error("Error al restaurar el registro de usuario:", restoreError);
+          return NextResponse.json(
+            { error: "No se pudieron eliminar las credenciales y tampoco restaurar el registro del usuario." },
+            { status: 500 }
+          );
+        }
+      }
+
+      return NextResponse.json(
+        { error: "No se pudieron eliminar las credenciales del usuario; el registro se restauró." },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json({ success: true, message: "Empleado eliminado definitivamente." }, { status: 200 });
@@ -3213,147 +3230,198 @@ export default function RootLayout({
 ### <a id="📄-app-page-tsx"></a>📄 `app/page.tsx`
 
 **File Info:**
-- **Size**: 4.18 KB
+- **Size**: 6.7 KB
 - **Extension**: `.tsx`
 - **Language**: `typescript`
 - **Location**: `app/page.tsx`
 - **Relative Path**: `app`
 - **Created**: 2026-07-21 20:24:25 (America/Caracas / GMT-04:00)
-- **Modified**: 2026-09-30 21:50:47 (America/Caracas / GMT-04:00)
-- **MD5**: `3bb7d790d28d852b5e07f694a8a87ced`
-- **SHA256**: `8083c2594013478d4e6384cadc00d2bc2e7ca66c59de39f485a309c04c9b7f2f`
+- **Modified**: 2026-10-20 14:40:54 (America/Caracas / GMT-04:00)
+- **MD5**: `6caf61fc3a7b623953e50aa18785577d`
+- **SHA256**: `c5e038439dc624699f4bada2ae13f172d2cc3f900fbb36ed8753ac33fb5030db`
 - **Encoding**: UTF-8
 
 **File code content:**
 
 ```typescript
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import Image from 'next/image'
-import { supabase } from '@/lib/supabase'
+import { useState } from "react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { createClient } from "@supabase/supabase-js";
 
-export default function Login() {
-  const [identificador, setIdentificador] = useState('') // Guarda el usuario, cédula o correo
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-  const router = useRouter()
+// 1. Inicializamos Supabase utilizando las variables de entorno públicas
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    setLoading(true)
+export default function Home() {
+  // 2. Creamos los estados para gestionar los campos del formulario y errores
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [cargando, setCargando] = useState(false);
+  const [mostrarPassword, setMostrarPassword] = useState(false);
 
-    try {
-      let emailParaAuth = identificador
+  // 3. Inicializamos el enrutador para la redirección de páginas
+  const router = useRouter();
 
-      // Si el texto no contiene "@", asumimos que ingresó una Cédula o Usuario
-      if (!identificador.includes('@')) {
-        const { data, error: fetchError } = await supabase
-          .from('usuarios')
-          .select('correo')
-          .eq('cedula', identificador) // Asegúrate de que la columna se llame 'cedula' en tu tabla
-          .single()
+  // 4. Función principal que procesa el inicio de sesión
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setCargando(true);
+    setError("");
 
-        if (fetchError || !data) {
-          setError('Cédula o usuario no encontrado en el sistema.')
-          setLoading(false)
-          return
-        }
-        
-        // Asignamos el correo encontrado en la base de datos
-        emailParaAuth = data.correo
-      }
+    // Paso A: Autenticar credenciales en Supabase Auth
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      email: email,
+      password: password,
+    });
 
-      // Iniciar sesión en Supabase con el correo (ingresado o encontrado) y la contraseña
-      const { error: authError } = await supabase.auth.signInWithPassword({
-        email: emailParaAuth,
-        password: password,
-      })
-
-      if (authError) {
-        setError('Contraseña incorrecta.')
-      } else {
-        // Si es exitoso, redirigir al panel administrativo
-        router.push('/dashboard') 
-      }
-    } catch (err) {
-      setError('Ocurrió un error inesperado al intentar conectar.')
-    } finally {
-      setLoading(false)
+    if (authError) {
+      setError("❌ Correo o contraseña incorrectos.");
+      setCargando(false);
+      return;
     }
-  }
+
+    // Paso B: Verificar el rol del usuario en la tabla personalizada 'usuarios'
+    if (authData.user) {
+      const { data: userData, error: userError } = await supabase
+        .from('usuarios')
+        .select('rol')
+        .eq('id_usuario', authData.user.id)
+        .single();
+
+      if (userError || !userData) {
+        setError("❌ Error al verificar los permisos en la base de datos.");
+        await supabase.auth.signOut();
+        setCargando(false);
+        return;
+      }
+
+      // Paso C: Redirección inteligente basada en el rol del usuario
+      const rolEmpleado = userData.rol?.toLowerCase().trim();
+
+      if (rolEmpleado === 'administrador' || rolEmpleado === 'admin' || rolEmpleado === 'super usuario') {
+        router.push('/admin');
+      } else if (rolEmpleado === 'comercial') {
+        router.push('/comercial');
+      } else if (rolEmpleado === 'flota') {
+        router.push('/flota');
+      } else {
+        setError(`⛔ Acceso denegado: El rol "${userData.rol}" no está configurado en el sistema.`);
+        await supabase.auth.signOut();
+      }
+    }
+
+    setCargando(false);
+  };
 
   return (
-    <div 
-      className="min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat" 
-      style={{ backgroundImage: "url('/imagen1.jpg')" }} // Llama a public/imagen1.jpg
-    >
-      <div className="bg-white/90 backdrop-blur-sm p-8 rounded-xl shadow-2xl w-full max-w-md">
+    <div className="relative flex min-h-screen items-center justify-center bg-zinc-900 font-sans">
+      {/* Imagen de fondo a pantalla completa */}
+      <div className="absolute inset-0 z-0">
+        <Image
+          src="/imagen1.png"
+          alt="Fondo institucional"
+          fill
+          sizes="100vw"
+          className="object-cover opacity-40"
+          priority
+        />
+      </div>
+
+      {/* Tarjeta de Inicio de Sesión */}
+      <div className="relative z-10 mx-4 w-full max-w-md rounded-2xl bg-white/95 p-8 shadow-2xl backdrop-blur-md dark:bg-zinc-950/90 sm:p-10">
         
-        {/* Logo de la empresa */}
-        <div className="flex justify-center mb-4">
-          <Image 
-            src="/logo1.png" // Llama a public/logo1.png
-            alt="Logo Serdefalca" 
-            width={120} 
-            height={120} 
-            priority
-          />
+        {/* Encabezado y Logotipo */}
+        <div className="mb-8 flex flex-col items-center text-center">
+          <div className="relative mb-6 h-20 w-full max-w-[200px]">
+            <Image
+              src="/logo1.png"
+              alt="Logotipo oficial"
+              fill
+              sizes="(max-width: 768px) 200px, 200px"
+              className="object-contain"
+              priority
+            />
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight text-emerald-800 dark:text-emerald-400">
+            Portal Serdefalca
+          </h1>
+          <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+            Sistema Regional de Gestión de Desechos Sólidos del Estado Falcón
+          </p>
         </div>
 
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-8">
-          Portal Serdefalca
-        </h2>
-
-        {error && (
-          <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-3 mb-6 rounded text-sm">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleLogin} className="space-y-6">
+        {/* Formulario de Acceso */}
+        <form onSubmit={handleLogin} className="flex flex-col gap-5">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Usuario o Cédula
+            <label
+              htmlFor="email"
+              className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300"
+            >
+              Correo Electrónico
             </label>
             <input
-              type="text"
+              id="email"
+              name="email"
+              type="email"
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-gray-900"
-              placeholder="Ej: V-00000000 o correo"
-              value={identificador}
-              onChange={(e) => setIdentificador(e.target.value)}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="operador@serdefalca.gob.ve"
+              className="w-full rounded-lg border border-zinc-300 bg-zinc-50 px-4 py-3 text-sm text-zinc-900 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:focus:border-emerald-500"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="password"
+              className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300"
+            >
               Contraseña
             </label>
-            <input
-              type="password"
-              required
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-gray-900"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+            <div className="relative">
+              <input
+                id="password"
+                name="password"
+                type={mostrarPassword ? "text" : "password"}
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full rounded-lg border border-zinc-300 bg-zinc-50 px-4 py-3 text-sm text-zinc-900 outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:focus:border-emerald-500"
+              />
+              <button
+                type="button"
+                onClick={() => setMostrarPassword(!mostrarPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+              >
+                {mostrarPassword ? "Ocultar" : "Mostrar"}
+              </button>
+            </div>
           </div>
+
+          {error && (
+            <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600 dark:bg-red-950/50 dark:text-red-400">
+              {error}
+            </div>
+          )}
 
           <button
             type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md transition-colors duration-200 shadow-md disabled:bg-blue-400"
+            disabled={cargando}
+            className="w-full rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-600/20 transition-all hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 active:scale-[0.98] disabled:opacity-50"
           >
-            {loading ? 'Iniciando sesión...' : 'Ingresar'}
+            {cargando ? "Iniciando sesión..." : "Ingresar al Sistema"}
           </button>
         </form>
+
       </div>
     </div>
-  )
+  );
 }
 ```
 
@@ -3984,15 +4052,15 @@ export const config = {
 ### <a id="📄-next-env-d-ts"></a>📄 `next-env.d.ts`
 
 **File Info:**
-- **Size**: 251 B
+- **Size**: 247 B
 - **Extension**: `.ts`
 - **Language**: `typescript`
 - **Location**: `next-env.d.ts`
 - **Relative Path**: `root`
 - **Created**: 2026-07-21 20:24:17 (America/Caracas / GMT-04:00)
-- **Modified**: 2026-07-21 14:14:38 (America/Caracas / GMT-04:00)
-- **MD5**: `d0f8375ae1199dc7acd3977fc33b78b8`
-- **SHA256**: `7ad303e40d4fddf44f156129e397511953a71481c5cfd86b1862649aaaf240cc`
+- **Modified**: 2026-10-13 17:47:45 (America/Caracas / GMT-04:00)
+- **MD5**: `2a74d3909800ca5467fa83b0ab4a4890`
+- **SHA256**: `7b550dda9686c16f36a17bf9051d5dbf31e98555b30d114ac49fc49a1e712651`
 - **Encoding**: ASCII
 
 **File code content:**
@@ -4000,7 +4068,7 @@ export const config = {
 ```typescript
 /// <reference types="next" />
 /// <reference types="next/image-types/global" />
-import "./.next/dev/types/routes.d.ts";
+import "./.next/types/routes.d.ts";
 
 // NOTE: This file should not be edited
 // see https://nextjs.org/docs/app/api-reference/config/typescript for more information.
@@ -4047,7 +4115,7 @@ export default nextConfig;
 - **Location**: `package-lock.json`
 - **Relative Path**: `root`
 - **Created**: 2026-07-21 20:24:17 (America/Caracas / GMT-04:00)
-- **Modified**: 2026-10-13 16:44:44 (America/Caracas / GMT-04:00)
+- **Modified**: 2026-10-13 17:47:20 (America/Caracas / GMT-04:00)
 - **MD5**: `a4add02c9010ad50adb3b8075b526345`
 - **SHA256**: `737a61f1a7845ab544a820a52d2197fc3203dea7189a95af3ce7850fab795d13`
 - **Encoding**: ASCII
