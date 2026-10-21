@@ -24,3 +24,11 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Agrega esta clase al final para la imagen de fondo del login */
+.bg-login {
+  background-image: url('/imagen1.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}

@@ -3,7 +3,7 @@
 ## 📊 Project Information
 
 - **Project Name**: `mrserdefalca`
-- **Generated On**: 2026-10-21 13:33:21 (America/Caracas / GMT-04:00)
+- **Generated On**: 2026-10-21 13:48:32 (America/Caracas / GMT-04:00)
 - **Total Files Processed**: 41
 - **Export Tool**: Easy Whole Project to Single Text File for LLMs v1.1.0
 - **Tool Author**: Jota / José Guilherme Pandolfi
@@ -55,9 +55,9 @@
 │   │   └── 📄 page.tsx (1.87 KB)
 │   ├── 📁 reparar/
 │   ├── 📄 favicon.ico (264.06 KB)
-│   ├── 📄 globals.css (488 B)
+│   ├── 📄 globals.css (699 B)
 │   ├── 📄 layout.tsx (821 B)
-│   └── 📄 page.tsx (4.12 KB)
+│   └── 📄 page.tsx (3.83 KB)
 ├── 📁 lib/
 │   ├── 📄 supabase-admin.ts (361 B)
 │   └── 📄 supabase.ts (463 B)
@@ -130,7 +130,7 @@
 | Total Directories | 21 |
 | Text Files | 31 |
 | Binary Files | 10 |
-| Total Size | 910.27 KB |
+| Total Size | 910.18 KB |
 
 ### 📄 File Types Distribution
 
@@ -2956,15 +2956,15 @@ export default function MantenimientoPage() {
 ### <a id="📄-app-globals-css"></a>📄 `app/globals.css`
 
 **File Info:**
-- **Size**: 488 B
+- **Size**: 699 B
 - **Extension**: `.css`
 - **Language**: `css`
 - **Location**: `app/globals.css`
 - **Relative Path**: `app`
 - **Created**: 2026-07-21 20:24:25 (America/Caracas / GMT-04:00)
-- **Modified**: 2026-07-21 14:14:42 (America/Caracas / GMT-04:00)
-- **MD5**: `20552b4b0f91d72bbf19051b78b2aff5`
-- **SHA256**: `769edf77bd0d101a2d26e6c5656defba8cd885ff37d92279fa293a2756fe5651`
+- **Modified**: 2026-10-21 13:48:32 (America/Caracas / GMT-04:00)
+- **MD5**: `07600ae796b11e8d6cfa9dec3bb9f9ee`
+- **SHA256**: `970d3cddfa5bbf84e9e5339748e0352825c9091dbffc4527fa3fc4916eaa7b77`
 - **Encoding**: ASCII
 
 **File code content:**
@@ -2997,6 +2997,13 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/* Agrega esta clase al final para la imagen de fondo del login */
+.bg-login {
+  background-image: url('/imagen1.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
 ```
 
 ---
@@ -3061,16 +3068,16 @@ export default function RootLayout({
 ### <a id="📄-app-page-tsx"></a>📄 `app/page.tsx`
 
 **File Info:**
-- **Size**: 4.12 KB
+- **Size**: 3.83 KB
 - **Extension**: `.tsx`
 - **Language**: `typescript`
 - **Location**: `app/page.tsx`
 - **Relative Path**: `app`
 - **Created**: 2026-07-21 20:24:25 (America/Caracas / GMT-04:00)
-- **Modified**: 2026-10-21 13:33:20 (America/Caracas / GMT-04:00)
-- **MD5**: `2ed649f76221c99c69e4d6ceedcad9da`
-- **SHA256**: `6ee13a2ac24a70b982d8f0e642ca0d26034aef88d49dd7a550e7493a74fe4ffd`
-- **Encoding**: UTF-8
+- **Modified**: 2026-10-21 13:44:31 (America/Caracas / GMT-04:00)
+- **MD5**: `37b28c64a145e3fb15d2efd261c84c1b`
+- **SHA256**: `8e5523d107b68c1c6d5284c2c0c7c5f47123f3c2b566f37036bd4a50528110d5`
+- **Encoding**: ASCII
 
 **File code content:**
 
@@ -3079,7 +3086,7 @@ export default function RootLayout({
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase'; // Asegúrate de que esta ruta apunte a tu cliente de Supabase
+import { createClient } from '@/lib/supabase';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -3106,11 +3113,11 @@ export default function LoginPage() {
       const user = authData.user;
       if (!user) throw new Error('No se pudo obtener el usuario.');
 
-      // 2. Consultar el rol del usuario en tu tabla personalizada (ej. 'usuarios' o 'profiles')
+      // 2. Consultar el rol del usuario en la tabla 'usuarios'
       const { data: profileData, error: profileError } = await supabase
-        .from('usuarios') // Cambia 'usuarios' por el nombre real de tu tabla de roles
+        .from('usuarios')
         .select('rol')
-        .eq('id', user.id)
+        .eq('id_usuario', user.id)
         .single();
 
       if (profileError || !profileData) {
@@ -3119,7 +3126,7 @@ export default function LoginPage() {
 
       const rol = profileData.rol?.toLowerCase();
 
-      // 3. Redirección dinámica basada estricamente en el rol
+      // 3. Redirección dinámica basada estrictamente en el rol
       switch (rol) {
         case 'administrador':
           router.push('/admin');
@@ -3128,7 +3135,7 @@ export default function LoginPage() {
           router.push('/comercial');
           break;
         case 'desechos':
-          router.push('/desechos'); // Ajusta la ruta según tu estructura de carpetas
+          router.push('/desechos');
           break;
         default:
           router.push('/');
@@ -3145,7 +3152,6 @@ export default function LoginPage() {
     <main className="min-h-screen flex items-center justify-center bg-login">
       <div className="bg-white/90 backdrop-blur-md p-8 rounded-xl shadow-2xl w-full max-w-md">
         <div className="flex justify-center mb-6">
-          {/* Asegúrate de que logo1.png esté en la carpeta public */}
           <img src="/logo1.png" alt="Logo" className="h-20 object-contain" />
         </div>
 
@@ -3161,7 +3167,6 @@ export default function LoginPage() {
           <div>
             <label className="block text-sm font-medium text-gray-700">Correo Electrónico</label>
             <input
-              type="email5"
               type="email"
               required
               value={email}

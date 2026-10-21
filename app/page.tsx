@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase'; // Asegúrate de que esta ruta apunte a tu cliente de Supabase
+import { createClient } from '@/lib/supabase';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -29,11 +29,11 @@ export default function LoginPage() {
       const user = authData.user;
       if (!user) throw new Error('No se pudo obtener el usuario.');
 
-      // 2. Consultar el rol del usuario en tu tabla personalizada (ej. 'usuarios' o 'profiles')
+      // 2. Consultar el rol del usuario en la tabla 'usuarios'
       const { data: profileData, error: profileError } = await supabase
-        .from('usuarios') // Cambia 'usuarios' por el nombre real de tu tabla de roles
+        .from('usuarios')
         .select('rol')
-        .eq('id', user.id)
+        .eq('id_usuario', user.id)
         .single();
 
       if (profileError || !profileData) {
@@ -42,7 +42,7 @@ export default function LoginPage() {
 
       const rol = profileData.rol?.toLowerCase();
 
-      // 3. Redirección dinámica basada estricamente en el rol
+      // 3. Redirección dinámica basada estrictamente en el rol
       switch (rol) {
         case 'administrador':
           router.push('/admin');
@@ -51,7 +51,7 @@ export default function LoginPage() {
           router.push('/comercial');
           break;
         case 'desechos':
-          router.push('/desechos'); // Ajusta la ruta según tu estructura de carpetas
+          router.push('/desechos');
           break;
         default:
           router.push('/');
@@ -68,7 +68,6 @@ export default function LoginPage() {
     <main className="min-h-screen flex items-center justify-center bg-login">
       <div className="bg-white/90 backdrop-blur-md p-8 rounded-xl shadow-2xl w-full max-w-md">
         <div className="flex justify-center mb-6">
-          {/* Asegúrate de que logo1.png esté en la carpeta public */}
           <img src="/logo1.png" alt="Logo" className="h-20 object-contain" />
         </div>
 
@@ -84,7 +83,6 @@ export default function LoginPage() {
           <div>
             <label className="block text-sm font-medium text-gray-700">Correo Electrónico</label>
             <input
-              type="email5"
               type="email"
               required
               value={email}
