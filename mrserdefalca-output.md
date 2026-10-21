@@ -3,7 +3,7 @@
 ## 📊 Project Information
 
 - **Project Name**: `mrserdefalca`
-- **Generated On**: 2026-10-21 15:07:16 (America/Caracas / GMT-04:00)
+- **Generated On**: 2026-10-21 15:16:32 (America/Caracas / GMT-04:00)
 - **Total Files Processed**: 41
 - **Export Tool**: Easy Whole Project to Single Text File for LLMs v1.1.0
 - **Tool Author**: Jota / José Guilherme Pandolfi
@@ -57,7 +57,7 @@
 │   ├── 📄 favicon.ico (264.06 KB)
 │   ├── 📄 globals.css (699 B)
 │   ├── 📄 layout.tsx (821 B)
-│   └── 📄 page.tsx (5.38 KB)
+│   └── 📄 page.tsx (5.46 KB)
 ├── 📁 lib/
 │   ├── 📄 supabase-admin.ts (361 B)
 │   └── 📄 supabase.ts (344 B)
@@ -130,7 +130,7 @@
 | Total Directories | 21 |
 | Text Files | 31 |
 | Binary Files | 10 |
-| Total Size | 911.62 KB |
+| Total Size | 911.7 KB |
 
 ### 📄 File Types Distribution
 
@@ -3068,15 +3068,15 @@ export default function RootLayout({
 ### <a id="📄-app-page-tsx"></a>📄 `app/page.tsx`
 
 **File Info:**
-- **Size**: 5.38 KB
+- **Size**: 5.46 KB
 - **Extension**: `.tsx`
 - **Language**: `typescript`
 - **Location**: `app/page.tsx`
 - **Relative Path**: `app`
 - **Created**: 2026-07-21 20:24:25 (America/Caracas / GMT-04:00)
-- **Modified**: 2026-10-21 15:06:48 (America/Caracas / GMT-04:00)
-- **MD5**: `a872ed57ceae74ff20946d0422c035d5`
-- **SHA256**: `0fbf8f1c448b6f3f7acdab8f89756f61b18f399e3f6676f5d16795daad3fa804`
+- **Modified**: 2026-10-21 15:16:32 (America/Caracas / GMT-04:00)
+- **MD5**: `1beb47cd0cca62a4a11c01240b3372a0`
+- **SHA256**: `5daf486d5573bdc16012516d42cff3e79357b24d5ea07c3d1afb19b3f8808d22`
 - **Encoding**: UTF-8
 
 **File code content:**
@@ -3134,10 +3134,11 @@ export default function LoginPage() {
 
       const userRol = userData.rol?.toLowerCase().trim();
 
-      // 3. Redirección basada en el rol del usuario
+      // 3. Redirección basada en el rol del usuario (Soporte completo para todos los roles)
       switch (userRol) {
         case "administrador":
         case "admin":
+        case "superuser":
           router.push("/admin");
           break;
         case "desechos":
@@ -3150,7 +3151,7 @@ export default function LoginPage() {
           router.push("/admin/empleados");
           break;
         default:
-          throw new Error(`Acceso denegado: El rol "${userRol}" no está configurado.`);
+          throw new Error(`Acceso denegado: El rol "${userRol}" no está configurado en el sistema.`);
       }
     } catch (err: any) {
       setErrorMessage(err.message || "Ocurrió un error inesperado al iniciar sesión.");
