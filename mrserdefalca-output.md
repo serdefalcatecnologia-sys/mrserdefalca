@@ -3,7 +3,7 @@
 ## 📊 Project Information
 
 - **Project Name**: `mrserdefalca`
-- **Generated On**: 2026-10-21 14:21:25 (America/Caracas / GMT-04:00)
+- **Generated On**: 2026-10-21 15:07:16 (America/Caracas / GMT-04:00)
 - **Total Files Processed**: 41
 - **Export Tool**: Easy Whole Project to Single Text File for LLMs v1.1.0
 - **Tool Author**: Jota / José Guilherme Pandolfi
@@ -57,10 +57,10 @@
 │   ├── 📄 favicon.ico (264.06 KB)
 │   ├── 📄 globals.css (699 B)
 │   ├── 📄 layout.tsx (821 B)
-│   └── 📄 page.tsx (5.28 KB)
+│   └── 📄 page.tsx (5.38 KB)
 ├── 📁 lib/
 │   ├── 📄 supabase-admin.ts (361 B)
-│   └── 📄 supabase.ts (346 B)
+│   └── 📄 supabase.ts (344 B)
 ├── 📁 public/
 │   ├── 📄 file.svg (391 B)
 │   ├── 📄 globe.svg (1.01 KB)
@@ -130,7 +130,7 @@
 | Total Directories | 21 |
 | Text Files | 31 |
 | Binary Files | 10 |
-| Total Size | 911.52 KB |
+| Total Size | 911.62 KB |
 
 ### 📄 File Types Distribution
 
@@ -3068,15 +3068,15 @@ export default function RootLayout({
 ### <a id="📄-app-page-tsx"></a>📄 `app/page.tsx`
 
 **File Info:**
-- **Size**: 5.28 KB
+- **Size**: 5.38 KB
 - **Extension**: `.tsx`
 - **Language**: `typescript`
 - **Location**: `app/page.tsx`
 - **Relative Path**: `app`
 - **Created**: 2026-07-21 20:24:25 (America/Caracas / GMT-04:00)
-- **Modified**: 2026-10-21 14:17:13 (America/Caracas / GMT-04:00)
-- **MD5**: `afcef70063d6f2dbe707e864dc1483bc`
-- **SHA256**: `f61ae03f91d4939dc461bfcd371eece1ac0ae4801684df4367c47207d98ddac4`
+- **Modified**: 2026-10-21 15:06:48 (America/Caracas / GMT-04:00)
+- **MD5**: `a872ed57ceae74ff20946d0422c035d5`
+- **SHA256**: `0fbf8f1c448b6f3f7acdab8f89756f61b18f399e3f6676f5d16795daad3fa804`
 - **Encoding**: UTF-8
 
 **File code content:**
@@ -3105,50 +3105,55 @@ export default function LoginPage() {
     try {
       // 1. Autenticación con Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email,
+        email: email.trim(),
         password,
       });
 
-      if (authError) throw new Error("Credenciales inválidas. Verifique su correo y contraseña.");
+      if (authError) {
+        throw new Error("Correo o contraseña incorrectos.");
+      }
 
-      if (authData.user) {
-        // 2. Consulta de rol en la tabla de usuarios
-        const { data: userData, error: userError } = await supabase
-          .from("usuarios")
-          .select("rol")
-          .eq("id_usuario", authData.user.id)
-          .single();
+      if (!authData.user) {
+        throw new Error("No se pudo obtener la sesión del usuario.");
+      }
 
-        if (userError || !userData) {
-          throw new Error("El usuario no tiene un rol asignado en la base de datos.");
-        }
+      // 2. Consulta de rol en la tabla pública 'usuarios'
+      const { data: userData, error: userError } = await supabase
+        .from("usuarios")
+        .select("rol")
+        .eq("id_usuario", authData.user.id)
+        .maybeSingle();
 
-        const userRol = userData.rol?.toLowerCase();
+      if (userError) {
+        throw new Error("Error al verificar los permisos en la base de datos.");
+      }
 
-        // 3. Redirección según rol
-        switch (userRol) {
-          case "administrador":
-          case "admin":
-          case "superuser":
-            router.push("/admin");
-            break;
-          case "desechos":
-            router.push("/llave");
-            break;
-          case "comercial":
-            router.push("/comercial");
-            break;
-          case "transporte":
-            router.push("/admin/empleados");
-            break;
-          default:
-            setErrorMessage(`Acceso denegado: El rol "${userRol}" no está configurado en el sistema.`);
-            break;
-        }
+      if (!userData) {
+        throw new Error("El usuario authenticated no está registrado en la tabla pública 'usuarios'.");
+      }
+
+      const userRol = userData.rol?.toLowerCase().trim();
+
+      // 3. Redirección basada en el rol del usuario
+      switch (userRol) {
+        case "administrador":
+        case "admin":
+          router.push("/admin");
+          break;
+        case "desechos":
+          router.push("/llave");
+          break;
+        case "comercial":
+          router.push("/comercial");
+          break;
+        case "transporte":
+          router.push("/admin/empleados");
+          break;
+        default:
+          throw new Error(`Acceso denegado: El rol "${userRol}" no está configurado.`);
       }
     } catch (err: any) {
       setErrorMessage(err.message || "Ocurrió un error inesperado al iniciar sesión.");
-    } finally {
       setLoading(false);
     }
   };
@@ -3275,15 +3280,15 @@ export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
 ### <a id="📄-lib-supabase-ts"></a>📄 `lib/supabase.ts`
 
 **File Info:**
-- **Size**: 346 B
+- **Size**: 344 B
 - **Extension**: `.ts`
 - **Language**: `typescript`
 - **Location**: `lib/supabase.ts`
 - **Relative Path**: `lib`
 - **Created**: 2026-07-21 20:24:25 (America/Caracas / GMT-04:00)
-- **Modified**: 2026-10-21 14:21:24 (America/Caracas / GMT-04:00)
-- **MD5**: `e4f2d53c1dd05f61594dba8d94cee561`
-- **SHA256**: `5ddb71b58604db84f36316f24f11810565033e8c555f42a0ec65840d93e9528d`
+- **Modified**: 2026-10-21 15:07:16 (America/Caracas / GMT-04:00)
+- **MD5**: `9dc98cc89ce4dbd0d38c68aef917a158`
+- **SHA256**: `e9e09b52720fc0a5c34ff55cbc764655ab166112f0edbbd373760cae4c0ff080`
 - **Encoding**: ASCII
 
 **File code content:**
@@ -3300,7 +3305,6 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
   },
 });
-
 ```
 
 ---

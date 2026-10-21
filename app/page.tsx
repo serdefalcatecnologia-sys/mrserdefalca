@@ -21,50 +21,55 @@ export default function LoginPage() {
     try {
       // 1. Autenticación con Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email,
+        email: email.trim(),
         password,
       });
 
-      if (authError) throw new Error("Credenciales inválidas. Verifique su correo y contraseña.");
+      if (authError) {
+        throw new Error("Correo o contraseña incorrectos.");
+      }
 
-      if (authData.user) {
-        // 2. Consulta de rol en la tabla de usuarios
-        const { data: userData, error: userError } = await supabase
-          .from("usuarios")
-          .select("rol")
-          .eq("id_usuario", authData.user.id)
-          .single();
+      if (!authData.user) {
+        throw new Error("No se pudo obtener la sesión del usuario.");
+      }
 
-        if (userError || !userData) {
-          throw new Error("El usuario no tiene un rol asignado en la base de datos.");
-        }
+      // 2. Consulta de rol en la tabla pública 'usuarios'
+      const { data: userData, error: userError } = await supabase
+        .from("usuarios")
+        .select("rol")
+        .eq("id_usuario", authData.user.id)
+        .maybeSingle();
 
-        const userRol = userData.rol?.toLowerCase();
+      if (userError) {
+        throw new Error("Error al verificar los permisos en la base de datos.");
+      }
 
-        // 3. Redirección según rol
-        switch (userRol) {
-          case "administrador":
-          case "admin":
-          case "superuser":
-            router.push("/admin");
-            break;
-          case "desechos":
-            router.push("/llave");
-            break;
-          case "comercial":
-            router.push("/comercial");
-            break;
-          case "transporte":
-            router.push("/admin/empleados");
-            break;
-          default:
-            setErrorMessage(`Acceso denegado: El rol "${userRol}" no está configurado en el sistema.`);
-            break;
-        }
+      if (!userData) {
+        throw new Error("El usuario authenticated no está registrado en la tabla pública 'usuarios'.");
+      }
+
+      const userRol = userData.rol?.toLowerCase().trim();
+
+      // 3. Redirección basada en el rol del usuario
+      switch (userRol) {
+        case "administrador":
+        case "admin":
+          router.push("/admin");
+          break;
+        case "desechos":
+          router.push("/llave");
+          break;
+        case "comercial":
+          router.push("/comercial");
+          break;
+        case "transporte":
+          router.push("/admin/empleados");
+          break;
+        default:
+          throw new Error(`Acceso denegado: El rol "${userRol}" no está configurado.`);
       }
     } catch (err: any) {
       setErrorMessage(err.message || "Ocurrió un error inesperado al iniciar sesión.");
-    } finally {
       setLoading(false);
     }
   };
