@@ -3,31 +3,23 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { createClient } from "@supabase/supabase-js";
-
-// 1. Inicializamos Supabase utilizando las variables de entorno públicas
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+import { supabase } from "@/lib/supabase";
 
 export default function Home() {
-  // 2. Creamos los estados para gestionar los campos del formulario y errores
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [cargando, setCargando] = useState(false);
   const [mostrarPassword, setMostrarPassword] = useState(false);
 
-  // 3. Inicializamos el enrutador para la redirección de páginas
   const router = useRouter();
 
-  // 4. Función principal que procesa el inicio de sesión
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setCargando(true);
     setError("");
 
-    // Paso A: Autenticar credenciales en Supabase Auth
+    // Paso A: Autenticar al usuario en Supabase
     const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
       email: email,
       password: password,
@@ -39,7 +31,7 @@ export default function Home() {
       return;
     }
 
-    // Paso B: Verificar el rol del usuario en la tabla personalizada 'usuarios'
+    // Paso B: Verificar ROL en la tabla 'usuarios'
     if (authData.user) {
       const { data: userData, error: userError } = await supabase
         .from('usuarios')
@@ -54,15 +46,22 @@ export default function Home() {
         return;
       }
 
-      // Paso C: Redirección inteligente basada en el rol del usuario
+      // Paso C: Normalizar y Redireccionar según el rol
       const rolEmpleado = userData.rol?.toLowerCase().trim();
 
-      if (rolEmpleado === 'administrador' || rolEmpleado === 'admin' || rolEmpleado === 'super usuario') {
+      if (
+        rolEmpleado === 'administrador' || 
+        rolEmpleado === 'admin' || 
+        rolEmpleado === 'super usuario' ||
+        rolEmpleado === 'tecnologia'
+      ) {
         router.push('/admin');
-      } else if (rolEmpleado === 'comercial') {
+      } else if (rolEmpleado === 'comercial' || rolEmpleado === 'comercializacion') {
         router.push('/comercial');
-      } else if (rolEmpleado === 'flota') {
+      } else if (rolEmpleado === 'flota' || rolEmpleado === 'transporte') {
         router.push('/flota');
+      } else if (rolEmpleado === 'desechos' || rolEmpleado === 'recoleccion') {
+        router.push('/desechos');
       } else {
         setError(`⛔ Acceso denegado: El rol "${userData.rol}" no está configurado en el sistema.`);
         await supabase.auth.signOut();
@@ -74,11 +73,11 @@ export default function Home() {
 
   return (
     <div className="relative flex min-h-screen items-center justify-center bg-zinc-900 font-sans">
-      {/* Imagen de fondo a pantalla completa */}
+      {/* Imagen de Fondo */}
       <div className="absolute inset-0 z-0">
         <Image
           src="/imagen1.png"
-          alt="Fondo institucional"
+          alt="Fondo Serdefalca"
           fill
           sizes="100vw"
           className="object-cover opacity-40"
@@ -86,15 +85,15 @@ export default function Home() {
         />
       </div>
 
-      {/* Tarjeta de Inicio de Sesión */}
+      {/* Tarjeta de Login */}
       <div className="relative z-10 mx-4 w-full max-w-md rounded-2xl bg-white/95 p-8 shadow-2xl backdrop-blur-md dark:bg-zinc-950/90 sm:p-10">
         
-        {/* Encabezado y Logotipo */}
+        {/* Logotipo y Título */}
         <div className="mb-8 flex flex-col items-center text-center">
           <div className="relative mb-6 h-20 w-full max-w-[200px]">
             <Image
               src="/logo1.png"
-              alt="Logotipo oficial"
+              alt="Logo Oficial Serdefalca"
               fill
               sizes="(max-width: 768px) 200px, 200px"
               className="object-contain"
@@ -109,13 +108,10 @@ export default function Home() {
           </p>
         </div>
 
-        {/* Formulario de Acceso */}
+        {/* Formulario */}
         <form onSubmit={handleLogin} className="flex flex-col gap-5">
           <div>
-            <label
-              htmlFor="email"
-              className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300"
-            >
+            <label htmlFor="email" className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
               Correo Electrónico
             </label>
             <input
@@ -131,10 +127,7 @@ export default function Home() {
           </div>
 
           <div>
-            <label
-              htmlFor="password"
-              className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300"
-            >
+            <label htmlFor="password" className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
               Contraseña
             </label>
             <div className="relative">

@@ -5,7 +5,7 @@ PROJECT EXPORT FOR LLMs
 PROJECT INFORMATION:
 --------------------------------------------------
 Project Name: mrserdefalca
-Generated On: 2026-10-20 16:24:01 (America/Caracas / GMT-04:00)
+Generated On: 2026-10-21 13:17:05 (America/Caracas / GMT-04:00)
 Total Files Processed: 41
 Export Tool: Easy Whole Project to Single Text File for LLMs v1.1.0
 Tool Author: Jota / José Guilherme Pandolfi
@@ -48,7 +48,7 @@ PROJECT STRUCTURE
 │   ├── 📁 comercial/
 │   │   └── 📄 page.tsx (17.29 KB)
 │   ├── 📁 desechos/
-│   │   └── 📄 page.tsx (10.22 KB)
+│   │   └── 📄 page.tsx (2.08 KB)
 │   ├── 📁 flota/
 │   │   └── 📄 page.tsx (11.14 KB)
 │   ├── 📁 llave/
@@ -59,10 +59,10 @@ PROJECT STRUCTURE
 │   ├── 📄 favicon.ico (264.06 KB)
 │   ├── 📄 globals.css (488 B)
 │   ├── 📄 layout.tsx (821 B)
-│   └── 📄 page.tsx (6.7 KB)
+│   └── 📄 page.tsx (6.29 KB)
 ├── 📁 lib/
 │   ├── 📄 supabase-admin.ts (361 B)
-│   └── 📄 supabase.ts (269 B)
+│   └── 📄 supabase.ts (463 B)
 ├── 📁 public/
 │   ├── 📄 file.svg (391 B)
 │   ├── 📄 globe.svg (1.01 KB)
@@ -92,7 +92,7 @@ Total Files: 41
 Total Directories: 21
 Text Files: 31
 Binary Files: 10
-Total Size: 920.79 KB
+Total Size: 912.44 KB
 
 FILE TYPES DISTRIBUTION:
 ------------------------------
@@ -2361,72 +2361,44 @@ FILE: app/desechos/page.tsx
 
 FILE INFORMATION:
 ----------------------------------------
-Size: 10.22 KB
+Size: 2.08 KB
 Extension: .tsx
 Language: typescript
 Location: app/desechos/page.tsx
 Relative Path: app/desechos
 Created: 2026-08-31 16:08:08 (America/Caracas / GMT-04:00)
-Modified: 2026-09-22 17:07:22 (America/Caracas / GMT-04:00)
-MD5: 00fcf84a1bdb963e37c8f357bd227ff0
-SHA256: 1dfdd31c9ea5764ab7230dacecdc38c925b7b9693874313c0b48dd8f4ce1f61c
-Encoding: ASCII
+Modified: 2026-10-21 13:17:04 (America/Caracas / GMT-04:00)
+MD5: 1d35c20805c65880094ab151f43c83b9
+SHA256: 87ebbd56d35049c0f6afe1d2e8e0aa89c2306590d25b674ff6e3cd28e89a5701
+Encoding: UTF-8
 
 FILE CONTENT:
 ----------------------------------------
 "use client";
 
-import { useState, useEffect, useTransition } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
 export default function DesechosPage() {
+  const [usuario, setUsuario] = useState<any>(null);
+  const [cargando, setCargando] = useState(true);
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
-  const [cargandoSesion, setCargandoSesion] = useState(true);
-
-  const [usuarioNombre, setUsuarioNombre] = useState("");
-  const [usuarioIniciales, setUsuarioIniciales] = useState("--");
-
-  // Formulario
-  const [tipoDesecho, setTipoDesecho] = useState("Desechos Domiciliarios");
-  const [tipoTransporte, setTipoTransporte] = useState("Compactador");
-  const [placa, setPlaca] = useState("");
-  const [origenMunicipio, setOrigenMunicipio] = useState("Miranda");
-  const [observaciones, setObservaciones] = useState("");
-  const [mensaje, setMensaje] = useState({ texto: "", tipo: "" });
 
   useEffect(() => {
-    let isMounted = true;
-
-    const verificarUsuario = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        if (isMounted) router.push("/");
+    const verificarSesion = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        router.push("/");
         return;
       }
 
-      if (isMounted) {
-        const email = session.user.email || "";
-        const nombre = email.split("@")[0].toUpperCase();
-        setUsuarioNombre(nombre);
-        setUsuarioIniciales(nombre.substring(0, 2));
-        setCargandoSesion(false);
-      }
+      setUsuario(user);
+      setCargando(false);
     };
 
-    verificarUsuario();
-
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_OUT" || !session) {
-        router.push("/");
-      }
-    });
-
-    return () => {
-      isMounted = false;
-      authListener.subscription.unsubscribe();
-    };
+    verificarSesion();
   }, [router]);
 
   const handleCerrarSesion = async () => {
@@ -2434,181 +2406,40 @@ export default function DesechosPage() {
     router.push("/");
   };
 
-  const handleGuardarRegistro = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setMensaje({ texto: "", tipo: "" });
-
-    startTransition(async () => {
-      try {
-        const { error } = await supabase.from("registro_desechos").insert([
-          {
-            tipo_desecho: tipoDesecho,
-            tipo_transporte: tipoTransporte,
-            placa: placa.toUpperCase(),
-            origen_municipio: origenMunicipio,
-            observaciones,
-            responsable: usuarioNombre,
-            fecha_hora: new Date().toISOString(),
-          },
-        ]);
-
-        if (error) throw error;
-
-        setMensaje({ texto: "✅ Recepción de desechos registrada correctamente.", tipo: "exito" });
-        setPlaca("");
-        setObservaciones("");
-      } catch (err: any) {
-        setMensaje({ texto: "❌ Error al guardar: " + (err.message || "Error inesperado"), tipo: "error" });
-      }
-    });
-  };
-
-  if (cargandoSesion) {
+  if (cargando) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-100 text-zinc-600">
-        Verificando sesión...
+      <div className="flex min-h-screen items-center justify-center bg-zinc-900 text-white">
+        Cargando módulo de Desechos...
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-zinc-100 font-sans">
-      <aside className="w-64 bg-emerald-950 text-white flex flex-col justify-between p-4 shadow-xl shrink-0 hidden md:flex">
-        <div>
-          <div className="py-4 px-2 border-b border-emerald-800/60 mb-6">
-            <h1 className="text-xl font-black tracking-wider text-white">SERDEFALCA</h1>
-            <p className="text-[10px] text-emerald-300 font-medium">Control de Desechos</p>
-          </div>
-          <nav className="space-y-1 text-sm font-medium">
-            <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-emerald-800 text-white shadow-inner">
-              <span>♻️</span>
-              <span>Recepción de Desechos</span>
-            </div>
-          </nav>
+    <div className="min-h-screen bg-zinc-100 p-8 dark:bg-zinc-900 dark:text-white">
+      <div className="mx-auto max-w-4xl rounded-xl bg-white p-6 shadow-md dark:bg-zinc-800">
+        <div className="flex items-center justify-between border-b pb-4">
+          <h1 className="text-2xl font-bold text-emerald-700 dark:text-emerald-400">
+            Módulo de Gestión de Desechos Sólidos
+          </h1>
+          <button
+            onClick={handleCerrarSesion}
+            className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+          >
+            Cerrar Sesión
+          </button>
         </div>
-        <button
-          onClick={handleCerrarSesion}
-          className="flex items-center gap-2 text-xs font-semibold text-red-300 hover:text-red-100 px-3 py-2 rounded-lg hover:bg-emerald-900 transition-colors"
-        >
-          <span>🚪</span>
-          <span>Cerrar Sesión</span>
-        </button>
-      </aside>
 
-      <main className="flex-1 flex flex-col overflow-hidden">
-        <header className="bg-emerald-900 text-white px-6 md:px-8 py-4 flex items-center justify-between shadow-md">
-          <h2 className="text-base md:text-lg font-bold tracking-wide">Módulo de Desechos Sólidos</h2>
-          <div className="flex items-center gap-3">
-            <div className="text-right text-xs hidden sm:block">
-              <p className="font-bold text-white">{usuarioNombre}</p>
-              <p className="text-emerald-200">Operador de Botadero</p>
-            </div>
-            <div className="w-9 h-9 rounded-full bg-emerald-500 text-emerald-950 font-bold flex items-center justify-center text-xs border-2 border-emerald-300 shrink-0">
-              {usuarioIniciales}
-            </div>
+        <div className="mt-6">
+          <p className="text-gray-700 dark:text-gray-300">
+            Bienvenido al panel operativo de recolección y control de desechos.
+          </p>
+          <div className="mt-4 rounded-lg bg-emerald-50 p-4 dark:bg-emerald-950/40">
+            <p className="text-sm text-emerald-800 dark:text-emerald-300">
+              Usuario activo: <strong>{usuario?.email}</strong>
+            </p>
           </div>
-        </header>
-
-        <section className="p-4 md:p-8 w-full max-w-4xl mx-auto overflow-y-auto">
-          <div className="bg-white rounded-2xl p-6 md:p-8 shadow-xl border border-zinc-200/80">
-            <div className="border-b border-zinc-100 pb-4 mb-6">
-              <h3 className="text-xl md:text-2xl font-extrabold text-emerald-900">Registro de Ingreso a Vertedero</h3>
-              <p className="text-xs text-zinc-500 mt-1">
-                Complete la clasificación y procedencia del transporte que ingresa.
-              </p>
-            </div>
-
-            <form onSubmit={handleGuardarRegistro} className="space-y-5">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5">
-                <div>
-                  <label className="block text-xs font-semibold text-zinc-700 mb-1">Clasificación de Desecho *</label>
-                  <select
-                    value={tipoDesecho}
-                    onChange={(e) => setTipoDesecho(e.target.value)}
-                    className="w-full p-2.5 md:p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 bg-white"
-                  >
-                    <option value="Desechos Domiciliarios">Desechos Domiciliarios</option>
-                    <option value="Desechos Comerciales">Desechos Comerciales</option>
-                    <option value="Desechos Industriales">Desechos Industriales</option>
-                    <option value="Escombros y Vegetal">Escombros y Vegetal</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-zinc-700 mb-1">Tipo de Transporte *</label>
-                  <select
-                    value={tipoTransporte}
-                    onChange={(e) => setTipoTransporte(e.target.value)}
-                    className="w-full p-2.5 md:p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 bg-white"
-                  >
-                    <option value="Compactador">Camión Compactador</option>
-                    <option value="Volteo">Camión Volteo</option>
-                    <option value="Chasis Largo">Camión Chasis Largo</option>
-                    <option value="Particular / Particular">Particular / Pick-Up</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-zinc-700 mb-1">Placa del Vehículo *</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Ej: A82BK9"
-                    value={placa}
-                    onChange={(e) => setPlaca(e.target.value.toUpperCase())}
-                    className="w-full p-2.5 md:p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 font-mono uppercase"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-zinc-700 mb-1">Municipio de Origen *</label>
-                  <select
-                    value={origenMunicipio}
-                    onChange={(e) => setOrigenMunicipio(e.target.value)}
-                    className="w-full p-2.5 md:p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600 bg-white"
-                  >
-                    <option value="Miranda">Miranda</option>
-                    <option value="Carirubana">Carirubana</option>
-                    <option value="Colina">Colina</option>
-                    <option value="Zamora">Zamora</option>
-                    <option value="Falcón">Falcón</option>
-                    <option value="Silva">Silva</option>
-                  </select>
-                </div>
-
-                <div className="sm:col-span-2">
-                  <label className="block text-xs font-semibold text-zinc-700 mb-1">Observaciones</label>
-                  <textarea
-                    rows={3}
-                    placeholder="Detalles adicionales del estado de la carga o vehículo..."
-                    value={observaciones}
-                    onChange={(e) => setObservaciones(e.target.value)}
-                    className="w-full p-2.5 md:p-3 rounded-lg border border-zinc-300 text-sm text-zinc-800 outline-none focus:border-emerald-600"
-                  />
-                </div>
-              </div>
-
-              {mensaje.texto && (
-                <div
-                  className={`p-3.5 rounded-lg text-sm font-bold text-center shadow-sm ${
-                    mensaje.tipo === "error" ? "bg-red-50 text-red-600 border border-red-200" : "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                  }`}
-                >
-                  {mensaje.texto}
-                </div>
-              )}
-
-              <button
-                type="submit"
-                disabled={isPending}
-                className="w-full py-3.5 bg-emerald-700 text-white font-bold text-sm rounded-xl hover:bg-emerald-800 transition-colors disabled:bg-emerald-400 shadow-md mt-4"
-              >
-                {isPending ? "Guardando..." : "Registrar Recepción de Desechos"}
-              </button>
-            </form>
-          </div>
-        </section>
-      </main>
+        </div>
+      </div>
     </div>
   );
 }
@@ -3214,15 +3045,15 @@ FILE: app/page.tsx
 
 FILE INFORMATION:
 ----------------------------------------
-Size: 6.7 KB
+Size: 6.29 KB
 Extension: .tsx
 Language: typescript
 Location: app/page.tsx
 Relative Path: app
 Created: 2026-07-21 20:24:25 (America/Caracas / GMT-04:00)
-Modified: 2026-10-20 14:40:54 (America/Caracas / GMT-04:00)
-MD5: 6caf61fc3a7b623953e50aa18785577d
-SHA256: c5e038439dc624699f4bada2ae13f172d2cc3f900fbb36ed8753ac33fb5030db
+Modified: 2026-10-21 13:10:07 (America/Caracas / GMT-04:00)
+MD5: 30fe28cf26a10e283b98dc04dd5e77c5
+SHA256: 971f39e1448fce210689a09fc1df407ca2c0f7704593b8caa76fae8b26a62813
 Encoding: UTF-8
 
 FILE CONTENT:
@@ -3232,31 +3063,23 @@ FILE CONTENT:
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { createClient } from "@supabase/supabase-js";
-
-// 1. Inicializamos Supabase utilizando las variables de entorno públicas
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+import { supabase } from "@/lib/supabase";
 
 export default function Home() {
-  // 2. Creamos los estados para gestionar los campos del formulario y errores
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [cargando, setCargando] = useState(false);
   const [mostrarPassword, setMostrarPassword] = useState(false);
 
-  // 3. Inicializamos el enrutador para la redirección de páginas
   const router = useRouter();
 
-  // 4. Función principal que procesa el inicio de sesión
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setCargando(true);
     setError("");
 
-    // Paso A: Autenticar credenciales en Supabase Auth
+    // Paso A: Autenticar al usuario en Supabase
     const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
       email: email,
       password: password,
@@ -3268,7 +3091,7 @@ export default function Home() {
       return;
     }
 
-    // Paso B: Verificar el rol del usuario en la tabla personalizada 'usuarios'
+    // Paso B: Verificar ROL en la tabla 'usuarios'
     if (authData.user) {
       const { data: userData, error: userError } = await supabase
         .from('usuarios')
@@ -3283,15 +3106,22 @@ export default function Home() {
         return;
       }
 
-      // Paso C: Redirección inteligente basada en el rol del usuario
+      // Paso C: Normalizar y Redireccionar según el rol
       const rolEmpleado = userData.rol?.toLowerCase().trim();
 
-      if (rolEmpleado === 'administrador' || rolEmpleado === 'admin' || rolEmpleado === 'super usuario') {
+      if (
+        rolEmpleado === 'administrador' || 
+        rolEmpleado === 'admin' || 
+        rolEmpleado === 'super usuario' ||
+        rolEmpleado === 'tecnologia'
+      ) {
         router.push('/admin');
-      } else if (rolEmpleado === 'comercial') {
+      } else if (rolEmpleado === 'comercial' || rolEmpleado === 'comercializacion') {
         router.push('/comercial');
-      } else if (rolEmpleado === 'flota') {
+      } else if (rolEmpleado === 'flota' || rolEmpleado === 'transporte') {
         router.push('/flota');
+      } else if (rolEmpleado === 'desechos' || rolEmpleado === 'recoleccion') {
+        router.push('/desechos');
       } else {
         setError(`⛔ Acceso denegado: El rol "${userData.rol}" no está configurado en el sistema.`);
         await supabase.auth.signOut();
@@ -3303,11 +3133,11 @@ export default function Home() {
 
   return (
     <div className="relative flex min-h-screen items-center justify-center bg-zinc-900 font-sans">
-      {/* Imagen de fondo a pantalla completa */}
+      {/* Imagen de Fondo */}
       <div className="absolute inset-0 z-0">
         <Image
           src="/imagen1.png"
-          alt="Fondo institucional"
+          alt="Fondo Serdefalca"
           fill
           sizes="100vw"
           className="object-cover opacity-40"
@@ -3315,15 +3145,15 @@ export default function Home() {
         />
       </div>
 
-      {/* Tarjeta de Inicio de Sesión */}
+      {/* Tarjeta de Login */}
       <div className="relative z-10 mx-4 w-full max-w-md rounded-2xl bg-white/95 p-8 shadow-2xl backdrop-blur-md dark:bg-zinc-950/90 sm:p-10">
         
-        {/* Encabezado y Logotipo */}
+        {/* Logotipo y Título */}
         <div className="mb-8 flex flex-col items-center text-center">
           <div className="relative mb-6 h-20 w-full max-w-[200px]">
             <Image
               src="/logo1.png"
-              alt="Logotipo oficial"
+              alt="Logo Oficial Serdefalca"
               fill
               sizes="(max-width: 768px) 200px, 200px"
               className="object-contain"
@@ -3338,13 +3168,10 @@ export default function Home() {
           </p>
         </div>
 
-        {/* Formulario de Acceso */}
+        {/* Formulario */}
         <form onSubmit={handleLogin} className="flex flex-col gap-5">
           <div>
-            <label
-              htmlFor="email"
-              className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300"
-            >
+            <label htmlFor="email" className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
               Correo Electrónico
             </label>
             <input
@@ -3360,10 +3187,7 @@ export default function Home() {
           </div>
 
           <div>
-            <label
-              htmlFor="password"
-              className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300"
-            >
+            <label htmlFor="password" className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
               Contraseña
             </label>
             <div className="relative">
@@ -3454,25 +3278,29 @@ FILE: lib/supabase.ts
 
 FILE INFORMATION:
 ----------------------------------------
-Size: 269 B
+Size: 463 B
 Extension: .ts
 Language: typescript
 Location: lib/supabase.ts
 Relative Path: lib
 Created: 2026-07-21 20:24:25 (America/Caracas / GMT-04:00)
-Modified: 2026-09-30 21:50:14 (America/Caracas / GMT-04:00)
-MD5: 6c0579089940323090287ab0c32e08ba
-SHA256: 464509f8ef984085f0ec52f37dbae623ec8b9067805d260c9e85659dd2fa2009
-Encoding: ASCII
+Modified: 2026-10-21 13:09:19 (America/Caracas / GMT-04:00)
+MD5: bf0dbd4ac0a00e4c6563767313b44acb
+SHA256: 9bf9266bb7e06aad48da005104d65b9ed41a7d3753f0b8d491ea42b9b39bb2d2
+Encoding: UTF-8
 
 FILE CONTENT:
 ----------------------------------------
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error("⚠️ Alerta: Las variables NEXT_PUBLIC_SUPABASE_URL o NEXT_PUBLIC_SUPABASE_ANON_KEY no están configuradas en .env.local");
+}
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 ================================================================================
 
 
