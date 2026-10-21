@@ -50,10 +50,11 @@ export default function LoginPage() {
 
       const userRol = userData.rol?.toLowerCase().trim();
 
-      // 3. Redirección basada en el rol del usuario
+      // 3. Redirección basada en el rol del usuario (Soporte completo para todos los roles)
       switch (userRol) {
         case "administrador":
         case "admin":
+        case "superuser":
           router.push("/admin");
           break;
         case "desechos":
@@ -66,7 +67,7 @@ export default function LoginPage() {
           router.push("/admin/empleados");
           break;
         default:
-          throw new Error(`Acceso denegado: El rol "${userRol}" no está configurado.`);
+          throw new Error(`Acceso denegado: El rol "${userRol}" no está configurado en el sistema.`);
       }
     } catch (err: any) {
       setErrorMessage(err.message || "Ocurrió un error inesperado al iniciar sesión.");
