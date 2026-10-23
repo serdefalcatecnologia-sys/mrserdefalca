@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
+import { USER_ROLES } from "@/lib/user-roles";
 
 export default function RegistroEmpleados() {
   const [cedula, setCedula] = useState("");
@@ -10,7 +11,7 @@ export default function RegistroEmpleados() {
   const [apellidos, setApellidos] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [rol, setRol] = useState("comercial");
+  const [rol, setRol] = useState<string>(USER_ROLES.COMMERCIAL);
   const [mensaje, setMensaje] = useState({ texto: "", tipo: "" });
 
   const [isPending, startTransition] = useTransition();
@@ -150,10 +151,10 @@ export default function RegistroEmpleados() {
                 onChange={(e) => setRol(e.target.value)}
                 className="mt-1 w-full rounded-lg border border-zinc-300 p-3 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
               >
-                <option value="administrador">Administrador del Sistema (Acceso Total)</option>
-                <option value="comercial">Operador de Comercialización y Facturación</option>
-                <option value="flota">Operador de Flota de Rutas</option>
-                <option value="desechos">Operador de Control de Desechos</option>
+                <option value={USER_ROLES.ADMINISTRATOR}>Administrador del Sistema (Acceso Total)</option>
+                <option value={USER_ROLES.COMMERCIAL}>Operador de Comercialización y Facturación</option>
+                <option value={USER_ROLES.FLEET}>Operador de Flota de Rutas</option>
+                <option value={USER_ROLES.WASTE}>Operador de Control de Desechos</option>
               </select>
             </div>
 

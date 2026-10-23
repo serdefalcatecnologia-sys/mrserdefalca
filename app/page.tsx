@@ -4,6 +4,16 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { supabase } from "@/lib/supabase";
+import { USER_ROLES } from "@/lib/user-roles";
+
+const ROLE_REDIRECTS: Record<string, string> = {
+  [USER_ROLES.ADMINISTRATOR]: "/admin",
+  [USER_ROLES.ADMIN]: "/admin",
+  [USER_ROLES.SUPERUSER]: "/admin",
+  [USER_ROLES.WASTE]: "/llave",
+  [USER_ROLES.COMMERCIAL]: "/comercial",
+  [USER_ROLES.TRANSPORT]: "/admin/empleados",
+};
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -49,28 +59,17 @@ export default function LoginPage() {
       }
 
       const userRol = userData.rol?.toLowerCase().trim();
+      const redirectPath = userRol ? ROLE_REDIRECTS[userRol] : undefined;
 
-      // 3. Redirección basada en el rol del usuario (Soporte completo para todos los roles)
-      switch (userRol) {
-        case "administrador":
-        case "admin":
-        case "superuser":
-          router.push("/admin");
-          break;
-        case "desechos":
-          router.push("/llave");
-          break;
-        case "comercial":
-          router.push("/comercial");
-          break;
-        case "transporte":
-          router.push("/admin/empleados");
-          break;
-        default:
-          throw new Error(`Acceso denegado: El rol "${userRol}" no está configurado en el sistema.`);
+      if (!redirectPath) {
+        setErrorMessage(`Acceso denegado: El rol "${userRol}" no está configurado en el sistema.`);
+        setLoading(false);
+        return;
       }
-    } catch (err: any) {
-      setErrorMessage(err.message || "Ocurrió un error inesperado al iniciar sesión.");
+
+      router.push(redirectPath);
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : "Ocurrió un error inesperado al iniciar sesión.");
       setLoading(false);
     }
   };

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { USER_ROLES } from "@/lib/user-roles";
 
 export async function DELETE(request: Request) {
   try {
@@ -44,7 +45,7 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "No se pudieron comprobar los permisos." }, { status: 500 });
     }
 
-    if (typeof profile?.rol !== "string" || profile.rol.trim().toLowerCase() !== "administrador") {
+    if (typeof profile?.rol !== "string" || profile.rol.trim().toLowerCase() !== USER_ROLES.ADMINISTRATOR) {
       return NextResponse.json({ error: "No tienes permisos para eliminar usuarios." }, { status: 403 });
     }
 

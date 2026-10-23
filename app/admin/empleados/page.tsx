@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { USER_ROLES } from "@/lib/user-roles";
 
 interface Empleado {
   id_usuario: string;
@@ -205,10 +206,10 @@ export default function GestionEmpleados() {
                     onChange={(e) => setNuevoRol(e.target.value)}
                     className="mt-1 w-full rounded-lg border border-zinc-300 p-2.5 text-sm text-zinc-800 outline-none focus:border-emerald-600"
                   >
-                    <option value="administrador">Administrador</option>
-                    <option value="comercial">Comercialización</option>
-                    <option value="flota">Flota de Rutas</option>
-                    <option value="desechos">Control de Desechos</option>
+                    <option value={USER_ROLES.ADMINISTRATOR}>Administrador</option>
+                    <option value={USER_ROLES.COMMERCIAL}>Comercialización</option>
+                    <option value={USER_ROLES.FLEET}>Flota de Rutas</option>
+                    <option value={USER_ROLES.WASTE}>Control de Desechos</option>
                   </select>
                 </div>
 
