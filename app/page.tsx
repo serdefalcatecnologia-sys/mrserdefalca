@@ -93,7 +93,7 @@ export default function LoginPage() {
           <Image src="/logo1.png" alt="Serdefalca Logo" width={180} height={60} className="object-contain" />
         </div>
 
-        <h1 className="text-2xl font-bold text-center text-emerald-900">SERDEFAL CA</h1>
+        <h1 className="text-2xl font-bold text-center text-emerald-900">SERDEFALCA</h1>
         <p className="text-xs text-center text-gray-500 mt-1 mb-6">
           Sistema Regional de Gestión de Desechos Sólidos del Estado Falcón
         </p>
