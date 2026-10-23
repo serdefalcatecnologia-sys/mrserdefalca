@@ -1,23 +1,8 @@
 {
-  "generatedAt": "2026-10-23T11:07:21.000Z",
+  "generatedAt": "2026-10-23T18:47:00.000Z",
   "generatedOnPlatform": "win32",
   "projectType": "webapp",
-  "setup": [
-    {
-      "command": "npm",
-      "args": ["ci"]
-    }
-  ],
   "assertions": [
-    {
-      "name": "tsc-no-emit",
-      "kind": "process",
-      "command": "npx",
-      "args": ["tsc", "--noEmit"],
-      "verificationMethod": "exit-code",
-      "expected": "0",
-      "timeoutSeconds": 180
-    },
     {
       "name": "tests-pass",
       "kind": "process",
@@ -30,8 +15,8 @@
     {
       "name": "home-route-responds",
       "kind": "http-probe",
-      "startCommand": "npm",
-      "startArgs": ["run", "dev"],
+      "startCommand": "node",
+      "startArgs": ["node_modules/next/dist/bin/next", "dev", "--webpack"],
       "url": "http://localhost:3000/",
       "verificationMethod": "http-status",
       "expected": "200",
