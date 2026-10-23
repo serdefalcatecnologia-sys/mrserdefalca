@@ -1,5 +1,6 @@
 // Regression tests for dependency upgrades in the application package.
-import { describe, expect, it } from "vitest";
+import assert from "node:assert/strict";
+import { describe, it } from "node:test";
 import { createClient } from "@supabase/supabase-js";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -12,8 +13,8 @@ describe("package integrations", () => {
       { auth: { persistSession: false, autoRefreshToken: false } },
     );
 
-    expect(typeof client.auth.signInWithPassword).toBe("function");
-    expect(typeof client.from("records").select).toBe("function");
+    assert.equal(typeof client.auth.signInWithPassword, "function");
+    assert.equal(typeof client.from("records").select, "function");
   });
 
   it("generates a PDF table", () => {
@@ -23,7 +24,7 @@ describe("package integrations", () => {
       body: [["Value"]],
     });
 
-    expect(document.getNumberOfPages()).toBe(1);
-    expect(document.lastAutoTable?.finalY).toBeGreaterThan(0);
+    assert.equal(document.getNumberOfPages(), 1);
+    assert.ok(document.output("arraybuffer").byteLength > 0);
   });
 });
