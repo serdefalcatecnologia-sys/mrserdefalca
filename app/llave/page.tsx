@@ -2,10 +2,9 @@
 
 import { useState } from "react";
 import { createClient } from "@supabase/supabase-js";
+import { getSupabaseUrl, getSupabaseAnonKey } from "@/lib/supabase-config";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const supabase = createClient(getSupabaseUrl(), getSupabaseAnonKey());
 
 export default function PaginaLlave() {
   const [nombre, setNombre] = useState("");
