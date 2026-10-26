@@ -10,7 +10,7 @@ const ROLE_REDIRECTS: Record<string, string> = {
   [USER_ROLES.ADMINISTRATOR]: "/admin",
   [USER_ROLES.ADMIN]: "/admin",
   [USER_ROLES.SUPERUSER]: "/admin",
-  [USER_ROLES.WASTE]: "/llave",
+  [USER_ROLES.WASTE]: "/desechos", // Corregido: Redirige correctamente al módulo de desechos
   [USER_ROLES.COMMERCIAL]: "/comercial",
   [USER_ROLES.TRANSPORT]: "/admin/empleados",
 };
@@ -29,7 +29,6 @@ export default function LoginPage() {
     setErrorMessage("");
 
     try {
-      // 1. Autenticación con Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password,
@@ -43,7 +42,6 @@ export default function LoginPage() {
         throw new Error("No se pudo obtener la sesión del usuario.");
       }
 
-      // 2. Consulta de rol en la tabla pública 'usuarios'
       const { data: userData, error: userError } = await supabase
         .from("usuarios")
         .select("rol")
@@ -55,7 +53,7 @@ export default function LoginPage() {
       }
 
       if (!userData) {
-        throw new Error("El usuario authenticated no está registrado en la tabla pública 'usuarios'.");
+        throw new Error("El usuario no está registrado en la tabla pública 'usuarios'.");
       }
 
       const userRol = userData.rol?.toLowerCase().trim();
@@ -76,7 +74,6 @@ export default function LoginPage() {
 
   return (
     <main className="min-h-screen w-full relative flex items-center justify-center bg-gray-900 p-4">
-      {/* Fondo de pantalla */}
       <div className="absolute inset-0 z-0 opacity-40">
         <Image
           src="/imagen1.png"
@@ -87,7 +84,6 @@ export default function LoginPage() {
         />
       </div>
 
-      {/* Tarjeta de Login */}
       <div className="relative z-10 w-full max-w-md bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl p-8 border border-gray-100">
         <div className="flex justify-center items-center gap-4 mb-6">
           <Image src="/logo1.png" alt="Serdefalca Logo" width={180} height={60} className="object-contain" />
