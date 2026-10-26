@@ -12,7 +12,7 @@ const ROLE_REDIRECTS: Record<string, string> = {
   [USER_ROLES.SUPERUSER]: "/admin",
   [USER_ROLES.WASTE]: "/desechos",
   [USER_ROLES.COMMERCIAL]: "/comercial",
-  [USER_ROLES.TRANSPORT]: "/admin/empleados",
+  [USER_ROLES.TRANSPORT]: "/flota", // Apunta correctamente al módulo de flota/transporte
 };
 
 export default function LoginPage() {
