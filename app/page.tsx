@@ -10,7 +10,7 @@ const ROLE_REDIRECTS: Record<string, string> = {
   [USER_ROLES.ADMINISTRATOR]: "/admin",
   [USER_ROLES.ADMIN]: "/admin",
   [USER_ROLES.SUPERUSER]: "/admin",
-  [USER_ROLES.WASTE]: "/desechos", // Corregido: Redirige correctamente al módulo de desechos
+  [USER_ROLES.WASTE]: "/desechos",
   [USER_ROLES.COMMERCIAL]: "/comercial",
   [USER_ROLES.TRANSPORT]: "/admin/empleados",
 };
@@ -29,19 +29,30 @@ export default function LoginPage() {
     setErrorMessage("");
 
     try {
+      const cleanEmail = email.trim().toLowerCase();
+
+      // 1. Autenticación con Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
+        email: cleanEmail,
         password,
       });
 
       if (authError) {
-        throw new Error("Correo o contraseña incorrectos.");
+        console.error("Error Auth Supabase:", authError.message);
+        if (authError.message.includes("Invalid login credentials")) {
+          throw new Error("El correo electrónico o la contraseña son incorrectos.");
+        }
+        if (authError.message.includes("Email not confirmed")) {
+          throw new Error("El correo electrónico aún no ha sido confirmado en Supabase.");
+        }
+        throw new Error(`Error de autenticación: ${authError.message}`);
       }
 
       if (!authData.user) {
-        throw new Error("No se pudo obtener la sesión del usuario.");
+        throw new Error("No se pudo iniciar la sesión del usuario.");
       }
 
+      // 2. Consulta de rol en la tabla pública 'usuarios'
       const { data: userData, error: userError } = await supabase
         .from("usuarios")
         .select("rol")
@@ -49,31 +60,35 @@ export default function LoginPage() {
         .maybeSingle();
 
       if (userError) {
-        throw new Error("Error al verificar los permisos en la base de datos.");
+        console.error("Error al consultar la tabla usuarios:", userError.message);
+        throw new Error("Error de permisos al consultar los datos del usuario en la base de datos.");
       }
 
       if (!userData) {
-        throw new Error("El usuario no está registrado en la tabla pública 'usuarios'.");
+        throw new Error("El usuario no existe en la tabla 'public.usuarios'. Contacte al administrador.");
       }
 
+      // 3. Verificación de rol y redirección
       const userRol = userData.rol?.toLowerCase().trim();
       const redirectPath = userRol ? ROLE_REDIRECTS[userRol] : undefined;
 
       if (!redirectPath) {
-        setErrorMessage(`Acceso denegado: El rol "${userRol}" no está configurado en el sistema.`);
-        setLoading(false);
-        return;
+        throw new Error(`Acceso denegado: El rol '${userRol || "sin rol"}' no tiene un módulo asignado.`);
       }
 
       router.push(redirectPath);
-    } catch (err) {
-      setErrorMessage(err instanceof Error ? err.message : "Ocurrió un error inesperado al iniciar sesión.");
+    } catch (err: unknown) {
+      console.error("Detalle del error de login:", err);
+      setErrorMessage(
+        err instanceof Error ? err.message : "Ocurrió un error inesperado al iniciar sesión."
+      );
       setLoading(false);
     }
   };
 
   return (
     <main className="min-h-screen w-full relative flex items-center justify-center bg-gray-900 p-4">
+      {/* Imagen de Fondo */}
       <div className="absolute inset-0 z-0 opacity-40">
         <Image
           src="/imagen1.png"
@@ -84,9 +99,16 @@ export default function LoginPage() {
         />
       </div>
 
+      {/* Tarjeta de Formulario */}
       <div className="relative z-10 w-full max-w-md bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl p-8 border border-gray-100">
         <div className="flex justify-center items-center gap-4 mb-6">
-          <Image src="/logo1.png" alt="Serdefalca Logo" width={180} height={60} className="object-contain" />
+          <Image
+            src="/logo1.png"
+            alt="Serdefalca Logo"
+            width={180}
+            height={60}
+            className="object-contain"
+          />
         </div>
 
         <h1 className="text-2xl font-bold text-center text-emerald-900">SERDEFALCA</h1>
@@ -94,6 +116,7 @@ export default function LoginPage() {
           Sistema Regional de Gestión de Desechos Sólidos del Estado Falcón
         </p>
 
+        {/* Notificación de Error */}
         {errorMessage && (
           <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-xs flex items-center gap-2">
             <span>⛔</span>
@@ -101,9 +124,12 @@ export default function LoginPage() {
           </div>
         )}
 
+        {/* Formulario */}
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">Correo Electrónico</label>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">
+              Correo Electrónico
+            </label>
             <input
               type="email"
               required
@@ -115,7 +141,9 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">Contraseña</label>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">
+              Contraseña
+            </label>
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
