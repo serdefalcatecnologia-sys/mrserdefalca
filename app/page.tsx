@@ -1,18 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { supabase } from "@/lib/supabase";
-import { USER_ROLES } from "@/lib/user-roles";
 
 const ROLE_REDIRECTS: Record<string, string> = {
-  [USER_ROLES.ADMINISTRATOR]: "/admin",
-  [USER_ROLES.ADMIN]: "/admin",
-  [USER_ROLES.SUPERUSER]: "/admin",
-  [USER_ROLES.WASTE]: "/desechos",
-  [USER_ROLES.COMMERCIAL]: "/comercial",
-  [USER_ROLES.TRANSPORT]: "/flota", // Apunta correctamente al módulo de flota/transporte
+  "admin": "/admin",
+  "administrador": "/admin",
+  "superuser": "/admin",
+  "desechos": "/desechos",
+  "comercial": "/comercial",
+  "transporte": "/flota",
+  "flota": "/flota",
 };
 
 export default function LoginPage() {
@@ -21,7 +20,6 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,7 +66,7 @@ export default function LoginPage() {
         throw new Error("El usuario no existe en la tabla 'public.usuarios'. Contacte al administrador.");
       }
 
-      // 3. Verificación de rol y redirección
+      // 3. Verificación de rol y redirección robusta
       const userRol = userData.rol?.toLowerCase().trim();
       const redirectPath = userRol ? ROLE_REDIRECTS[userRol] : undefined;
 
@@ -76,7 +74,8 @@ export default function LoginPage() {
         throw new Error(`Acceso denegado: El rol '${userRol || "sin rol"}' no tiene un módulo asignado.`);
       }
 
-      router.push(redirectPath);
+      // Redirección limpia mediante el navegador
+      window.location.href = redirectPath;
     } catch (err: unknown) {
       console.error("Detalle del error de login:", err);
       setErrorMessage(

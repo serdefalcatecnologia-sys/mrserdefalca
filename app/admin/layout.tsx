@@ -1,7 +1,6 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
 export default function AdminLayout({
@@ -13,8 +12,7 @@ export default function AdminLayout({
 
   const handleCerrarSesion = async () => {
     await supabase.auth.signOut();
-    router.push("/");
-    router.refresh();
+    window.location.href = "/";
   };
 
   return (
