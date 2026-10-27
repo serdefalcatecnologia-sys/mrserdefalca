@@ -28,6 +28,7 @@ export default function LoginPage() {
 
     try {
       const cleanEmail = email.trim().toLowerCase();
+      console.log("Intentando autenticar a:", cleanEmail);
 
       // 1. Autenticación con Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
@@ -37,18 +38,14 @@ export default function LoginPage() {
 
       if (authError) {
         console.error("Error Auth Supabase:", authError.message);
-        if (authError.message.includes("Invalid login credentials")) {
-          throw new Error("El correo electrónico o la contraseña son incorrectos.");
-        }
-        if (authError.message.includes("Email not confirmed")) {
-          throw new Error("El correo electrónico aún no ha sido confirmado en Supabase.");
-        }
-        throw new Error(`Error de autenticación: ${authError.message}`);
+        throw new Error(authError.message);
       }
 
       if (!authData.user) {
         throw new Error("No se pudo iniciar la sesión del usuario.");
       }
+
+      console.log("Auth exitoso. ID de usuario:", authData.user.id);
 
       // 2. Consulta de rol en la tabla pública 'usuarios'
       const { data: userData, error: userError } = await supabase
@@ -59,14 +56,17 @@ export default function LoginPage() {
 
       if (userError) {
         console.error("Error al consultar la tabla usuarios:", userError.message);
-        throw new Error("Error de permisos al consultar los datos del usuario en la base de datos.");
+        throw new Error("Error al consultar los datos del usuario en la base de datos: " + userError.message);
       }
 
       if (!userData) {
-        throw new Error("El usuario no existe en la tabla 'public.usuarios'. Contacte al administrador.");
+        console.error("El usuario con ID", authData.user.id, "no se encontró en la tabla public.usuarios");
+        throw new Error("El usuario no existe en la tabla 'public.usuarios'.");
       }
 
-      // 3. Verificación de rol y redirección robusta
+      console.log("Rol encontrado:", userData.rol);
+
+      // 3. Verificación de rol y redirección
       const userRol = userData.rol?.toLowerCase().trim();
       const redirectPath = userRol ? ROLE_REDIRECTS[userRol] : undefined;
 
@@ -74,10 +74,10 @@ export default function LoginPage() {
         throw new Error(`Acceso denegado: El rol '${userRol || "sin rol"}' no tiene un módulo asignado.`);
       }
 
-      // Redirección limpia mediante el navegador
+      console.log("Redirigiendo a:", redirectPath);
       window.location.href = redirectPath;
     } catch (err: unknown) {
-      console.error("Detalle del error de login:", err);
+      console.error("Detalle del error de login catch:", err);
       setErrorMessage(
         err instanceof Error ? err.message : "Ocurrió un error inesperado al iniciar sesión."
       );
