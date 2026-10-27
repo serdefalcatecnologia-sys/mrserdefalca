@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-// IMPORTACIÓN CORREGIDA: Usando la instancia global
 import { supabase } from '@/lib/supabase';
 
 export default function VistaComercializacion() {
@@ -26,8 +25,11 @@ export default function VistaComercializacion() {
             .eq('id_usuario', authData.session.user.id)
             .single();
 
+          // ==========================================
+          // AQUí SE UBICA LA VALIDACIÓN DE ROL:
+          // ==========================================
           const r = perfil?.rol?.toLowerCase().trim();
-          if (r === 'comercial' || r === 'flota' || r === 'desechos') {
+          if (r === 'comercial' || r === 'flota' || r === 'desechos' || r === 'transporte') {
             setEsAdmin(false);
           }
         }
