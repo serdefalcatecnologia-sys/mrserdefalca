@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { getSupabaseServiceRoleKey, getSupabaseUrl } from "@/lib/supabase-config";
 
 export async function PUT(request: Request) {
   try {
@@ -10,8 +11,8 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: "Se requiere el ID del usuario." }, { status: 400 });
     }
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const supabaseUrl = getSupabaseUrl();
+    const supabaseServiceKey = getSupabaseServiceRoleKey();
 
     if (!supabaseUrl || !supabaseServiceKey) {
       return NextResponse.json({ error: "Faltan credenciales en el servidor." }, { status: 500 });

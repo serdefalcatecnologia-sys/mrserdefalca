@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { getSupabaseServiceRoleKey, getSupabaseUrl } from "@/lib/supabase-config";
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { email, password, cedula, telefono, nombres, apellidos, rol } = body;
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const supabaseUrl = getSupabaseUrl();
+    const supabaseServiceKey = getSupabaseServiceRoleKey();
 
     if (!supabaseUrl || !supabaseServiceKey) {
       return NextResponse.json(

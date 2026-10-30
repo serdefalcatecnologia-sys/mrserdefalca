@@ -1,10 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
+import { getSupabaseAnonKey, getSupabaseUrl } from './supabase-config';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const supabaseUrl = getSupabaseUrl();
+const supabaseAnonKey = getSupabaseAnonKey();
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error("Faltan las variables de entorno de Supabase: NEXT_PUBLIC_SUPABASE_URL o NEXT_PUBLIC_SUPABASE_ANON_KEY.");
+if (supabaseUrl === 'https://example.supabase.co' || supabaseAnonKey === 'demo-anon-key') {
+  console.warn('Supabase no está configurado; usando valores de ejemplo para compilar la app.');
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {

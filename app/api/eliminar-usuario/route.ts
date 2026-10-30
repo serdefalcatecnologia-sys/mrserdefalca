@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { getSupabaseServiceRoleKey, getSupabaseUrl } from "@/lib/supabase-config";
 import { USER_ROLES } from "@/lib/user-roles";
 
 export async function DELETE(request: Request) {
@@ -11,8 +12,8 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "Falta el ID del usuario a eliminar." }, { status: 400 });
     }
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const supabaseUrl = getSupabaseUrl();
+    const supabaseServiceKey = getSupabaseServiceRoleKey();
 
     if (!supabaseUrl || !supabaseServiceKey) {
       return NextResponse.json({ error: "Faltan credenciales de servidor." }, { status: 500 });
