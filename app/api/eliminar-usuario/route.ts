@@ -46,7 +46,7 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "No se pudieron comprobar los permisos." }, { status: 500 });
     }
 
-    if (typeof profile?.rol !== "string" || profile.rol.trim().toLowerCase() !== USER_ROLES.ADMINISTRATOR) {
+    if (typeof profile?.rol !== "string" || profile.rol.trim().toLowerCase() !== USER_ROLES.ADMIN) {
       return NextResponse.json({ error: "No tienes permisos para eliminar usuarios." }, { status: 403 });
     }
 
