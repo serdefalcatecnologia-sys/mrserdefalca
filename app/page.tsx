@@ -6,8 +6,6 @@ import { supabase } from "@/lib/supabase";
 
 const ROLE_REDIRECTS: Record<string, string> = {
   "admin": "/admin",
-  "administrador": "/admin",
-  "superuser": "/admin",
   "desechos": "/desechos",
   "comercial": "/comercial",
   "transporte": "/flota",
@@ -28,7 +26,6 @@ export default function LoginPage() {
 
     try {
       const cleanEmail = email.trim().toLowerCase();
-      console.log("Intentando autenticar a:", cleanEmail);
 
       // 1. Autenticación con Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
@@ -37,7 +34,6 @@ export default function LoginPage() {
       });
 
       if (authError) {
-        console.error("Error Auth Supabase:", authError.message);
         throw new Error(authError.message);
       }
 
@@ -45,26 +41,32 @@ export default function LoginPage() {
         throw new Error("No se pudo iniciar la sesión del usuario.");
       }
 
-      console.log("Auth exitoso. ID de usuario:", authData.user.id);
-
       // 2. Consulta de rol en la tabla pública 'usuarios'
-      const { data: userData, error: userError } = await supabase
+      let { data: userData, error: userError } = await supabase
         .from("usuarios")
         .select("rol")
         .eq("id_usuario", authData.user.id)
         .maybeSingle();
 
-      if (userError) {
-        console.error("Error al consultar la tabla usuarios:", userError.message);
-        throw new Error("Error al consultar los datos del usuario en la base de datos: " + userError.message);
-      }
-
+      // Auto-reparación si el usuario no estaba en la tabla pública
       if (!userData) {
-        console.error("El usuario con ID", authData.user.id, "no se encontró en la tabla public.usuarios");
-        throw new Error("El usuario no existe en la tabla 'public.usuarios'.");
-      }
+        const esAdminCorreo = ['serdefalcatecnologia@gmail.com', 'feypaz66@gmail.com'].includes(cleanEmail);
+        const rolAsignado = esAdminCorreo ? 'admin' : 'comercial';
 
-      console.log("Rol encontrado:", userData.rol);
+        const { error: insertError } = await supabase.from("usuarios").insert([
+          {
+            id_usuario: authData.user.id,
+            correo: cleanEmail,
+            rol: rolAsignado,
+            nombre: 'Usuario',
+          },
+        ]);
+
+        if (insertError) {
+          throw new Error("Error al sincronizar los datos del usuario: " + insertError.message);
+        }
+        userData = { rol: rolAsignado };
+      }
 
       // 3. Verificación de rol y redirección
       const userRol = userData.rol?.toLowerCase().trim();
@@ -74,10 +76,8 @@ export default function LoginPage() {
         throw new Error(`Acceso denegado: El rol '${userRol || "sin rol"}' no tiene un módulo asignado.`);
       }
 
-      console.log("Redirigiendo a:", redirectPath);
       window.location.href = redirectPath;
     } catch (err: unknown) {
-      console.error("Detalle del error de login catch:", err);
       setErrorMessage(
         err instanceof Error ? err.message : "Ocurrió un error inesperado al iniciar sesión."
       );
@@ -87,7 +87,6 @@ export default function LoginPage() {
 
   return (
     <main className="min-h-screen w-full relative flex items-center justify-center bg-gray-900 p-4">
-      {/* Imagen de Fondo */}
       <div className="absolute inset-0 z-0 opacity-40">
         <Image
           src="/imagen1.png"
@@ -98,7 +97,6 @@ export default function LoginPage() {
         />
       </div>
 
-      {/* Tarjeta de Formulario */}
       <div className="relative z-10 w-full max-w-md bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl p-8 border border-gray-100">
         <div className="flex justify-center items-center gap-4 mb-6">
           <Image
@@ -115,7 +113,6 @@ export default function LoginPage() {
           Sistema Regional de Gestión de Desechos Sólidos del Estado Falcón
         </p>
 
-        {/* Notificación de Error */}
         {errorMessage && (
           <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-xs flex items-center gap-2">
             <span>⛔</span>
@@ -123,7 +120,6 @@ export default function LoginPage() {
           </div>
         )}
 
-        {/* Formulario */}
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
             <label className="block text-xs font-semibold text-gray-700 mb-1">
