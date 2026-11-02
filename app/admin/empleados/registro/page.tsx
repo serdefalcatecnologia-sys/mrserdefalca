@@ -71,7 +71,7 @@ export default function RegistroEmpleados() {
         <div className="rounded-2xl bg-white p-8 shadow-xl">
           <h1 className="text-2xl font-bold text-emerald-800">Alta de Personal y Asignación de Roles</h1>
           <p className="mt-1 text-xs text-zinc-500">
-            Registra al nuevo operador para darle acceso a su módulo correspondiente.
+            Registra al nuevo operador para darle acceso al módulo correspondiente.
           </p>
 
           <form onSubmit={handleCrearEmpleado} className="mt-6 space-y-4">
@@ -151,7 +151,7 @@ export default function RegistroEmpleados() {
                 onChange={(e) => setRol(e.target.value)}
                 className="mt-1 w-full rounded-lg border border-zinc-300 p-3 text-sm text-zinc-800 outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
               >
-                <option value={USER_ROLES.ADMINISTRATOR}>Administrador del Sistema (Acceso Total)</option>
+                <option value={USER_ROLES.ADMIN}>Administrador del Sistema (Acceso Total)</option>
                 <option value={USER_ROLES.COMMERCIAL}>Operador de Comercialización y Facturación</option>
                 <option value={USER_ROLES.FLEET}>Operador de Flota de Rutas</option>
                 <option value={USER_ROLES.WASTE}>Operador de Control de Desechos</option>

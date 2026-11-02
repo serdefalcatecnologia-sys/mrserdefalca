@@ -206,7 +206,7 @@ export default function GestionEmpleados() {
                     onChange={(e) => setNuevoRol(e.target.value)}
                     className="mt-1 w-full rounded-lg border border-zinc-300 p-2.5 text-sm text-zinc-800 outline-none focus:border-emerald-600"
                   >
-                    <option value={USER_ROLES.ADMINISTRATOR}>Administrador</option>
+                    <option value={USER_ROLES.ADMIN}>Administrador</option>
                     <option value={USER_ROLES.COMMERCIAL}>Comercialización</option>
                     <option value={USER_ROLES.FLEET}>Flota de Rutas</option>
                     <option value={USER_ROLES.WASTE}>Control de Desechos</option>
